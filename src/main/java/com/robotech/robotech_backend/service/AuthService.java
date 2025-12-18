@@ -14,6 +14,7 @@ import com.robotech.robotech_backend.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,16 +27,22 @@ public class AuthService {
     private final ClubRepository clubRepo;
     private final CompetidorRepository competidorRepo;
     private final JuezRepository juezRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public Map<String, Object> login(String correo, String contrasena) {
 
-        Usuario usuario = usuarioRepo.findByCorreoAndContrasenaHash(correo, contrasena)
+        Usuario usuario = usuarioRepo.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+
+        if (!passwordEncoder.matches(contrasena, usuario.getContrasenaHash())) {
+            throw new RuntimeException("Credenciales incorrectas");
+        }
 
         Map<String, Object> response = new HashMap<>();
 
-        // NO usas JWT, así que seguimos con token vacío
-        response.put("token", "");
+        String token = jwtService.generarToken(usuario);
+        response.put("token", token);
 
         response.put("usuario", usuario);
         response.put("rol", usuario.getRol());
