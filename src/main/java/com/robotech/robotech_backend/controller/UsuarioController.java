@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +12,10 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
