@@ -1,9 +1,10 @@
 package com.robotech.robotech_backend.security;
 
+import com.robotech.robotech_backend.model.Usuario;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.robotech.robotech_backend.model.Usuario;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -12,14 +13,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "ESTA_ES_MI_SECRET_KEY_SUPER_SECRETA_PARA_JWT_256_BITS_1234567890";
+    private final Key signingKey;
+    private final long expirationMs;
 
-    private static final long EXPIRATION_MS = 1000 * 60 * 60 * 4; // 4 horas
-
-
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    public JwtService(@Value("${jwt.secret}") String secretKey,
+                      @Value("${jwt.expiration-ms:14400000}") long expirationMs) {
+        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        this.expirationMs = expirationMs;
     }
 
 
@@ -30,8 +30,8 @@ public class JwtService {
                 .claim("rol", usuario.getRol())
                 .claim("idUsuario", usuario.getIdUsuario())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -40,7 +40,7 @@ public class JwtService {
     public boolean esTokenValido(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+                    .setSigningKey(signingKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -59,7 +59,7 @@ public class JwtService {
 
     private Claims obtenerClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
