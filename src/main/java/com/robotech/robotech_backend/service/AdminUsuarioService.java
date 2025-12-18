@@ -4,6 +4,7 @@ import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 public class AdminUsuarioService {
 
     private final UsuarioRepository usuarioRepo;
+    private final PasswordEncoder passwordEncoder;
 
     // LISTAR
     public List<Usuario> listar() {
@@ -25,7 +27,7 @@ public class AdminUsuarioService {
         Usuario u = Usuario.builder()
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
-                .contrasenaHash(dto.getContrasena())
+                .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
                 .rol(dto.getRol())
                 .estado(dto.getEstado())
                 .build();
@@ -60,7 +62,7 @@ public class AdminUsuarioService {
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        u.setContrasenaHash(nuevaPass);
+        u.setContrasenaHash(passwordEncoder.encode(nuevaPass));
         return usuarioRepo.save(u);
     }
 
