@@ -8,6 +8,7 @@ import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +22,14 @@ public class AdminClubService {
 
     private final ClubRepository clubRepo;
     private final UsuarioRepository usuarioRepo;
+    private final PasswordEncoder passwordEncoder;
 
     public ClubResponseDTO crearClub(CrearClubDTO dto) {
 
         // 1. Crear usuario propietario
         Usuario propietario = Usuario.builder()
                 .correo(dto.getCorreoPropietario())
-                .contrasenaHash(dto.getContrasenaPropietario())
+                .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
                 .telefono(dto.getTelefonoPropietario())
                 .rol("CLUB")
                 .estado("ACTIVO")
