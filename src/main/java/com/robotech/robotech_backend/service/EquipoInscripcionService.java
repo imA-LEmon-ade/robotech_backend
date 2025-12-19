@@ -98,4 +98,10 @@ public class EquipoInscripcionService {
 
         return equipoRepo.save(equipo);
     }
+
+    public EquipoTorneo inscribirEquipoPorUsuario(String idUsuario, EquipoInscripcionDTO dto) {
+        Club club = clubRepo.findByUsuario_IdUsuario(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+        return inscribirEquipo(club.getIdClub(), dto);
+    }
 }
