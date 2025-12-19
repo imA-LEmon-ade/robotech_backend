@@ -8,6 +8,7 @@ import com.robotech.robotech_backend.service.CategoriaTorneoService;
 import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,7 @@ public class TorneoController {
 
     // Crear torneo
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody CrearTorneoDTO dto) {
+    public ResponseEntity<?> crear(@RequestBody CrearTorneoDTO dto, Authentication auth) {
 
         Torneo torneo = Torneo.builder()
                 .nombre(dto.getNombre())
@@ -31,8 +32,14 @@ public class TorneoController {
                 .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion())
                 .fechaCierreInscripcion(dto.getFechaCierreInscripcion())
                 .tipo(dto.getTipo())
+                .maxParticipantes(dto.getMaxParticipantes())
+                .numeroEncuentros(dto.getNumeroEncuentros())
                 .estado("BORRADOR")
                 .build();
+
+        if (auth != null && auth.getPrincipal() instanceof com.robotech.robotech_backend.model.Usuario usuario) {
+            torneo.setCreadoPor(usuario.getIdUsuario());
+        }
 
         return ResponseEntity.ok(torneoService.crearTorneo(torneo));
     }
@@ -40,9 +47,9 @@ public class TorneoController {
 
 
    // Listar torneos
-   @GetMapping
-   public ResponseEntity<?> listar() {
-        return ResponseEntity.ok(torneoService.listar());
+    @GetMapping
+   public ResponseEntity<?> listar(Authentication auth) {
+        return ResponseEntity.ok(torneoService.listarPorAdministrador(auth));
     }
 
     // Editar torneo
@@ -60,6 +67,8 @@ public class TorneoController {
                 .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion())
                 .fechaCierreInscripcion(dto.getFechaCierreInscripcion())
                 .tipo(dto.getTipo())
+                .maxParticipantes(dto.getMaxParticipantes())
+                .numeroEncuentros(dto.getNumeroEncuentros())
                 .build();
 
         return ResponseEntity.ok(torneoService.editar(id, data));
