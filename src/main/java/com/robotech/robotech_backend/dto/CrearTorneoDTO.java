@@ -12,5 +12,6 @@ public class CrearTorneoDTO {
     private Date fechaAperturaInscripcion;
     private Date fechaCierreInscripcion;
     private String tipo; // INDIVIDUAL o EQUIPOS
+    private Integer maxParticipantes;
+    private Integer numeroEncuentros;
 }
-
