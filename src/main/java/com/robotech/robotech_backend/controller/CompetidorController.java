@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
@@ -35,8 +36,12 @@ public class CompetidorController {
 
     // Obtener perfil del competidor
     @GetMapping("/{idCompetidor}")
-    public ResponseEntity<?> obtener(@PathVariable String idCompetidor) {
-        return ResponseEntity.ok(competidorService.obtener(idCompetidor));
+    public ResponseEntity<CompetidorPerfilDTO> obtenerPerfil(
+            @PathVariable String idCompetidor
+    ) {
+        return ResponseEntity.ok(
+                competidorService.obtenerPerfil(idCompetidor)
+        );
     }
 
     // ✔ APROBAR COMPETIDOR

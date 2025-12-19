@@ -19,5 +19,6 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     // 🔥 ESTE ES EL BUENO CON TU MODELO
     List<Robot> findByCompetidor_Club(Club club);
 
+    int countByCompetidor_IdCompetidor(String idCompetidor);
 
 }

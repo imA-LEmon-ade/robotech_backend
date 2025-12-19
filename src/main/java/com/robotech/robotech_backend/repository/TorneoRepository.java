@@ -18,4 +18,5 @@ public interface TorneoRepository extends JpaRepository<Torneo, String> {
 
     List<Torneo> findByCreadoPor(String creadoPor);
 
+
 }
