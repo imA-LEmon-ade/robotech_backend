@@ -23,7 +23,7 @@ public class JwtService {
     }
 
 
-    // 🔥 GENERAR TOKEN
+    // GENERAR TOKEN
     public String generarToken(Usuario usuario) {
         return Jwts.builder()
                 .setSubject(usuario.getCorreo())
