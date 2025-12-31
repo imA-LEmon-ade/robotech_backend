@@ -44,12 +44,10 @@ public class ClubService {
 
     public Club obtenerPorUsuario(Authentication auth) {
 
-        String correo = auth.getName(); // viene del JWT
-
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = (Usuario) auth.getPrincipal();
 
         return clubRepository.findByUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Club no asociado al usuario"));
     }
+
 }

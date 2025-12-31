@@ -17,7 +17,7 @@ public class Robot {
     @Column(length = 8)
     private String idRobot;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true )
     private String nombre;
 
     @Column(nullable = false)
