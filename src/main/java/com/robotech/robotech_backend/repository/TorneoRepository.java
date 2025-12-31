@@ -7,16 +7,12 @@ import java.util.List;
 
 public interface TorneoRepository extends JpaRepository<Torneo, String> {
 
-
+    // Torneos por estado
     List<Torneo> findByEstado(String estado);
 
+    // Torneos por múltiples estados
     List<Torneo> findByEstadoIn(List<String> estados);
 
-    List<Torneo> findByEstadoAndTipo(String estado, String tipo);
-
-    List<Torneo> findByEstadoInAndTipo(List<String> estados, String tipo);
-
+    // Torneos creados por un usuario (admin / subadmin)
     List<Torneo> findByCreadoPor(String creadoPor);
-
-
 }

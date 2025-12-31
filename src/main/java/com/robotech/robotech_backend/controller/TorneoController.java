@@ -31,9 +31,6 @@ public class TorneoController {
                 .fechaFin(dto.getFechaFin())
                 .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion())
                 .fechaCierreInscripcion(dto.getFechaCierreInscripcion())
-                .tipo(dto.getTipo())
-                .maxParticipantes(dto.getMaxParticipantes())
-                .numeroEncuentros(dto.getNumeroEncuentros())
                 .estado("BORRADOR")
                 .build();
 
@@ -66,9 +63,6 @@ public class TorneoController {
                 .fechaFin(dto.getFechaFin())
                 .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion())
                 .fechaCierreInscripcion(dto.getFechaCierreInscripcion())
-                .tipo(dto.getTipo())
-                .maxParticipantes(dto.getMaxParticipantes())
-                .numeroEncuentros(dto.getNumeroEncuentros())
                 .build();
 
         return ResponseEntity.ok(torneoService.editar(id, data));

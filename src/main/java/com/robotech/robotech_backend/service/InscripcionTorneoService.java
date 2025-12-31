@@ -16,104 +16,123 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class InscripcionTorneoService {
 
-    private final CategoriaTorneoRepository catRepo;
+    private final CategoriaTorneoRepository categoriaRepo;
     private final RobotRepository robotRepo;
-    private final InscripcionTorneoRepository inscripcionRepository;
-    private final CompetidorRepository competidorRepository;
+    private final InscripcionTorneoRepository inscripcionRepo;
+    private final CompetidorRepository competidorRepo;
 
     // ----------------------------------------------------------------------
-    // INSCRIBIR UN ROBOT A UNA CATEGORÍA DE TORNEO
+    // INSCRIBIR ROBOT (MODALIDAD INDIVIDUAL)
     // ----------------------------------------------------------------------
-    public InscripcionTorneo inscribir(String idCategoriaTorneo, String idRobot, String idUsuario) {
+    public InscripcionTorneo inscribirIndividual(
+            String idCategoriaTorneo,
+            String idRobot,
+            String idUsuario
+    ) {
 
-        CategoriaTorneo categoria = catRepo.findById(idCategoriaTorneo)
+        // 1️⃣ Categoría
+        CategoriaTorneo categoria = categoriaRepo.findById(idCategoriaTorneo)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        Torneo torneo = categoria.getTorneo();
-
-        if (!"INDIVIDUAL".equals(torneo.getTipo())) {
-            throw new RuntimeException("Este torneo no es individual");
+        // 2️⃣ Validar modalidad
+        if (!"INDIVIDUAL".equals(categoria.getModalidad())) {
+            throw new RuntimeException("Esta categoría es por equipos");
         }
 
+        // 3️⃣ Torneo y fechas
+        Torneo torneo = categoria.getTorneo();
         Date hoy = new Date();
+
         if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
                 hoy.after(torneo.getFechaCierreInscripcion())) {
             throw new RuntimeException("Las inscripciones están fuera de fecha");
         }
 
-        Competidor competidor = competidorRepository.findByUsuario_IdUsuario(idUsuario)
+        // 4️⃣ Competidor por usuario
+        Competidor competidor = competidorRepo
+                .findByUsuario_IdUsuario(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
+        // 5️⃣ Robot
         Robot robot = robotRepo.findById(idRobot)
                 .orElseThrow(() -> new RuntimeException("Robot no encontrado"));
 
-        if (!robot.getCompetidor().equals(competidor)) {
+        // 6️⃣ Verificar pertenencia
+        if (!robot.getCompetidor().getIdCompetidor()
+                .equals(competidor.getIdCompetidor())) {
             throw new RuntimeException("El robot no pertenece al competidor");
         }
 
-        // No duplicar inscripción
-        boolean yaInscrito = inscripcionRepository
-                .existsByRobotIdRobotAndCategoriaTorneoTorneoIdTorneo(idRobot, torneo.getIdTorneo());
+        // 7️⃣ No duplicar inscripción en el mismo torneo
+        boolean yaInscrito = inscripcionRepo
+                .existsByRobotIdRobotAndCategoriaTorneoTorneoIdTorneo(
+                        idRobot,
+                        torneo.getIdTorneo()
+                );
 
         if (yaInscrito) {
             throw new RuntimeException("El robot ya está inscrito en este torneo");
         }
 
-        // Cupos
-        long inscritos = inscripcionRepository
+        // 8️⃣ Validar cupos
+        long inscritos = inscripcionRepo
                 .countByCategoriaTorneoIdCategoriaTorneo(idCategoriaTorneo);
 
         if (inscritos >= categoria.getMaxParticipantes()) {
             throw new RuntimeException("Cupos agotados en esta categoría");
         }
 
-        // Crear inscripción
-        InscripcionTorneo i = InscripcionTorneo.builder()
+        // 9️⃣ Crear inscripción
+        InscripcionTorneo inscripcion = InscripcionTorneo.builder()
                 .categoriaTorneo(categoria)
                 .robot(robot)
                 .estado("PENDIENTE")
                 .build();
 
-        return inscripcionRepository.save(i);
+        return inscripcionRepo.save(inscripcion);
     }
 
     // ----------------------------------------------------------------------
     // APROBAR INSCRIPCIÓN
     // ----------------------------------------------------------------------
     public InscripcionTorneo aprobar(String idInscripcion) {
-        InscripcionTorneo i = inscripcionRepository.findById(idInscripcion)
+        InscripcionTorneo i = inscripcionRepo.findById(idInscripcion)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
 
         i.setEstado("APROBADO");
-        return inscripcionRepository.save(i);
+        return inscripcionRepo.save(i);
     }
 
     // ----------------------------------------------------------------------
     // RECHAZAR INSCRIPCIÓN
     // ----------------------------------------------------------------------
     public InscripcionTorneo rechazar(String idInscripcion) {
-        InscripcionTorneo i = inscripcionRepository.findById(idInscripcion)
+        InscripcionTorneo i = inscripcionRepo.findById(idInscripcion)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
 
         i.setEstado("RECHAZADO");
-        return inscripcionRepository.save(i);
+        return inscripcionRepo.save(i);
     }
 
     // ----------------------------------------------------------------------
     // LISTAR INSCRITOS DE UN TORNEO
     // ----------------------------------------------------------------------
-    public List<?> listarInscritos(String torneoId) {
+    public List<?> listarInscritos(String idTorneo) {
 
-        return inscripcionRepository.findByCategoriaTorneoTorneoIdTorneo(torneoId)
+        return inscripcionRepo
+                .findByCategoriaTorneoTorneoIdTorneo(idTorneo)
                 .stream()
-                .map(ins -> {
-                    return new Object() {
-                        public final String idCompetidor = ins.getRobot().getCompetidor().getIdCompetidor();
-                        public final String competidor = ins.getRobot().getCompetidor().getUsuario().getCorreo();
-                        public final String robot = ins.getRobot().getNombre();
-                        public final String categoria = ins.getCategoriaTorneo().getCategoria();
-                        public final String estado = ins.getEstado();
-                    };
+                .map(ins -> new Object() {
+                    public final String idCompetidor =
+                            ins.getRobot().getCompetidor().getIdCompetidor();
+                    public final String competidor =
+                            ins.getRobot().getCompetidor().getUsuario().getCorreo();
+                    public final String robot =
+                            ins.getRobot().getNombre();
+                    public final String categoria =
+                            ins.getCategoriaTorneo().getCategoria();
+                    public final String estado =
+                            ins.getEstado();
                 })
                 .collect(Collectors.toList());
     }

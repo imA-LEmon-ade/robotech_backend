@@ -4,11 +4,7 @@ import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -18,14 +14,23 @@ public class TorneoCompetidorController {
 
     private final TorneoService torneoService;
 
+    // --------------------------------------------------
+    // LISTAR TORNEOS DISPONIBLES PARA COMPETIDOR
+    // --------------------------------------------------
     @GetMapping
     public ResponseEntity<?> listar() {
-        return ResponseEntity.ok(torneoService.listarParaCompetidor());
+        return ResponseEntity.ok(
+                torneoService.listarPublicos()
+        );
     }
 
+    // --------------------------------------------------
+    // LISTAR CATEGORÍAS DE UN TORNEO
+    // --------------------------------------------------
     @GetMapping("/{id}/categorias")
     public ResponseEntity<?> categorias(@PathVariable String id) {
-        return ResponseEntity.ok(torneoService.listarCategorias(id));
+        return ResponseEntity.ok(
+                torneoService.listarCategorias(id)
+        );
     }
 }
-

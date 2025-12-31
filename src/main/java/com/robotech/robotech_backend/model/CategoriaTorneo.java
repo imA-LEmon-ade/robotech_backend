@@ -17,35 +17,26 @@ import java.util.UUID;
 public class CategoriaTorneo {
 
     @Id
-    @Column(length = 8)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String idCategoriaTorneo;
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "id_torneo", nullable = false)
     private Torneo torneo;
 
-
-    @Column(nullable = true)
-    private String categoria; // Ej: MINISUMO, MEGASUMO, SOCCER...
-
     @Column(nullable = false)
+    private String categoria; // Minisumo, Sumo, etc.
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ModalidadCategoria modalidad; // INDIVIDUAL | EQUIPO
+
+    // Para INDIVIDUAL
     private Integer maxParticipantes;
 
-    @Column(nullable = false)
+    // Para EQUIPO
+    private Integer maxEquipos;
     private Integer maxIntegrantesEquipo;
 
-
-    @Column(nullable = false)
-    private String descripcion; // ← ESTE FALTABA
-
-    @OneToMany(mappedBy = "categoriaTorneo")
-    private List<InscripcionTorneo> inscripciones;
-
-    @PrePersist
-    public void prePersist() {
-        if (idCategoriaTorneo == null) {
-            idCategoriaTorneo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        }
-    }
+    private String descripcion;
 }

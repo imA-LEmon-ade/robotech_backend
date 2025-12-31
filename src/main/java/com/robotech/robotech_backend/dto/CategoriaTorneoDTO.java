@@ -1,11 +1,21 @@
 package com.robotech.robotech_backend.dto;
 
+import com.robotech.robotech_backend.model.ModalidadCategoria;
 import lombok.Data;
 
 @Data
 public class CategoriaTorneoDTO {
 
-    private String categoria;        // Nombre (Minisumo, Megasumo, etc.)
-    private Integer maxParticipantes; // Cupo máximo de robots
-    private String descripcion;       // Opcional: descripción de la categoría
+    private String categoria;
+    private ModalidadCategoria modalidad;
+
+    // Individual
+    private Integer maxParticipantes;
+
+    // Equipo
+    private Integer maxEquipos;
+    private Integer maxIntegrantesEquipo;
+
+    private String descripcion;
 }
+

@@ -21,51 +21,57 @@ public class EquipoInscripcionService {
     private final EquipoTorneoRepository equipoRepo;
     private final ClubRepository clubRepo;
 
+    // ---------------------------------------------------------
+    // INSCRIPCIÓN DE EQUIPO A CATEGORÍA (MODALIDAD EQUIPO)
+    // ---------------------------------------------------------
     public EquipoTorneo inscribirEquipo(
             String idClubSesion,
             EquipoInscripcionDTO dto
     ) {
 
         Club club = clubRepo.findById(idClubSesion)
-                .orElseThrow(() ->
-                        new RuntimeException("Club no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
-        CategoriaTorneo categoria = categoriaRepo
-                .findById(dto.getIdCategoriaTorneo())
-                .orElseThrow(() ->
-                        new RuntimeException("Categoría no encontrada"));
+        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
         Torneo torneo = categoria.getTorneo();
 
-        // 1️⃣ Validar tipo torneo
-        if (!torneo.getTipo().equals("EQUIPOS")) {
-            throw new RuntimeException("Este torneo no es por equipos");
+        // 1️⃣ Validar modalidad de la categoría
+        if (!"EQUIPO".equals(categoria.getModalidad())) {
+            throw new RuntimeException("Esta categoría no es por equipos");
         }
 
-        // 2️⃣ Validar fechas
+        // 2️⃣ Validar fechas de inscripción
         Date hoy = new Date();
         if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
                 hoy.after(torneo.getFechaCierreInscripcion())) {
             throw new RuntimeException("Inscripciones cerradas");
         }
 
-        // 3️⃣ Validar límite de integrantes
-        if (dto.getRobots().size() > categoria.getMaxIntegrantesEquipo()) {
-            throw new RuntimeException(
-                    "Excede el límite de integrantes por equipo");
+        // 3️⃣ Validar cantidad de robots
+        if (dto.getRobots() == null || dto.getRobots().isEmpty()) {
+            throw new RuntimeException("Debe seleccionar al menos un robot");
         }
 
-        // 4️⃣ Obtener robots y validar pertenencia
+        if (dto.getRobots().size() > categoria.getMaxIntegrantesEquipo()) {
+            throw new RuntimeException(
+                    "Excede el límite de integrantes por equipo"
+            );
+        }
+
+        // 4️⃣ Obtener robots y validar pertenencia + duplicados
         List<Robot> robots = dto.getRobots().stream()
                 .map(id -> robotRepo.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException("Robot no encontrado")))
+                                new RuntimeException("Robot no encontrado: " + id)))
                 .toList();
 
         for (Robot r : robots) {
+
             if (!r.getCompetidor().getClub().equals(club)) {
                 throw new RuntimeException(
-                        "Robot no pertenece al club");
+                        "Robot " + r.getNombre() + " no pertenece al club");
             }
 
             boolean yaInscrito = equipoRepo
@@ -76,17 +82,18 @@ public class EquipoInscripcionService {
 
             if (yaInscrito) {
                 throw new RuntimeException(
-                        "Robot ya inscrito en este torneo");
+                        "Robot " + r.getNombre() + " ya está inscrito en este torneo");
             }
         }
 
         // 5️⃣ Validar cupo de equipos
         long equiposInscritos = equipoRepo
                 .countByCategoriaTorneoIdCategoriaTorneo(
-                        categoria.getIdCategoriaTorneo());
+                        categoria.getIdCategoriaTorneo()
+                );
 
         if (equiposInscritos >= categoria.getMaxParticipantes()) {
-            throw new RuntimeException("Categoría sin cupos");
+            throw new RuntimeException("Categoría sin cupos disponibles");
         }
 
         // 6️⃣ Crear equipo
@@ -94,14 +101,22 @@ public class EquipoInscripcionService {
                 .club(club)
                 .categoriaTorneo(categoria)
                 .robots(robots)
+                .estado("PENDIENTE")
                 .build();
 
         return equipoRepo.save(equipo);
     }
 
-    public EquipoTorneo inscribirEquipoPorUsuario(String idUsuario, EquipoInscripcionDTO dto) {
+    // ---------------------------------------------------------
+    // INSCRIPCIÓN DE EQUIPO USANDO USUARIO AUTENTICADO
+    // ---------------------------------------------------------
+    public EquipoTorneo inscribirEquipoPorUsuario(
+            String idUsuario,
+            EquipoInscripcionDTO dto
+    ) {
         Club club = clubRepo.findByUsuario_IdUsuario(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+
         return inscribirEquipo(club.getIdClub(), dto);
     }
 }

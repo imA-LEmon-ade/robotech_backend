@@ -3,14 +3,9 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.model.CategoriaTorneo;
 import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,20 +17,26 @@ public class TorneoClubController {
 
     private final TorneoService torneoService;
 
-    @GetMapping("/disponibles")
-    public ResponseEntity<?> listarParaClub(Authentication auth) {
-        return ResponseEntity.ok(torneoService.listarParaClub(auth));
-    }
-
+    // --------------------------------------------------
+    // LISTAR TORNEOS DISPONIBLES PARA CLUB
+    // --------------------------------------------------
     @GetMapping
     public ResponseEntity<?> listar() {
-        return ResponseEntity.ok(torneoService.listarParaClub());
+        return ResponseEntity.ok(
+                torneoService.listarPublicos()
+        );
     }
 
-    // 1️⃣ Categorías del torneo
+    // --------------------------------------------------
+    // LISTAR CATEGORÍAS DE UN TORNEO
+    // --------------------------------------------------
     @GetMapping("/{idTorneo}/categorias")
-    public List<CategoriaTorneo> categorias(@PathVariable String idTorneo) {
-        return torneoService.listarCategorias(idTorneo);
+    public ResponseEntity<List<CategoriaTorneo>> categorias(
+            @PathVariable String idTorneo
+    ) {
+        return ResponseEntity.ok(
+                torneoService.listarCategorias(idTorneo)
+        );
     }
 }
 

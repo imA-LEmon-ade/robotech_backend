@@ -39,21 +39,17 @@ public class Torneo {
     private Date fechaCierreInscripcion;
 
     @Column(nullable = false)
-    private String tipo;   // INDIVIDUAL o EQUIPOS
-
-    @Column(nullable = false)
-    private String estado; // BORRADOR, INSCRIPCIONES_ABIERTAS, EN_PROGRESO, FINALIZADO
-
-    @Column
-    private Integer maxParticipantes;
-
-    @Column
-    private Integer numeroEncuentros;
+    private String estado;
+    // BORRADOR, INSCRIPCIONES_ABIERTAS, EN_PROGRESO, FINALIZADO
 
     @Column
     private String creadoPor;
 
-    @OneToMany(mappedBy = "torneo")
+    @OneToMany(
+            mappedBy = "torneo",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @JsonManagedReference
     private List<CategoriaTorneo> categorias;
 
