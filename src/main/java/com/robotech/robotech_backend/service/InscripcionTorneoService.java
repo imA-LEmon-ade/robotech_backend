@@ -1,10 +1,8 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.InscripcionIndividualDTO;
 import com.robotech.robotech_backend.model.*;
-import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
-import com.robotech.robotech_backend.repository.CompetidorRepository;
-import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
-import com.robotech.robotech_backend.repository.RobotRepository;
+import com.robotech.robotech_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,53 +18,54 @@ public class InscripcionTorneoService {
     private final RobotRepository robotRepo;
     private final InscripcionTorneoRepository inscripcionRepo;
     private final CompetidorRepository competidorRepo;
+    private final ClubRepository clubRepo;
 
     // ----------------------------------------------------------------------
     // INSCRIBIR ROBOT (MODALIDAD INDIVIDUAL)
     // ----------------------------------------------------------------------
-    public InscripcionTorneo inscribirIndividual(
-            String idCategoriaTorneo,
-            String idRobot,
-            String idUsuario
+    public InscripcionTorneo inscribirIndividualComoClub(
+            String idUsuarioClub,
+            InscripcionIndividualDTO dto
     ) {
 
-        // 1️⃣ Categoría
-        CategoriaTorneo categoria = categoriaRepo.findById(idCategoriaTorneo)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        // 1️⃣ Obtener club desde el usuario
+        Club club = clubRepo.findByUsuario_IdUsuario(idUsuarioClub)
+                .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
-        // 2️⃣ Validar modalidad
-        if (!"INDIVIDUAL".equals(categoria.getModalidad())) {
-            throw new RuntimeException("Esta categoría es por equipos");
+        // 2️⃣ Obtener categoría del torneo
+        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada "));
+
+        // 3️⃣ Validar modalidad INDIVIDUAL
+        if (categoria.getModalidad() != ModalidadCategoria.INDIVIDUAL) {
+            throw new RuntimeException(
+                    "La modalidad de esta categoría es " + categoria.getModalidad()
+            );
         }
 
-        // 3️⃣ Torneo y fechas
-        Torneo torneo = categoria.getTorneo();
-        Date hoy = new Date();
 
+        Torneo torneo = categoria.getTorneo();
+
+        // 4️⃣ Validar fechas de inscripción
+        Date hoy = new Date();
         if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
                 hoy.after(torneo.getFechaCierreInscripcion())) {
-            throw new RuntimeException("Las inscripciones están fuera de fecha");
+            throw new RuntimeException("Las inscripciones están cerradas");
         }
 
-        // 4️⃣ Competidor por usuario
-        Competidor competidor = competidorRepo
-                .findByUsuario_IdUsuario(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
-
-        // 5️⃣ Robot
-        Robot robot = robotRepo.findById(idRobot)
+        // 5️⃣ Obtener robot
+        Robot robot = robotRepo.findById(dto.getIdRobot())
                 .orElseThrow(() -> new RuntimeException("Robot no encontrado"));
 
-        // 6️⃣ Verificar pertenencia
-        if (!robot.getCompetidor().getIdCompetidor()
-                .equals(competidor.getIdCompetidor())) {
-            throw new RuntimeException("El robot no pertenece al competidor");
+        // 6️⃣ Validar que el robot pertenece al club
+        if (!robot.getCompetidor().getClub().equals(club)) {
+            throw new RuntimeException("El robot no pertenece a este club");
         }
 
-        // 7️⃣ No duplicar inscripción en el mismo torneo
+        // 7️⃣ Validar duplicado (robot ya inscrito en el torneo)
         boolean yaInscrito = inscripcionRepo
                 .existsByRobotIdRobotAndCategoriaTorneoTorneoIdTorneo(
-                        idRobot,
+                        robot.getIdRobot(),
                         torneo.getIdTorneo()
                 );
 
@@ -76,10 +75,12 @@ public class InscripcionTorneoService {
 
         // 8️⃣ Validar cupos
         long inscritos = inscripcionRepo
-                .countByCategoriaTorneoIdCategoriaTorneo(idCategoriaTorneo);
+                .countByCategoriaTorneoIdCategoriaTorneo(
+                        categoria.getIdCategoriaTorneo()
+                );
 
         if (inscritos >= categoria.getMaxParticipantes()) {
-            throw new RuntimeException("Cupos agotados en esta categoría");
+            throw new RuntimeException("No hay cupos disponibles en esta categoría");
         }
 
         // 9️⃣ Crear inscripción
@@ -87,10 +88,12 @@ public class InscripcionTorneoService {
                 .categoriaTorneo(categoria)
                 .robot(robot)
                 .estado("PENDIENTE")
+                .fechaInscripcion(new Date())
                 .build();
 
         return inscripcionRepo.save(inscripcion);
     }
+
 
     // ----------------------------------------------------------------------
     // APROBAR INSCRIPCIÓN

@@ -22,4 +22,10 @@ public interface EquipoTorneoRepository
             String idClub,
             String idTorneo
     );
+
+    // 🔹 Vista CLUB
+    List<EquipoTorneo> findByClubUsuarioIdUsuario(String idUsuarioClub);
+
+    // 🔹 Vista COMPETIDOR
+    List<EquipoTorneo> findByRobotsCompetidorUsuarioIdUsuario(String idUsuario);
 }

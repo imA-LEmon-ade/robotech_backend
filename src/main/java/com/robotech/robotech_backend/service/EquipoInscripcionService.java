@@ -38,9 +38,11 @@ public class EquipoInscripcionService {
         Torneo torneo = categoria.getTorneo();
 
         // 1️⃣ Validar modalidad de la categoría
-        if (!"EQUIPO".equals(categoria.getModalidad())) {
-            throw new RuntimeException("Esta categoría no es por equipos");
-        }
+         if (categoria.getModalidad() != ModalidadCategoria.EQUIPO) {
+            throw new RuntimeException(
+                    "La modalidad de esta categoría es " + categoria.getModalidad()
+            );
+         }
 
         // 2️⃣ Validar fechas de inscripción
         Date hoy = new Date();
@@ -92,9 +94,18 @@ public class EquipoInscripcionService {
                         categoria.getIdCategoriaTorneo()
                 );
 
-        if (equiposInscritos >= categoria.getMaxParticipantes()) {
+        Integer maxEquipos = categoria.getMaxEquipos();
+
+        if (maxEquipos == null) {
+            throw new RuntimeException(
+                    "La categoría no tiene definido el máximo de equipos"
+            );
+        }
+
+        if (equiposInscritos >= maxEquipos) {
             throw new RuntimeException("Categoría sin cupos disponibles");
         }
+
 
         // 6️⃣ Crear equipo
         EquipoTorneo equipo = EquipoTorneo.builder()
