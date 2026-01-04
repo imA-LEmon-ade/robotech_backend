@@ -1,11 +1,13 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.TorneoRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -116,4 +118,30 @@ public class CompetidorService {
             throw new RuntimeException("Error al subir la foto");
         }
     }
+
+    public void actualizarTelefono(String idCompetidor, String telefono) {
+
+        Competidor c = competidorRepo.findById(idCompetidor)
+                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+        Usuario u = c.getUsuario();
+        u.setTelefono(telefono);
+    }
+
+    @Transactional
+    public void actualizarPerfil(String idCompetidor, CompetidorActualizarDTO dto) {
+
+        Competidor competidor = competidorRepo.findById(idCompetidor)
+                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+        // Actualizar datos propios
+        competidor.setNombres(dto.getNombres());
+        competidor.setApellidos(dto.getApellidos());
+
+        // Actualizar datos del usuario
+        Usuario usuario = competidor.getUsuario();
+        usuario.setTelefono(dto.getTelefono());
+    }
+
+
 }

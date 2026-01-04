@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Usuario;
@@ -91,5 +92,16 @@ public class CompetidorController {
                 Map.of("fotoUrl", url)
         );
     }
+
+    @PutMapping("/{idCompetidor}")
+    public ResponseEntity<?> actualizarPerfil(
+            @PathVariable String idCompetidor,
+            @RequestBody CompetidorActualizarDTO dto
+    ) {
+        competidorService.actualizarPerfil(idCompetidor, dto);
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }
