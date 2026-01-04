@@ -36,13 +36,17 @@ public class Competidor {
     private String estadoValidacion;
     // PENDIENTE, APROBADO, RECHAZADO
 
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "id_club_actual")
-    private Club club;
+    @Column(name = "foto_url")
+    private String fotoUrl;
 
-   // @OneToMany(mappedBy = "competidor")
-   // private List<Robot> robots;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_club")
+    private Club club; // club de origen / histórico
+
+
+    @OneToMany(mappedBy = "competidor")
+    @JsonIgnore
+    private List<Robot> robots;
 
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
