@@ -27,7 +27,9 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // login
+                        .requestMatchers("/api/usuarios/login").permitAll()
+                        .requestMatchers("/api/usuarios").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/torneos/**").authenticated()
                         .anyRequest().permitAll()
                 )
