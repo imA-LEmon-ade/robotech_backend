@@ -16,6 +16,8 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
 
     // Verificar si el nickname ya está en uso
     boolean existsByNickname(String nickname);
+    // Verificar si el nombre ya está en uso
+    boolean existsByNombre(String nombre);
     // 🔥 ESTE ES EL BUENO CON TU MODELO
     List<Robot> findByCompetidor_Club(Club club);
 
