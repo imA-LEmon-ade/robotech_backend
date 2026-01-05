@@ -52,7 +52,7 @@ public class AdminEncuentrosService {
 
                     return CategoriaEncuentroAdminDTO.builder()
                             .idCategoriaTorneo(categoria.getIdCategoriaTorneo())
-                            .categoria(categoria.getCategoria())
+                            .categoria(categoria.getCategoria().name())
                             .modalidad(categoria.getModalidad().name())
                             .inscritos(inscritos)
                             .maxParticipantes(max)

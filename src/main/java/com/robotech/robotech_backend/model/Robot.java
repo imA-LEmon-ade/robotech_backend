@@ -20,8 +20,10 @@ public class Robot {
     @Column(nullable = false, unique = true )
     private String nombre;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String categoria;
+    private CategoriaCompetencia categoria;
+
 
     @Column(nullable = false, unique = true)
     private String nickname; // NUEVO

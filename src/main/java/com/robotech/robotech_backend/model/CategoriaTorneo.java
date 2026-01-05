@@ -21,8 +21,10 @@ public class CategoriaTorneo {
     @JsonIgnore // 🔥 CLAVE: corta el bucle infinito
     private Torneo torneo;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String categoria;
+    private CategoriaCompetencia categoria;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

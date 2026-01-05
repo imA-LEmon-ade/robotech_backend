@@ -27,7 +27,7 @@ public class RobotService {
         Competidor comp = competidorRepo.findById(idCompetidor)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-        if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(idCompetidor, dto.getCategoria())) {
+        if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(idCompetidor, dto.getCategoria().name())) {
             throw new RuntimeException("Ya tienes un robot registrado en esta categoría");
         }
 

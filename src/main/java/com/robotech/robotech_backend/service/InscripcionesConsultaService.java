@@ -28,7 +28,7 @@ public class InscripcionesConsultaService {
                         .map(i -> new InscripcionResumenDTO(
                                 i.getIdInscripcion(),
                                 i.getCategoriaTorneo().getTorneo().getNombre(),
-                                i.getCategoriaTorneo().getCategoria(),
+                                i.getCategoriaTorneo().getCategoria().name(),
                                 "INDIVIDUAL",
                                 List.of(i.getRobot().getNombre()),
                                 i.getEstado()
@@ -41,7 +41,7 @@ public class InscripcionesConsultaService {
                         .map(e -> new InscripcionResumenDTO(
                                 e.getIdEquipo(),
                                 e.getCategoriaTorneo().getTorneo().getNombre(),
-                                e.getCategoriaTorneo().getCategoria(),
+                                e.getCategoriaTorneo().getCategoria().name(),
                                 "EQUIPO",
                                 e.getRobots().stream().map(Robot::getNombre).toList(),
                                 e.getEstado()
@@ -62,7 +62,7 @@ public class InscripcionesConsultaService {
                         .map(i -> new InscripcionResumenDTO(
                                 i.getIdInscripcion(),
                                 i.getCategoriaTorneo().getTorneo().getNombre(),
-                                i.getCategoriaTorneo().getCategoria(),
+                                i.getCategoriaTorneo().getCategoria().name(),
                                 "INDIVIDUAL",
                                 List.of(i.getRobot().getNombre()),
                                 i.getEstado()
@@ -75,7 +75,7 @@ public class InscripcionesConsultaService {
                         .map(e -> new InscripcionResumenDTO(
                                 e.getIdEquipo(),
                                 e.getCategoriaTorneo().getTorneo().getNombre(),
-                                e.getCategoriaTorneo().getCategoria(),
+                                e.getCategoriaTorneo().getCategoria().name(),
                                 "EQUIPO",
                                 e.getRobots().stream().map(Robot::getNombre).toList(),
                                 e.getEstado()

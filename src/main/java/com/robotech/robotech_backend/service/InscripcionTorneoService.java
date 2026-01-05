@@ -133,7 +133,7 @@ public class InscripcionTorneoService {
                     public final String robot =
                             ins.getRobot().getNombre();
                     public final String categoria =
-                            ins.getCategoriaTorneo().getCategoria();
+                            ins.getCategoriaTorneo().getCategoria().name();
                     public final String estado =
                             ins.getEstado();
                 })
