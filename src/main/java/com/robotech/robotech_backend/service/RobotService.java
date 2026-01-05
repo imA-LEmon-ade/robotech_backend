@@ -34,6 +34,9 @@ public class RobotService {
         if (robotRepo.existsByNickname(dto.getNickname())) {
             throw new RuntimeException("Este nickname ya está en uso");
         }
+        if (robotRepo.existsByNombre(dto.getNombre())) {
+            throw new RuntimeException("Este nombre ya está en uso");
+        }
 
         Robot robot = Robot.builder()
                 .nombre(dto.getNombre())

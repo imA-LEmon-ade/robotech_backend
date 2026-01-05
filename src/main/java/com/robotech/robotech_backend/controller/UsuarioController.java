@@ -1,7 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.model.Usuario;
-import com.robotech.robotech_backend.security.JwtService;
 import com.robotech.robotech_backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import java.util.*;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    private final JwtService jwtService;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
@@ -37,6 +35,7 @@ public class UsuarioController {
 
         return ResponseEntity.ok(usuarioService.crearUsuario(usuario));
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
 
@@ -44,25 +43,10 @@ public class UsuarioController {
         String contrasena = data.get("contrasena");
 
         return usuarioService.login(correo, contrasena)
-                .map(usuario -> {
-
-                    String token = jwtService.generarToken(usuario);
-
-                    return ResponseEntity.ok(
-                            Map.of(
-                                    "token", token,
-                                    "idUsuario", usuario.getIdUsuario(),
-                                    "rol", usuario.getRol(),
-                                    "correo", usuario.getCorreo()
-                            )
-                    );
-                })
+                .<ResponseEntity<?>>map(usuario -> ResponseEntity.ok(usuario))
                 .orElseGet(() -> ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
-                        .body(
-                                Map.of("error", "Credenciales inválidas")
-                        ));
+                        .body("Credenciales inválidas"));
     }
-
 
 }
