@@ -1,5 +1,7 @@
 package com.robotech.robotech_backend.security;
 
+import com.robotech.robotech_backend.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -12,27 +14,33 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
+    private final CustomUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/usuarios/login").permitAll()
-                        .requestMatchers("/api/usuarios").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/torneos/**").authenticated()
-                        .anyRequest().permitAll()
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/usuarios/login",
+                                "/api/admin/login",
+                                "/api/usuarios",
+                                "/api/auth/**"
+                        ).permitAll()
+                        .requestMatchers("/api/torneos/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+
+                // 🔥 ESTA LÍNEA EVITA inMemoryUserDetailsManager
+                .userDetailsService(userDetailsService)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults());
 
@@ -41,10 +49,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
-
-
-
 }

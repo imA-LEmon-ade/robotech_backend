@@ -31,17 +31,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/auth")) {
+        // 🔥 EXCLUIR ENDPOINTS DE LOGIN
+        if (
+                path.equals("/api/admin/login") ||
+                        path.equals("/api/usuarios/login") ||
+                        path.startsWith("/api/auth")
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
 
-
         String header = request.getHeader("Authorization");
 
-        // Si no hay token o está mal formado, continúa sin autenticar
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,13 +53,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        // Evita re-autenticar si ya hay autenticación
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Valida el token antes de obtener los datos
         if (!jwtService.esTokenValido(token)) {
             filterChain.doFilter(request, response);
             return;
@@ -66,7 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Usuario usuario = usuarioRepository.findByCorreo(correo).orElse(null);
 
         if (usuario != null) {
-            // Crear autoridad correctamente
             List<SimpleGrantedAuthority> authorities =
                     List.of(new SimpleGrantedAuthority(usuario.getRol()));
 
