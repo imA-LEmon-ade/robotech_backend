@@ -36,6 +36,24 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idClub") String idClub
     );
 
+    @Query("""
+    SELECT r
+    FROM Robot r
+    WHERE r.competidor.club.idClub = :idClub
+      AND r.categoria = :categoria
+      AND r.idRobot NOT IN (
+          SELECT i.robot.idRobot
+          FROM InscripcionTorneo i
+          WHERE i.categoriaTorneo.torneo.idTorneo = :idTorneo
+      )
+""")
+    List<Robot> findRobotsDisponibles(
+            @Param("idClub") String idClub,
+            @Param("categoria") CategoriaCompetencia categoria,
+            @Param("idTorneo") String idTorneo
+    );
+
+
 
 
 }
