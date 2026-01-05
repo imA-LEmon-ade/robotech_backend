@@ -1,13 +1,13 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.RobotDTO;
+import com.robotech.robotech_backend.model.CategoriaCompetencia;
 import com.robotech.robotech_backend.model.Club;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Robot;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +27,14 @@ public class RobotService {
         Competidor comp = competidorRepo.findById(idCompetidor)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-        if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(idCompetidor, dto.getCategoria().name())) {
+        // Convertir categoria (String del DTO) -> Enum
+        CategoriaCompetencia categoriaEnum = parseCategoria(dto.getCategoria());
+
+// Validar que NO tenga ya un robot en esa categoría
+        if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(
+                idCompetidor,
+                categoriaEnum      // ✅ BIEN
+        )) {
             throw new RuntimeException("Ya tienes un robot registrado en esta categoría");
         }
 
@@ -40,7 +47,7 @@ public class RobotService {
 
         Robot robot = Robot.builder()
                 .nombre(dto.getNombre())
-                .categoria(dto.getCategoria())
+                .categoria(categoriaEnum)   // enum en entidad
                 .nickname(dto.getNickname())
                 .competidor(comp)
                 .build();
@@ -57,11 +64,22 @@ public class RobotService {
         Robot robot = robotRepo.findById(idRobot)
                 .orElseThrow(() -> new RuntimeException("Robot no existe"));
 
-        // validar nickname nuevo
         nicknameValidator.validar(dto.getNickname());
 
+        CategoriaCompetencia categoriaEnum = parseCategoria(dto.getCategoria());
+
+        // (Opcional pero recomendado) Validar duplicado si cambia la categoria
+        // Si tu regla es "1 robot por categoría", esto evita que cambien a una categoría donde ya tienen robot.
+        String idCompetidor = robot.getCompetidor().getIdCompetidor();
+        if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(
+                idCompetidor,
+                categoriaEnum   // ✅ SIN .name()
+        ) && robot.getCategoria() != categoriaEnum) {
+            throw new RuntimeException("Ya tienes un robot registrado en esta categoría");
+        }
+
         robot.setNombre(dto.getNombre());
-        robot.setCategoria(dto.getCategoria());
+        robot.setCategoria(categoriaEnum);
         robot.setNickname(dto.getNickname());
 
         return robotRepo.save(robot);
@@ -71,11 +89,18 @@ public class RobotService {
         robotRepo.deleteById(idRobot);
     }
 
-
     public List<Robot> listarPorClub(Club club) {
         return robotRepo.findByCompetidor_Club(club);
     }
 
-
+    private CategoriaCompetencia parseCategoria(String categoria) {
+        if (categoria == null || categoria.isBlank()) {
+            throw new RuntimeException("La categoría es obligatoria");
+        }
+        try {
+            return CategoriaCompetencia.valueOf(categoria.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Categoría inválida: " + categoria);
+        }
+    }
 }
-

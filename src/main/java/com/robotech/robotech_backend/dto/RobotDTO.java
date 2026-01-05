@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RobotDTO {
     private String nombre;
-    private CategoriaCompetencia categoria;
+    private String categoria; //
     private String nickname;
     private String idRobot;
 }

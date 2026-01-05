@@ -15,7 +15,10 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     List<Robot> findByCompetidor_IdCompetidor(String idCompetidor);
 
     // Verificar si ya registró un robot en la categoría
-    boolean existsByCompetidor_IdCompetidorAndCategoria(String idCompetidor, String categoria);
+    boolean existsByCompetidor_IdCompetidorAndCategoria(
+            String idCompetidor,
+            CategoriaCompetencia categoria
+    );
 
     // Verificar si el nickname ya está en uso
     boolean existsByNickname(String nickname);
