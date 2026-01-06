@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,12 +40,22 @@ public class AdminRobotService {
                         .idRobot(r.getIdRobot())
                         .nombre(r.getNombre())
                         .nickname(r.getNickname())
-                        .categoria(r.getCategoria().name()) // Enum → String
-                        .competidor(r.getCompetidor().getNombres())
-                        .club(r.getCompetidor().getClub().getNombre())
+                        .categoria(r.getCategoria().name())
+                        .competidor(
+                                Optional.ofNullable(r.getCompetidor())
+                                        .map(c -> c.getNombres())
+                                        .orElse(null)
+                        )
+                        .club(
+                                Optional.ofNullable(r.getCompetidor())
+                                        .map(c -> c.getClub())
+                                        .map(cl -> cl.getNombre())
+                                        .orElse(null)
+                        )
                         .build()
                 )
                 .toList();
+
     }
 
 }

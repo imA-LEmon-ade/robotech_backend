@@ -33,7 +33,8 @@ public class SecurityConfig {
                                 "/api/usuarios/login",
                                 "/api/admin/login",
                                 "/api/usuarios",
-                                "/api/auth/**"
+                                "/api/auth/**",
+                                "/api/codigos/validar/**"
                         ).permitAll()
                         .requestMatchers("/api/torneos/**").authenticated()
                         .anyRequest().authenticated()

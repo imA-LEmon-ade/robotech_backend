@@ -40,8 +40,8 @@ public class Competidor {
     private String fotoUrl;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_club")
-    private Club club; // club de origen / histórico
+    @JoinColumn(name = "id_club_actual", nullable = false)
+    private Club club;
 
 
     @OneToMany(mappedBy = "competidor")
