@@ -9,7 +9,7 @@ import java.util.*;
 
 public interface CompetidorRepository extends JpaRepository<Competidor, String> {
     boolean existsByUsuario_IdUsuario(String idUsuario);
-    List<Competidor> findByClub_IdClub(String idClub);
+    List<Competidor> findByClubActual_IdClub(String idClub);
     Optional<Competidor> findByUsuario_IdUsuario(String idUsuario);
     boolean existsByDni(String dni);
 }

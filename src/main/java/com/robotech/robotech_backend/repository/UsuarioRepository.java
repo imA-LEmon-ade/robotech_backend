@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.repository;
 
+import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,6 +13,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     boolean existsByCorreo(String correo);
     boolean existsByTelefono(String telefono);
 
-    List<Usuario> findByEstado(String estado);
+    List<Usuario> findByEstado(EstadoUsuario estado);
 }
 

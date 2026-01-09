@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
+import com.robotech.robotech_backend.dto.CompetidorClubDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Usuario;
@@ -63,8 +64,8 @@ public class CompetidorService {
 
         return CompetidorPerfilDTO.builder()
                 .idCompetidor(c.getIdCompetidor())
-                .nombres(c.getNombres())
-                .apellidos(c.getApellidos())
+                .nombres(c.getUsuario().getNombres())
+                .apellidos(c.getUsuario().getApellidos())
                 .dni(c.getDni())
 
                 // USUARIO
@@ -73,10 +74,10 @@ public class CompetidorService {
 
                 // CLUB
                 .clubNombre(
-                        c.getClub() != null ? c.getClub().getNombre() : "Sin club"
+                        c.getClubActual() != null ? c.getClubActual().getNombre() : "Sin club"
                 )
 
-                .estadoValidacion(c.getEstadoValidacion())
+                .estadoValidacion(c.getEstadoValidacion().name())
 
                 // SOLO ROBOTS
                 .totalRobots(totalRobots)
@@ -135,12 +136,27 @@ public class CompetidorService {
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
         // Actualizar datos propios
-        competidor.setNombres(dto.getNombres());
-        competidor.setApellidos(dto.getApellidos());
+        competidor.getUsuario().setNombres(dto.getNombres());
+        competidor.getUsuario().setApellidos(dto.getApellidos());
 
         // Actualizar datos del usuario
         Usuario usuario = competidor.getUsuario();
         usuario.setTelefono(dto.getTelefono());
+    }
+
+    public List<CompetidorClubDTO> listarPorClub(String idClub) {
+
+        return competidorRepo
+                .findByClubActual_IdClub(idClub)
+                .stream()
+                .map(c -> new CompetidorClubDTO(
+                        c.getIdCompetidor(),
+                        c.getUsuario().getNombres(),
+                        c.getUsuario().getApellidos(),
+                        c.getDni(),
+                        c.getEstadoValidacion().name()
+                ))
+                .toList();
     }
 
 

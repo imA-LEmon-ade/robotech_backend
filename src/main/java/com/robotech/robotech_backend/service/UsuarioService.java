@@ -1,5 +1,7 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
+import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,51 +17,64 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // -------------------------
+    // LISTAR
+    // -------------------------
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
-    public Optional<Usuario> buscarPorId(String id) {
-        return usuarioRepository.findById(id);
-    }
+    // -------------------------
+    // CREAR USUARIO (DESDE DTO)
+    // -------------------------
+    public Usuario crearUsuario(CrearUsuarioDTO dto) {
 
-    public Usuario crearUsuario(Usuario usuario) {
-        usuario.setContrasenaHash(passwordEncoder.encode(usuario.getContrasenaHash()));
+        if (dto.nombres() == null || dto.nombres().isBlank()) {
+            throw new IllegalArgumentException("El nombre es obligatorio");
+        }
+
+        if (dto.apellidos() == null || dto.apellidos().isBlank()) {
+            throw new IllegalArgumentException("El apellido es obligatorio");
+        }
+
+        if (usuarioRepository.existsByCorreo(dto.correo())) {
+            throw new IllegalArgumentException("Correo ya registrado");
+        }
+
+        if (usuarioRepository.existsByTelefono(dto.telefono())) {
+            throw new IllegalArgumentException("Teléfono ya registrado");
+        }
+
+        Usuario usuario = Usuario.builder()
+                .nombres(dto.nombres())
+                .apellidos(dto.apellidos())
+                .correo(dto.correo())
+                .telefono(dto.telefono())
+                .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
+                .rol("ADMINISTRADOR") // o el rol que definas
+                .estado(EstadoUsuario.ACTIVO)
+                .build();
+
         return usuarioRepository.save(usuario);
     }
 
-    public boolean correoExiste(String correo) {
-        return usuarioRepository.existsByCorreo(correo);
-    }
-
-
-    public boolean telefonoExiste(String telefono) {
-        return usuarioRepository.existsByTelefono(telefono);
-    }
-
+    // -------------------------
+    // LOGIN (solo ACTIVO)
+    // -------------------------
     public Optional<Usuario> login(String correo, String contrasena) {
         return usuarioRepository.findByCorreo(correo)
-                .filter(usuario -> passwordEncoder.matches(contrasena, usuario.getContrasenaHash()));
+                .filter(u -> u.getEstado() == EstadoUsuario.ACTIVO)
+                .filter(u -> passwordEncoder.matches(contrasena, u.getContrasenaHash()));
     }
 
-    public Optional<Usuario> actualizarUsuario(String id, Usuario datos) {
-        return usuarioRepository.findById(id).map(u -> {
-            u.setCorreo(datos.getCorreo());
-            u.setTelefono(datos.getTelefono());
-            u.setContrasenaHash(passwordEncoder.encode(datos.getContrasenaHash()));
-            u.setRol(datos.getRol());
-            u.setEstado(datos.getEstado());
-            return usuarioRepository.save(u);
-        });
-    }
-
+    // -------------------------
+    // DESACTIVAR (NO BORRAR)
+    // -------------------------
     public boolean eliminarUsuario(String id) {
-        if (!usuarioRepository.existsById(id)) {
-            return false;
-        }
-        usuarioRepository.deleteById(id);
-        return true;
+        return usuarioRepository.findById(id).map(u -> {
+            u.setEstado(EstadoUsuario.INACTIVO);
+            usuarioRepository.save(u);
+            return true;
+        }).orElse(false);
     }
-
-
 }

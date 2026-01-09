@@ -15,29 +15,38 @@ import java.util.UUID;
 public class InscripcionTorneo {
 
     @Id
-    @Column(length = 8)
     private String idInscripcion;
 
-    @ManyToOne
-    @JoinColumn(name = "id_categoria_torneo", nullable = false)
+    @ManyToOne(optional = false)
     private CategoriaTorneo categoriaTorneo;
 
-    @ManyToOne
-    @JoinColumn(name = "id_robot", nullable = false)
+    @ManyToOne(optional = false)
     private Robot robot;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estado;  // PENDIENTE, APROBADO, RECHAZADO
+    private EstadoInscripcion estado;
+
+    @Column(length = 500)
+    private String motivoAnulacion;
+
+    @Column
+    private String anuladaPor; // idUsuario del admin
+
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date anuladaEn;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaInscripcion;
 
     @PrePersist
     public void prePersist() {
-        if (idInscripcion == null) {
-            idInscripcion = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        if (fechaInscripcion == null) {
+            fechaInscripcion = new Date();
         }
-        fechaInscripcion = new Date();
-        estado = "PENDIENTE";
+        if (estado == null) {
+            estado = EstadoInscripcion.ACTIVA;
+        }
     }
 }

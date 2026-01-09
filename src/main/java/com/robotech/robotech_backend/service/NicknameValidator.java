@@ -2,31 +2,41 @@ package com.robotech.robotech_backend.service;
 
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.util.List;
 
 @Service
 public class NicknameValidator {
 
     private static final List<String> PALABRAS_PROHIBIDAS = List.of(
-            "mierda", "puta", "puto", "perra", "maricon", "maricón",
+            "mierda", "puta", "puto", "perra", "maricon",
             "pendejo", "coño", "verga", "ctm", "conchatumadre",
-            "culero", "chingar", "huevon", "huevón", "idiota",
-            "imbecil", "estupido", "estúpido"
+            "culero", "chingar", "huevon", "idiota",
+            "imbecil", "estupido", "hdp", "pinga", "idiota"
     );
 
-    // Limpia símbolos comunes usados para burlar el filtro
+    // Normaliza texto: quita tildes, símbolos y espacios
     private String normalizar(String texto) {
-        return texto
-                .toLowerCase()
-                .replaceAll("[^a-z0-9]", "")
-                .replaceAll("á","a")
-                .replaceAll("é","e")
-                .replaceAll("í","i")
-                .replaceAll("ó","o")
-                .replaceAll("ú","u");
+        if (texto == null) return "";
+
+        // 1️⃣ Pasar a minúsculas
+        String limpio = texto.toLowerCase();
+
+        // 2️⃣ Quitar tildes (forma correcta)
+        limpio = Normalizer.normalize(limpio, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+
+        // 3️⃣ Quitar todo lo que no sea letras o números
+        limpio = limpio.replaceAll("[^a-z0-9]", "");
+
+        return limpio;
     }
 
     public void validar(String nickname) {
+
+        if (nickname == null || nickname.isBlank()) {
+            throw new RuntimeException("El nickname es obligatorio");
+        }
 
         String limpio = normalizar(nickname);
 
@@ -34,7 +44,9 @@ public class NicknameValidator {
             String prohibida = normalizar(palabra);
 
             if (limpio.contains(prohibida)) {
-                throw new RuntimeException("El nickname contiene palabras inapropiadas");
+                throw new RuntimeException(
+                        "El nickname contiene palabras inapropiadas"
+                );
             }
         }
     }

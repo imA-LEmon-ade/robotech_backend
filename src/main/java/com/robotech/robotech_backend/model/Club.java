@@ -34,9 +34,10 @@ public class Club {
     @JoinColumn(name = "id_usuario_propietario", nullable = false, unique = true)
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "club")
     @JsonIgnore
+    @OneToMany(mappedBy = "clubActual", cascade = CascadeType.ALL)
     private List<Competidor> competidores;
+
 
     // ------------------------------------------------------------
     //        GENERADOR DE ID ALFANUMÉRICO (8 CARACTERES)

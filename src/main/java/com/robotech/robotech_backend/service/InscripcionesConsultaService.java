@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.InscripcionResumenDTO;
+import com.robotech.robotech_backend.model.EstadoInscripcion;
 import com.robotech.robotech_backend.model.Robot;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
@@ -23,7 +24,11 @@ public class InscripcionesConsultaService {
     public List<InscripcionResumenDTO> listarInscripcionesClub(String idUsuarioClub) {
 
         List<InscripcionResumenDTO> individuales =
-                inscripcionRepo.findByRobotCompetidorClubUsuarioIdUsuario(idUsuarioClub)
+                inscripcionRepo
+                        .findByRobotCompetidorClubActualUsuarioIdUsuarioAndEstado(
+                                idUsuarioClub,
+                                EstadoInscripcion.ACTIVA
+                        )
                         .stream()
                         .map(i -> new InscripcionResumenDTO(
                                 i.getIdInscripcion(),
@@ -31,7 +36,7 @@ public class InscripcionesConsultaService {
                                 i.getCategoriaTorneo().getCategoria().name(),
                                 "INDIVIDUAL",
                                 List.of(i.getRobot().getNombre()),
-                                i.getEstado()
+                                i.getEstado().name()
                         ))
                         .toList();
 
@@ -57,7 +62,11 @@ public class InscripcionesConsultaService {
     public List<InscripcionResumenDTO> listarInscripcionesCompetidor(String idUsuario) {
 
         List<InscripcionResumenDTO> individuales =
-                inscripcionRepo.findByRobotCompetidorUsuarioIdUsuario(idUsuario)
+                inscripcionRepo
+                        .findByRobotCompetidorUsuarioIdUsuarioAndEstado(
+                                idUsuario,
+                                EstadoInscripcion.ACTIVA
+                        )
                         .stream()
                         .map(i -> new InscripcionResumenDTO(
                                 i.getIdInscripcion(),
@@ -65,7 +74,7 @@ public class InscripcionesConsultaService {
                                 i.getCategoriaTorneo().getCategoria().name(),
                                 "INDIVIDUAL",
                                 List.of(i.getRobot().getNombre()),
-                                i.getEstado()
+                                i.getEstado().name()
                         ))
                         .toList();
 
@@ -85,4 +94,3 @@ public class InscripcionesConsultaService {
         return Stream.concat(individuales.stream(), equipos.stream()).toList();
     }
 }
-

@@ -17,30 +17,48 @@ import java.util.UUID;
 public class Encuentro {
 
     @Id
-    @Column(length = 8)
+    @Column(length = 8, nullable = false, updatable = false)
     private String idEncuentro;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "id_categoria_torneo", nullable = false)
     private CategoriaTorneo categoriaTorneo;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "id_juez", nullable = false)
     private Juez juez;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "id_coliseo", nullable = false)
     private Coliseo coliseo;
 
-    private Integer ronda; // 1, 2, semifinal, etc
+    @Column(nullable = false)
+    private Integer ronda;
 
-    private String estado; // PENDIENTE, EN_JUEGO, FINALIZADO
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoEncuentro tipo; // 🔥 AQUÍ
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoEncuentro estado;
 
     @PrePersist
     public void prePersist() {
+
         if (idEncuentro == null) {
-            idEncuentro = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            idEncuentro = UUID.randomUUID()
+                    .toString()
+                    .substring(0, 8)
+                    .toUpperCase();
         }
-        estado = "PENDIENTE";
+
+        if (estado == null) {
+            estado = EstadoEncuentro.PROGRAMADO;
+        }
+
+        if (ronda == null) {
+            ronda = 1;
+        }
     }
 }

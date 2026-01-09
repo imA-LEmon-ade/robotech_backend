@@ -1,10 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.RobotDTO;
-import com.robotech.robotech_backend.model.CategoriaCompetencia;
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.Robot;
+import com.robotech.robotech_backend.dto.RobotResponseDTO;
+import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +18,19 @@ public class RobotService {
     private final CompetidorRepository competidorRepo;
     private final NicknameValidator nicknameValidator;
 
-    public Robot crearRobot(String idCompetidor, RobotDTO dto) {
+    public RobotResponseDTO crearRobot(String idCompetidor, RobotDTO dto) {
 
         nicknameValidator.validar(dto.getNickname());
 
         Competidor comp = competidorRepo.findById(idCompetidor)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-        // Convertir categoria (String del DTO) -> Enum
         CategoriaCompetencia categoriaEnum = parseCategoria(dto.getCategoria());
 
-// Validar que NO tenga ya un robot en esa categoría
+        // Validar 1 robot por categoría
         if (robotRepo.existsByCompetidor_IdCompetidorAndCategoria(
                 idCompetidor,
-                categoriaEnum      // ✅ BIEN
+                categoriaEnum
         )) {
             throw new RuntimeException("Ya tienes un robot registrado en esta categoría");
         }
@@ -41,23 +38,44 @@ public class RobotService {
         if (robotRepo.existsByNickname(dto.getNickname())) {
             throw new RuntimeException("Este nickname ya está en uso");
         }
+
         if (robotRepo.existsByNombre(dto.getNombre())) {
             throw new RuntimeException("Este nombre ya está en uso");
         }
 
         Robot robot = Robot.builder()
                 .nombre(dto.getNombre())
-                .categoria(categoriaEnum)   // enum en entidad
+                .categoria(categoriaEnum)
                 .nickname(dto.getNickname())
+                .estado(EstadoRobot.ACTIVO)   // 👈 CLAVE
                 .competidor(comp)
                 .build();
 
-        return robotRepo.save(robot);
+        Robot saved = robotRepo.save(robot);
+
+        return new RobotResponseDTO(
+                saved.getIdRobot(),
+                saved.getNombre(),
+                saved.getNickname(),
+                saved.getCategoria().name(),
+                saved.getEstado().name()
+        );
     }
 
-    public List<Robot> listarPorCompetidor(String idCompetidor) {
-        return robotRepo.findByCompetidor_IdCompetidor(idCompetidor);
+
+    public List<RobotDTO> listarPorCompetidor(String idCompetidor) {
+
+        return robotRepo.findByCompetidor_IdCompetidor(idCompetidor)
+                .stream()
+                .map(robot -> new RobotDTO(
+                        robot.getNombre(),
+                        robot.getCategoria().name(),
+                        robot.getNickname(),
+                        robot.getIdRobot()
+                ))
+                .toList();
     }
+
 
     public Robot editarRobot(String idRobot, RobotDTO dto) {
 
@@ -90,7 +108,7 @@ public class RobotService {
     }
 
     public List<Robot> listarPorClub(Club club) {
-        return robotRepo.findByCompetidor_Club(club);
+        return robotRepo.findByCompetidor_ClubActual(club);
     }
 
     private CategoriaCompetencia parseCategoria(String categoria) {

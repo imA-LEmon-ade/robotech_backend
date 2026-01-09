@@ -1,22 +1,70 @@
 package com.robotech.robotech_backend.repository;
 
 import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.EstadoInscripcion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface InscripcionTorneoRepository extends JpaRepository<InscripcionTorneo, String> {
+public interface InscripcionTorneoRepository
+        extends JpaRepository<InscripcionTorneo, String> {
 
-    List<InscripcionTorneo> findByCategoriaTorneoTorneoIdTorneo(String idCategoriaTorneo);
+    // =========================
+    // GENERALES
+    // =========================
 
-    boolean existsByRobotIdRobotAndCategoriaTorneoTorneoIdTorneo(String idRobot, String idTorneo);
+    List<InscripcionTorneo> findByCategoriaTorneoIdCategoriaTorneo(
+            String idCategoriaTorneo
+    );
 
-    long countByCategoriaTorneoIdCategoriaTorneo(String idCategoriaTorneo);
+    List<InscripcionTorneo> findByCategoriaTorneoIdCategoriaTorneoAndEstado(
+            String idCategoriaTorneo,
+            EstadoInscripcion estado
+    );
 
-    // 🔹 Para vista CLUB
-    List<InscripcionTorneo> findByRobotCompetidorClubUsuarioIdUsuario(String idUsuarioClub);
+    // =========================
+    // VALIDACIONES
+    // =========================
 
-    // 🔹 Para vista COMPETIDOR
-    List<InscripcionTorneo> findByRobotCompetidorUsuarioIdUsuario(String idUsuario);
-    List<InscripcionTorneo> findByCategoriaTorneoIdCategoriaTorneo(String idCategoriaTorneo);
+    boolean existsByRobotIdRobotAndCategoriaTorneoTorneoIdTorneoAndEstado(
+            String idRobot,
+            String idTorneo,
+            EstadoInscripcion estado
+    );
+
+    // =========================
+    // CUPOS
+    // =========================
+
+    long countByCategoriaTorneoIdCategoriaTorneoAndEstado(
+            String idCategoriaTorneo,
+            EstadoInscripcion estado
+    );
+
+    // =========================
+    // VISTA CLUB
+    // =========================
+
+    List<InscripcionTorneo>
+    findByRobotCompetidorClubActualUsuarioIdUsuarioAndEstado(
+            String idUsuarioClub,
+            EstadoInscripcion estado
+    );
+
+    // =========================
+    // VISTA COMPETIDOR
+    // =========================
+
+    List<InscripcionTorneo>
+    findByRobotCompetidorUsuarioIdUsuarioAndEstado(
+            String idUsuario,
+            EstadoInscripcion estado
+    );
+
+    // =========================
+    // TORNEO
+    // =========================
+
+    List<InscripcionTorneo>
+    findByCategoriaTorneoTorneoIdTorneo(String idTorneo);
 }

@@ -1,6 +1,5 @@
 package com.robotech.robotech_backend.service;
 
-import com.robotech.robotech_backend.dto.FiltroRobotsAdminDTO;
 import com.robotech.robotech_backend.dto.RobotAdminDTO;
 import com.robotech.robotech_backend.model.CategoriaCompetencia;
 import com.robotech.robotech_backend.model.Robot;
@@ -41,21 +40,23 @@ public class AdminRobotService {
                         .nombre(r.getNombre())
                         .nickname(r.getNickname())
                         .categoria(r.getCategoria().name())
+
+                        // COMPETIDOR → usamos DNI (modelo final)
                         .competidor(
                                 Optional.ofNullable(r.getCompetidor())
-                                        .map(c -> c.getNombres())
+                                        .map(c -> c.getDni())
                                         .orElse(null)
                         )
+
+                        // CLUB → clubActual
                         .club(
                                 Optional.ofNullable(r.getCompetidor())
-                                        .map(c -> c.getClub())
+                                        .map(c -> c.getClubActual())
                                         .map(cl -> cl.getNombre())
                                         .orElse(null)
                         )
                         .build()
                 )
                 .toList();
-
     }
-
 }

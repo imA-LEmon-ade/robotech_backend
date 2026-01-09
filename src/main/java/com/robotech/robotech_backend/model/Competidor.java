@@ -19,39 +19,40 @@ public class Competidor {
     @Column(length = 8, nullable = false, unique = true)
     private String idCompetidor;
 
-    @OneToOne
+    // PERFIL BASE
+    @OneToOne(optional = false)
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
-    private Usuario usuario;  // <--- Perfil de usuario
+    private Usuario usuario;
 
-    @Column(nullable = false)
-    private String nombres;
-
-    @Column(nullable = false)
-    private String apellidos;
-
-    @Column(nullable = false, unique = true)
+    // IDENTIDAD COMPETITIVA
+    @Column(nullable = false, unique = true, length = 8)
     private String dni;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estadoValidacion;
+    private EstadoValidacion estadoValidacion;
     // PENDIENTE, APROBADO, RECHAZADO
 
     @Column(name = "foto_url")
     private String fotoUrl;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // CLUB ACTUAL
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_club_actual", nullable = false)
-    private Club club;
+    private Club clubActual;
 
-
-    @OneToMany(mappedBy = "competidor")
+    // ROBOTS
+    @OneToMany(mappedBy = "competidor", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<Robot> robots;
+    private List<Robot> robots = new ArrayList<>();
 
+    // ============================
+    // ID AUTO-GENERADO
+    // ============================
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private static String generarIdAlfanumerico() {
+    private static String generarId() {
         StringBuilder sb = new StringBuilder(8);
         for (int i = 0; i < 8; i++) {
             sb.append(ALPHA_NUM.charAt(RANDOM.nextInt(ALPHA_NUM.length())));
@@ -59,11 +60,13 @@ public class Competidor {
         return sb.toString();
     }
 
-    // ---------- SE EJECUTA ANTES DE INSERTAR EN LA BD ----------
     @PrePersist
     public void prePersist() {
         if (this.idCompetidor == null) {
-            this.idCompetidor = generarIdAlfanumerico();
+            this.idCompetidor = generarId();
+        }
+        if (this.estadoValidacion == null) {
+            this.estadoValidacion = EstadoValidacion.PENDIENTE;
         }
     }
 }

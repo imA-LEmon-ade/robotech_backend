@@ -3,19 +3,19 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
+import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.EstadoValidacion;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
-
 import com.robotech.robotech_backend.service.CompetidorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.multipart.MultipartFile;
-import java.util.Map;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/competidores")
@@ -31,14 +31,16 @@ public class CompetidorController {
     @Autowired
     private CompetidorService competidorService;
 
-
     // ✔ LISTAR COMPETIDORES DE UN CLUB
     @GetMapping("/club/{idClub}")
-    public List<Competidor> listarPorClub(@PathVariable String idClub) {
-        return competidorRepository.findByClub_IdClub(idClub);
+    public ResponseEntity<?> listarPorClub(@PathVariable String idClub) {
+        return ResponseEntity.ok(
+                competidorService.listarPorClub(idClub)
+        );
     }
 
-    // Obtener perfil del competidor
+
+    // ✔ OBTENER PERFIL
     @GetMapping("/{idCompetidor}")
     public ResponseEntity<CompetidorPerfilDTO> obtenerPerfil(
             @PathVariable String idCompetidor
@@ -55,11 +57,11 @@ public class CompetidorController {
         Competidor c = competidorRepository.findById(idCompetidor)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-        c.setEstadoValidacion("APROBADO");
+        c.setEstadoValidacion(EstadoValidacion.APROBADO);
         competidorRepository.save(c);
 
         Usuario u = c.getUsuario();
-        u.setEstado("ACTIVO");
+        u.setEstado(EstadoUsuario.ACTIVO);
         usuarioRepository.save(u);
 
         return ResponseEntity.ok("Competidor aprobado");
@@ -72,16 +74,17 @@ public class CompetidorController {
         Competidor c = competidorRepository.findById(idCompetidor)
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-        c.setEstadoValidacion("RECHAZADO");
+        c.setEstadoValidacion(EstadoValidacion.RECHAZADO);
         competidorRepository.save(c);
 
         Usuario u = c.getUsuario();
-        u.setEstado("INACTIVO");
+        u.setEstado(EstadoUsuario.INACTIVO);
         usuarioRepository.save(u);
 
         return ResponseEntity.ok("Competidor rechazado");
     }
 
+    // ✔ SUBIR FOTO
     @PostMapping("/{idCompetidor}/foto")
     public ResponseEntity<?> subirFoto(
             @PathVariable String idCompetidor,
@@ -93,6 +96,7 @@ public class CompetidorController {
         );
     }
 
+    // ✔ ACTUALIZAR PERFIL
     @PutMapping("/{idCompetidor}")
     public ResponseEntity<?> actualizarPerfil(
             @PathVariable String idCompetidor,
@@ -101,7 +105,4 @@ public class CompetidorController {
         competidorService.actualizarPerfil(idCompetidor, dto);
         return ResponseEntity.ok().build();
     }
-
-
-
 }

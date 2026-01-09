@@ -6,6 +6,7 @@ import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EquipoInscripcionService {
 
     private final CategoriaTorneoRepository categoriaRepo;
@@ -71,7 +73,7 @@ public class EquipoInscripcionService {
 
         for (Robot r : robots) {
 
-            if (!r.getCompetidor().getClub().equals(club)) {
+            if (!r.getCompetidor().getClubActual().equals(club.getIdClub())) {
                 throw new RuntimeException(
                         "Robot " + r.getNombre() + " no pertenece al club");
             }

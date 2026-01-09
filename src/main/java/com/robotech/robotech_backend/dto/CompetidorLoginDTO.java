@@ -1,12 +1,10 @@
 package com.robotech.robotech_backend.dto;
 
-public record UsuarioDTO(
-        String idUsuario,
+public record CompetidorLoginDTO(
+        String idCompetidor,
         String nombres,
         String apellidos,
         String correo,
-        String rol,
-        String estado,
-        String telefono
+        String idClub,
+        String nombreClub
 ) {}
-

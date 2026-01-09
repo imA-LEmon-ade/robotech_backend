@@ -4,6 +4,7 @@ import com.robotech.robotech_backend.dto.ClubResponseDTO;
 import com.robotech.robotech_backend.dto.CrearClubDTO;
 import com.robotech.robotech_backend.dto.EditarClubDTO;
 import com.robotech.robotech_backend.model.Club;
+import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -32,7 +33,7 @@ public class AdminClubService {
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
                 .telefono(dto.getTelefonoPropietario())
                 .rol("CLUB")
-                .estado("ACTIVO")
+                .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         usuarioRepo.save(propietario);

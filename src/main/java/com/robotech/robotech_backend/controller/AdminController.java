@@ -22,7 +22,7 @@ public class AdminController {
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
     @GetMapping("/pendientes")
     public List<Usuario> listarPendientes() {
-        return usuarioRepository.findByEstado("PENDIENTE");
+        return usuarioRepository.findByEstado(EstadoUsuario.PENDIENTE);
     }
 
     // ✔ APROBAR CLUB
@@ -32,7 +32,7 @@ public class AdminController {
         Club club = clubRepository.findById(id).orElseThrow();
 
         club.setEstado("ACTIVO");
-        club.getUsuario().setEstado("ACTIVO");
+        club.getUsuario().setEstado(EstadoUsuario.ACTIVO);
 
         usuarioRepository.save(club.getUsuario());
         clubRepository.save(club);
@@ -46,11 +46,11 @@ public class AdminController {
     public ResponseEntity<?> aprobarJuez(@PathVariable String id) {
         Juez juez = juezRepository.findById(id).orElseThrow();
 
-        juez.setEstadoValidacion("APROBADO");
+        juez.setEstadoValidacion(EstadoValidacion.APROBADO);
         juez.setValidadoEn(new Date());
 
         Usuario u = juez.getUsuario();
-        u.setEstado("ACTIVO");
+        u.setEstado(EstadoUsuario.ACTIVO);
 
         usuarioRepository.save(u);
         juezRepository.save(juez);

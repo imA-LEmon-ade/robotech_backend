@@ -25,7 +25,10 @@ public class Juez {
     private String licencia;
 
     //flujo correctamente soportado
-    private String estadoValidacion;   // PENDIENTE, APROBADO, RECHAZADO
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoValidacion estadoValidacion;
+    // PENDIENTE, APROBADO, RECHAZADO
     private String creadoPor;          // id del admin que creó el juez
     private String validadoPor;        // id del admin que valida el juez
     private Date creadoEn;             // fecha creación
@@ -59,7 +62,7 @@ public class Juez {
         }
 
         if (this.estadoValidacion == null) {
-            this.estadoValidacion = "PENDIENTE";
+            this.estadoValidacion = EstadoValidacion.PENDIENTE;
         }
 
         // validadoEn NO se coloca aquí

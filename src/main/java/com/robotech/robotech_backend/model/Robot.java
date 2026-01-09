@@ -32,6 +32,11 @@ public class Robot {
     @JoinColumn(name = "id_competidor", nullable = false)
     private Competidor competidor;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoRobot estado;
+
+
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 

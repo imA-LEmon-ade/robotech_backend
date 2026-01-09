@@ -1,6 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.JuezDTO;
+import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.EstadoValidacion;
 import com.robotech.robotech_backend.model.Juez;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.JuezRepository;
@@ -31,7 +33,7 @@ public class AdminJuezService {
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
                 .rol("JUEZ")
-                .estado("ACTIVO")
+                .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         usuarioRepository.save(u);
@@ -39,7 +41,7 @@ public class AdminJuezService {
         Juez j = Juez.builder()
                 .usuario(u)
                 .licencia(dto.getLicencia())
-                .estadoValidacion("PENDIENTE")
+                .estadoValidacion(EstadoValidacion.PENDIENTE)
                 .creadoPor(dto.getCreadoPor())
                 .creadoEn(new Date())
                 .build();
@@ -94,7 +96,7 @@ public class AdminJuezService {
         Juez j = juezRepository.findById(idJuez)
                 .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
-        j.setEstadoValidacion("APROBADO");
+        j.setEstadoValidacion(EstadoValidacion.APROBADO);
         j.setValidadoPor(adminId);
         j.setValidadoEn(new Date());
 
@@ -109,7 +111,7 @@ public class AdminJuezService {
         Juez j = juezRepository.findById(idJuez)
                 .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
-        j.setEstadoValidacion("RECHAZADO");
+        j.setEstadoValidacion(EstadoValidacion.RECHAZADO);
         j.setValidadoPor(adminId);
         j.setValidadoEn(new Date());
 

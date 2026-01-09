@@ -2,6 +2,7 @@ package com.robotech.robotech_backend.repository;
 
 import com.robotech.robotech_backend.model.CategoriaCompetencia;
 import com.robotech.robotech_backend.model.Club;
+import com.robotech.robotech_backend.model.EstadoRobot;
 import com.robotech.robotech_backend.model.Robot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,7 +26,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     // Verificar si el nombre ya está en uso
     boolean existsByNombre(String nombre);
     // 🔥 ESTE ES EL BUENO CON TU MODELO
-    List<Robot> findByCompetidor_Club(Club club);
+    List<Robot> findByCompetidor_ClubActual(Club club);
 
     int countByCompetidor_IdCompetidor(String idCompetidor);
 
@@ -33,7 +34,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     SELECT r FROM Robot r
     WHERE (:nombre IS NULL OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
       AND (:categoria IS NULL OR r.categoria = :categoria)
-      AND (:idClub IS NULL OR r.competidor.club.idClub = :idClub)
+      AND (:idClub IS NULL OR r.competidor.clubActual.idClub = :idClub)
         """)
     List<Robot> filtrarRobots(
             @Param("nombre") String nombre,
@@ -44,7 +45,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     @Query("""
     SELECT r
     FROM Robot r
-    WHERE r.competidor.club.idClub = :idClub
+    WHERE r.competidor.clubActual.idClub = :idClub
       AND r.categoria = :categoria
       AND r.idRobot NOT IN (
           SELECT i.robot.idRobot
@@ -56,6 +57,12 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idClub") String idClub,
             @Param("categoria") CategoriaCompetencia categoria,
             @Param("idTorneo") String idTorneo
+    );
+
+
+    List<Robot> findByCompetidorClubActualIdClubAndEstado(
+            String idClub,
+            EstadoRobot estado
     );
 
 

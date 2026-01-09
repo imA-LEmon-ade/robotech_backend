@@ -1,6 +1,8 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
+import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,49 +18,94 @@ public class AdminUsuarioService {
     private final UsuarioRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
 
+    // =========================
     // LISTAR
-    public List<Usuario> listar() {
-        return usuarioRepo.findAll();
+    // =========================
+    public List<UsuarioDTO> listar() {
+        return usuarioRepo.findAll()
+                .stream()
+                .map(u -> new UsuarioDTO(
+                        u.getIdUsuario(),
+                        u.getNombres(),
+                        u.getApellidos(),
+                        u.getCorreo(),
+                        u.getRol(),
+                        u.getEstado().name(),
+                        u.getTelefono()
+                ))
+                .toList();
     }
 
+
+    // =========================
     // CREAR
-    public Usuario crear(UsuarioDTO dto) {
+    // =========================
+    public Usuario crear(CrearUsuarioDTO dto) {
+
+        if (usuarioRepo.existsByCorreo(dto.correo())) {
+            throw new RuntimeException("El correo ya está registrado");
+        }
+
+        if (usuarioRepo.existsByTelefono(dto.telefono())) {
+            throw new RuntimeException("El teléfono ya está registrado");
+        }
 
         Usuario u = Usuario.builder()
-                .correo(dto.getCorreo())
-                .telefono(dto.getTelefono())
-                .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(dto.getRol())
-                .estado(dto.getEstado())
+                .nombres(dto.nombres())
+                .apellidos(dto.apellidos())
+                .correo(dto.correo())
+                .telefono(dto.telefono())
+                .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
+                .rol("COMPETIDOR") // o el que corresponda
+                .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         return usuarioRepo.save(u);
     }
 
-    // EDITAR
+
+
+    // =========================
+    // EDITAR (SIN PASSWORD)
+    // =========================
     public Usuario editar(String id, UsuarioDTO dto) {
+
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        u.setCorreo(dto.getCorreo());
-        u.setTelefono(dto.getTelefono());
-        u.setRol(dto.getRol());
-        u.setEstado(dto.getEstado());
+        u.setCorreo(dto.correo());
+        u.setTelefono(dto.telefono());
+        u.setNombres(dto.nombres().trim());
+        u.setApellidos(dto.apellidos().trim());
+        u.setRol(dto.rol());
+        u.setEstado(EstadoUsuario.valueOf(dto.estado()));
 
         return usuarioRepo.save(u);
     }
 
-    // CAMBIAR ESTADO
+
+
+    // =========================
+    // CAMBIAR ESTADO (ACTIVO / INACTIVO)
+    // =========================
     public Usuario cambiarEstado(String id, String nuevoEstado) {
+
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        u.setEstado(nuevoEstado);
+        u.setEstado(EstadoUsuario.valueOf(nuevoEstado));
         return usuarioRepo.save(u);
     }
 
+    // =========================
     // CAMBIAR CONTRASEÑA
+    // =========================
     public Usuario cambiarPassword(String id, String nuevaPass) {
+
+        if (nuevaPass == null || nuevaPass.length() < 8) {
+            throw new RuntimeException("La contraseña debe tener al menos 8 caracteres");
+        }
+
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -66,8 +113,16 @@ public class AdminUsuarioService {
         return usuarioRepo.save(u);
     }
 
-    // ELIMINAR
+    // =========================
+    // "ELIMINAR" → DESACTIVAR
+    // =========================
     public void eliminar(String id) {
-        usuarioRepo.deleteById(id);
+
+        Usuario u = usuarioRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Eliminación lógica para evitar errores FK
+        u.setEstado(EstadoUsuario.INACTIVO);
+        usuarioRepo.save(u);
     }
 }

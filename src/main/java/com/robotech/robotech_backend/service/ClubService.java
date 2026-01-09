@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CompetidorClubDTO;
 import com.robotech.robotech_backend.model.Club;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.ClubRepository;
@@ -17,6 +18,7 @@ public class ClubService {
     private UsuarioRepository usuarioRepository;
 
     private final ClubRepository clubRepository;
+
 
     public ClubService(ClubRepository clubRepository) {
         this.clubRepository = clubRepository;
@@ -49,5 +51,7 @@ public class ClubService {
         return clubRepository.findByUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Club no asociado al usuario"));
     }
+
+
 
 }

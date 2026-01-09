@@ -1,8 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.ClubService;
@@ -58,11 +56,11 @@ public class ClubController {
     public ResponseEntity<?> aprobar(@PathVariable String idCompetidor) {
         Competidor c = competidorRepository.findById(idCompetidor).orElseThrow();
 
-        c.setEstadoValidacion("APROBADO");
+        c.setEstadoValidacion(EstadoValidacion.APROBADO);
         competidorRepository.save(c);
 
         Usuario u = c.getUsuario();
-        u.setEstado("ACTIVO");
+        u.setEstado(EstadoUsuario.ACTIVO);
         usuarioRepository.save(u);
 
         return ResponseEntity.ok("Competidor aprobado");

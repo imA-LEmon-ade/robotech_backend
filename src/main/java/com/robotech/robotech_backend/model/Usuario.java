@@ -20,6 +20,13 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String correo;
 
+    @Column
+    private String nombres;
+
+    @Column
+    private String apellidos;
+
+
     @Column(nullable = false, unique = true, length = 9)
     private String telefono;
 
@@ -30,9 +37,10 @@ public class Usuario {
     private String rol;
     // ADMINISTRADOR, SUBADMINISTRADOR, JUEZ, CLUB, COMPETIDOR
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estado;
-    // ACTIVO, INACTIVO, PENDIENTE
+    private EstadoUsuario estado;
+
 
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
