@@ -2,6 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CategoriaEncuentroAdminDTO;
 import com.robotech.robotech_backend.model.CategoriaTorneo;
+import com.robotech.robotech_backend.model.EstadoEquipoTorneo;
 import com.robotech.robotech_backend.model.EstadoInscripcion;
 import com.robotech.robotech_backend.model.ModalidadCategoria;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
@@ -59,11 +60,13 @@ public class AdminEncuentrosService {
 
         } else {
 
-            inscritos = (int) inscripcionRepo
-                    .countByCategoriaTorneoIdCategoriaTorneoAndEstado(
-                            categoria.getIdCategoriaTorneo(),
-                            EstadoInscripcion.ACTIVA
-                    );
+            inscritos = (int) equipoRepo
+                    .findByCategoriaTorneoIdCategoriaTorneo(
+                            categoria.getIdCategoriaTorneo()
+                    )
+                    .stream()
+                    .filter(equipo -> equipo.getEstado() == EstadoEquipoTorneo.APROBADO)
+                    .count();
 
             max = categoria.getMaxEquipos();
         }

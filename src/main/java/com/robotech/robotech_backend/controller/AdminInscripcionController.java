@@ -16,9 +16,16 @@ public class AdminInscripcionController {
 
     // ❌ ANULAR INSCRIPCIÓN
     @PutMapping("/{id}/anular")
-    public ResponseEntity<?> anular(@PathVariable String id) {
-        inscripcionService.anular(id);
+    public ResponseEntity<?> anular(
+            @PathVariable String id,
+            @RequestBody(required = false) String motivo
+    ) {
+        inscripcionService.anularInscripcion(
+                id,
+                motivo != null ? motivo : "Anulación administrativa"
+        );
         return ResponseEntity.ok("Inscripción anulada");
     }
+
 }
 

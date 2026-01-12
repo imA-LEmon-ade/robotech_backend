@@ -33,9 +33,10 @@ public class EquipoTorneo {
     )
     private List<Robot> robots;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estado;
-    // PENDIENTE, APROBADO, RECHAZADO
+    private EstadoEquipoTorneo estado;
+
 
     @Column(nullable = false)
     private Date fechaInscripcion;
@@ -49,6 +50,6 @@ public class EquipoTorneo {
                     .toUpperCase();
         }
         fechaInscripcion = new Date();
-        estado = "PENDIENTE";
+        estado = EstadoEquipoTorneo.PENDIENTE;
     }
 }

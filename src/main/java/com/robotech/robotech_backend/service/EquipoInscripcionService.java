@@ -114,7 +114,7 @@ public class EquipoInscripcionService {
                 .club(club)
                 .categoriaTorneo(categoria)
                 .robots(robots)
-                .estado("PENDIENTE")
+                .estado(EstadoEquipoTorneo.PENDIENTE)
                 .build();
 
         return equipoRepo.save(equipo);
@@ -132,4 +132,6 @@ public class EquipoInscripcionService {
 
         return inscribirEquipo(club.getIdClub(), dto);
     }
+
+
 }

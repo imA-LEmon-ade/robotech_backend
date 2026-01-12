@@ -38,4 +38,8 @@ public class CategoriaTorneo {
     private Integer maxIntegrantesEquipo;
 
     private String descripcion;
+
+    @Column(nullable = false)
+    private Boolean inscripcionesCerradas = false;
+
 }

@@ -1,13 +1,12 @@
 package com.robotech.robotech_backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "encuentro_participantes")
@@ -23,6 +22,19 @@ public class EncuentroParticipante {
     @ManyToOne
     private Encuentro encuentro;
 
-    private String tipo; // ROBOT o EQUIPO
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoParticipante tipo;
+
     private String idReferencia; // idRobot o idEquipo
+
+    private Integer calificacion;
+    private Boolean ganador;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) {
+            id = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 }

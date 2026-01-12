@@ -43,6 +43,12 @@ public class Encuentro {
     @Column(nullable = false)
     private EstadoEncuentro estado;
 
+    private String ganadorIdReferencia;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private TipoParticipante ganadorTipo;
+
+
     @PrePersist
     public void prePersist() {
 

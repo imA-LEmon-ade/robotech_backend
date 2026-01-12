@@ -49,7 +49,7 @@ public class InscripcionesConsultaService {
                                 e.getCategoriaTorneo().getCategoria().name(),
                                 "EQUIPO",
                                 e.getRobots().stream().map(Robot::getNombre).toList(),
-                                e.getEstado()
+                                e.getEstado().name()
                         ))
                         .toList();
 
@@ -87,10 +87,43 @@ public class InscripcionesConsultaService {
                                 e.getCategoriaTorneo().getCategoria().name(),
                                 "EQUIPO",
                                 e.getRobots().stream().map(Robot::getNombre).toList(),
-                                e.getEstado()
+                                e.getEstado().name()
                         ))
                         .toList();
 
         return Stream.concat(individuales.stream(), equipos.stream()).toList();
     }
+
+    // --------------------------------------------------
+// VISTA ADMIN - TODAS LAS INSCRIPCIONES
+// --------------------------------------------------
+    public List<InscripcionResumenDTO> listarTodas() {
+
+        List<InscripcionResumenDTO> individuales =
+                inscripcionRepo.findAll().stream()
+                        .map(i -> new InscripcionResumenDTO(
+                                i.getIdInscripcion(),
+                                i.getCategoriaTorneo().getTorneo().getNombre(),
+                                i.getCategoriaTorneo().getCategoria().name(),
+                                "INDIVIDUAL",
+                                List.of(i.getRobot().getNombre()),
+                                i.getEstado().name()
+                        ))
+                        .toList();
+
+        List<InscripcionResumenDTO> equipos =
+                equipoRepo.findAll().stream()
+                        .map(e -> new InscripcionResumenDTO(
+                                e.getIdEquipo(),
+                                e.getCategoriaTorneo().getTorneo().getNombre(),
+                                e.getCategoriaTorneo().getCategoria().name(),
+                                "EQUIPO",
+                                e.getRobots().stream().map(Robot::getNombre).toList(),
+                                e.getEstado().name()
+                        ))
+                        .toList();
+
+        return Stream.concat(individuales.stream(), equipos.stream()).toList();
+    }
+
 }

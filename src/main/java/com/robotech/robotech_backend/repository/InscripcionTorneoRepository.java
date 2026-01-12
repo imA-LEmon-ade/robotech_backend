@@ -22,6 +22,19 @@ public interface InscripcionTorneoRepository
             EstadoInscripcion estado
     );
 
+    boolean existsByRobot_IdRobotAndCategoriaTorneo_Torneo_IdTorneoAndEstado(
+            String idRobot,
+            String idTorneo,
+            EstadoInscripcion estado
+    );
+
+
+    long countByCategoriaTorneo_IdCategoriaTorneoAndEstado(
+            String idCategoriaTorneo,
+            EstadoInscripcion estado
+    );
+
+
     // =========================
     // VALIDACIONES
     // =========================

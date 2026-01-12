@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.InscripcionResumenDTO;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.service.InscripcionesConsultaService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/inscripciones")
@@ -46,5 +49,12 @@ public class InscripcionesConsultaController {
                 service.listarInscripcionesCompetidor(usuario.getIdUsuario())
         );
     }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<InscripcionResumenDTO> listarTodas() {
+        return service.listarTodas();
+    }
+
 }
 
