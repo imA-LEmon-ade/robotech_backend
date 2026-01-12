@@ -42,4 +42,12 @@ public class CategoriaTorneo {
     @Column(nullable = false)
     private Boolean inscripcionesCerradas = false;
 
+    @PrePersist
+    public void prePersist() {
+        if (inscripcionesCerradas == null) {
+            inscripcionesCerradas = false;
+        }
+    }
+
+
 }

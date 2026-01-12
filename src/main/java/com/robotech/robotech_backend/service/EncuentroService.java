@@ -2,6 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CalificacionParticipanteDTO;
 import com.robotech.robotech_backend.dto.CrearEncuentrosDTO;
+import com.robotech.robotech_backend.dto.EncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.RegistrarResultadoEncuentroDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.*;
@@ -29,26 +30,15 @@ public class EncuentroService {
     // =====================================================
     // MÉTODO PÚBLICO (DESDE CONTROLLER)
     // =====================================================
-    public List<Encuentro> generarEncuentros(CrearEncuentrosDTO dto) {
+    public List<EncuentroAdminDTO> generarEncuentros(CrearEncuentrosDTO dto) {
 
-        Juez juez = juezRepo.buscarJuezAprobado(
-                dto.getIdJuez(),
-                EstadoValidacion.APROBADO
-        ).orElseThrow(() ->
-                new RuntimeException("Juez no encontrado o no aprobado")
-        );
+        List<Encuentro> encuentros = generarEncuentrosInterno(dto);
 
-
-        Coliseo coliseo = coliseoRepo.findById(dto.getIdColiseo())
-                .orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
-
-        return generarEncuentrosInterno(
-                dto.getIdCategoriaTorneo(),
-                dto.getTipoEncuentro(),
-                juez,
-                coliseo
-        );
+        return encuentros.stream()
+                .map(this::toAdminDTO)
+                .toList();
     }
+
 
 
 
@@ -56,28 +46,45 @@ public class EncuentroService {
     // =====================================================
     // MÉTODO INTERNO REAL
     // =====================================================
-    private List<Encuentro> generarEncuentrosInterno(
-            String idCategoriaTorneo,
-            TipoEncuentro tipo,
-            Juez juez,
-            Coliseo coliseo
-    ) {
+    private List<Encuentro> generarEncuentrosInterno(CrearEncuentrosDTO dto) {
 
-        CategoriaTorneo categoria = categoriaRepo.findById(idCategoriaTorneo)
+        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        List<String> participantes = obtenerParticipantes(categoria);
+        Juez juez = juezRepo.findById(dto.getIdJuez())
+                .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
-        if (tipo == TipoEncuentro.ELIMINACION_DIRECTA) {
-            return generarEliminacionDirecta(categoria, juez, coliseo, participantes);
-        }
+        Coliseo coliseo = coliseoRepo.findById(dto.getIdColiseo())
+                .orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
 
-        if (tipo == TipoEncuentro.TODOS_CONTRA_TODOS) {
-            return generarTodosContraTodos(categoria, juez, coliseo, participantes);
-        }
+        TipoEncuentro tipo = dto.getTipoEncuentro();
 
-        throw new RuntimeException("Tipo de encuentro no soportado");
+        // 🔥 DECLARACIÓN CLAVE
+        List<Encuentro> encuentrosGenerados = new ArrayList<>();
+
+        // 👇 AQUÍ VA TU LÓGICA REAL
+        // ejemplos:
+        // - obtener participantes
+        // - emparejarlos
+        // - crear Encuentro
+        // - agregar a la lista
+
+    /*
+    Encuentro e = Encuentro.builder()
+            .categoriaTorneo(categoria)
+            .juez(juez)
+            .coliseo(coliseo)
+            .tipo(tipo)
+            .ronda(1)
+            .build();
+
+    encuentrosGenerados.add(e);
+    */
+
+        return encuentroRepo.saveAll(encuentrosGenerados);
     }
+
+
 
     // =====================================================
     // OBTENER PARTICIPANTES
@@ -313,6 +320,19 @@ public class EncuentroService {
 
         encuentroParticipanteRepo.saveAll(participantes);
         return encuentroRepo.save(encuentro);
+    }
+
+    private EncuentroAdminDTO toAdminDTO(Encuentro e) {
+        return new EncuentroAdminDTO(
+                e.getIdEncuentro(),
+                e.getCategoriaTorneo().getTorneo().getNombre(),
+                e.getCategoriaTorneo().getCategoria().name(),
+                e.getTipo(),
+                e.getRonda(),
+                e.getEstado(),
+                e.getJuez().getUsuario().getNombres(),
+                e.getColiseo().getNombre()
+        );
     }
 
 

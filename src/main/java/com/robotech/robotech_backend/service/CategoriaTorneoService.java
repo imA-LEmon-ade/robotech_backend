@@ -57,6 +57,7 @@ public class CategoriaTorneoService {
                 .maxEquipos(dto.getMaxEquipos())
                 .maxIntegrantesEquipo(dto.getMaxIntegrantesEquipo())
                 .descripcion(dto.getDescripcion())
+                .inscripcionesCerradas(false)
                 .build();
 
         return repo.save(categoria);

@@ -34,7 +34,8 @@ public class SecurityConfig {
                                 "/api/admin/login",
                                 "/api/usuarios",
                                 "/api/auth/**",
-                                "/api/codigos/validar/**"
+                                "/api/codigos/validar/**",
+                                "/uploads/**"
                         ).permitAll()
                         .requestMatchers("/api/torneos/**").authenticated()
                         .anyRequest().authenticated()

@@ -2,9 +2,11 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.CategoriaEncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.CrearEncuentrosDTO;
+import com.robotech.robotech_backend.dto.EncuentroAdminDTO;
 import com.robotech.robotech_backend.model.Encuentro;
 import com.robotech.robotech_backend.service.AdminEncuentrosService;
 import com.robotech.robotech_backend.service.EncuentroService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,10 +38,12 @@ public class AdminEncuentrosController {
     // 2️⃣ CREAR ENCUENTROS (ELIMINACIÓN / TODOS VS TODOS)
     // ----------------------------------------------------
     @PostMapping("/generar")
-    public ResponseEntity<List<Encuentro>> generarEncuentros(
-            @RequestBody CrearEncuentrosDTO dto
+    public ResponseEntity<List<EncuentroAdminDTO>> generarEncuentros(
+            @Valid @RequestBody CrearEncuentrosDTO dto
     ) {
-        List<Encuentro> encuentros = encuentroService.generarEncuentros(dto);
-        return ResponseEntity.ok(encuentros);
+        return ResponseEntity.ok(
+                encuentroService.generarEncuentros(dto)
+        );
     }
+
 }
