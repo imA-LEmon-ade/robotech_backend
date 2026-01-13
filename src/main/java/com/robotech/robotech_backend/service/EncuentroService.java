@@ -31,17 +31,9 @@ public class EncuentroService {
     // MÉTODO PÚBLICO (DESDE CONTROLLER)
     // =====================================================
     public List<EncuentroAdminDTO> generarEncuentros(CrearEncuentrosDTO dto) {
-
         List<Encuentro> encuentros = generarEncuentrosInterno(dto);
-
-        return encuentros.stream()
-                .map(this::toAdminDTO)
-                .toList();
+        return encuentros.stream().map(this::toAdminDTO).toList();
     }
-
-
-
-
 
     // =====================================================
     // MÉTODO INTERNO REAL
@@ -51,47 +43,30 @@ public class EncuentroService {
         CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        Juez juez = juezRepo.findById(dto.getIdJuez())
-                .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+        Juez juez = juezRepo.buscarJuezAprobado(dto.getIdJuez(), EstadoValidacion.APROBADO)
+                .orElseThrow(() -> new RuntimeException("Juez no aprobado"));
 
         Coliseo coliseo = coliseoRepo.findById(dto.getIdColiseo())
                 .orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
 
-        TipoEncuentro tipo = dto.getTipoEncuentro();
+        List<String> participantes = obtenerParticipantes(categoria);
 
-        // 🔥 DECLARACIÓN CLAVE
-        List<Encuentro> encuentrosGenerados = new ArrayList<>();
+        if (participantes.isEmpty()) {
+            throw new RuntimeException("No hay participantes inscritos");
+        }
 
-        // 👇 AQUÍ VA TU LÓGICA REAL
-        // ejemplos:
-        // - obtener participantes
-        // - emparejarlos
-        // - crear Encuentro
-        // - agregar a la lista
+        if (dto.getTipoEncuentro() == TipoEncuentro.ELIMINACION_DIRECTA) {
+            return generarEliminacionDirecta(categoria, juez, coliseo, participantes);
+        }
 
-    /*
-    Encuentro e = Encuentro.builder()
-            .categoriaTorneo(categoria)
-            .juez(juez)
-            .coliseo(coliseo)
-            .tipo(tipo)
-            .ronda(1)
-            .build();
-
-    encuentrosGenerados.add(e);
-    */
-
-        return encuentroRepo.saveAll(encuentrosGenerados);
+        return generarTodosContraTodos(categoria, juez, coliseo, participantes);
     }
-
-
 
     // =====================================================
     // OBTENER PARTICIPANTES
     // =====================================================
     private List<String> obtenerParticipantes(CategoriaTorneo categoria) {
 
-        // INDIVIDUAL → ROBOTS ACTIVOS
         if (categoria.getModalidad() == ModalidadCategoria.INDIVIDUAL) {
             return inscripcionRepo
                     .findByCategoriaTorneoIdCategoriaTorneoAndEstado(
@@ -99,17 +74,16 @@ public class EncuentroService {
                             EstadoInscripcion.ACTIVA
                     )
                     .stream()
-                    .map(i -> i.getRobot().getIdRobot()) // 👈 AQUÍ
+                    .map(i -> i.getRobot() != null ? i.getRobot().getIdRobot() : null)
+                    .filter(Objects::nonNull)
                     .toList();
         }
 
-        // EQUIPO → TODOS LOS EQUIPOS INSCRITOS
         return equipoRepo
-                .findByCategoriaTorneoIdCategoriaTorneo(
-                        categoria.getIdCategoriaTorneo()
-                )
+                .findByCategoriaTorneoIdCategoriaTorneo(categoria.getIdCategoriaTorneo())
                 .stream()
                 .map(EquipoTorneo::getIdEquipo)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
@@ -129,6 +103,13 @@ public class EncuentroService {
         List<Encuentro> encuentros = new ArrayList<>();
 
         for (int i = 0; i < participantes.size(); i += 2) {
+            // Como ya validaste que es par, i+1 es seguro
+            String p1 = participantes.get(i);
+            String p2 = participantes.get(i + 1);
+
+            if (p1 == null || p2 == null) {
+                throw new RuntimeException("Participante inválido");
+            }
 
             Encuentro encuentro = crearEncuentroBase(
                     categoria,
@@ -139,8 +120,8 @@ public class EncuentroService {
 
             crearParticipantes(
                     encuentro,
-                    participantes.get(i),
-                    participantes.get(i + 1),
+                    p1,
+                    p2,
                     categoria.getModalidad()
             );
 
@@ -167,6 +148,13 @@ public class EncuentroService {
         for (int i = 0; i < participantes.size(); i++) {
             for (int j = i + 1; j < participantes.size(); j++) {
 
+                String p1 = participantes.get(i);
+                String p2 = participantes.get(j);
+
+                if (p1 == null || p2 == null) {
+                    throw new RuntimeException("Participante inválido");
+                }
+
                 Encuentro encuentro = crearEncuentroBase(
                         categoria,
                         juez,
@@ -174,12 +162,7 @@ public class EncuentroService {
                         TipoEncuentro.TODOS_CONTRA_TODOS
                 );
 
-                crearParticipantes(
-                        encuentro,
-                        participantes.get(i),
-                        participantes.get(j),
-                        categoria.getModalidad()
-                );
+                crearParticipantes(encuentro, p1, p2, categoria.getModalidad());
 
                 encuentros.add(encuentro);
             }
@@ -189,7 +172,7 @@ public class EncuentroService {
     }
 
     // =====================================================
-    // UTILIDADES
+    // VALIDACIONES / UTILIDADES
     // =====================================================
     private void validarParticipantes(List<String> participantes, boolean requierePar) {
 
@@ -210,12 +193,18 @@ public class EncuentroService {
     ) {
 
         Encuentro encuentro = Encuentro.builder()
+                .idEncuentro(
+                        UUID.randomUUID()
+                                .toString()
+                                .substring(0, 8)
+                                .toUpperCase()
+                )
                 .categoriaTorneo(categoria)
                 .juez(juez)
                 .coliseo(coliseo)
                 .tipo(tipo)
-                .estado(EstadoEncuentro.PROGRAMADO) // 🔥 CLAVE
-                .ronda(1)                            // 🔥 CLAVE
+                .estado(EstadoEncuentro.PROGRAMADO)
+                .ronda(1)
                 .build();
 
         return encuentroRepo.save(encuentro);
@@ -251,10 +240,8 @@ public class EncuentroService {
     // =====================================================
     // REGISTRAR RESULTADO (JUEZ ASIGNADO)
     // =====================================================
-    public Encuentro registrarResultado(
-            String idJuez,
-            RegistrarResultadoEncuentroDTO dto
-    ) {
+    public Encuentro registrarResultado(String idJuez, RegistrarResultadoEncuentroDTO dto) {
+
         Encuentro encuentro = encuentroRepo.findById(dto.getIdEncuentro())
                 .orElseThrow(() -> new RuntimeException("Encuentro no encontrado"));
 
@@ -267,9 +254,7 @@ public class EncuentroService {
         }
 
         List<EncuentroParticipante> participantes =
-                encuentroParticipanteRepo.findByEncuentroIdEncuentro(
-                        encuentro.getIdEncuentro()
-                );
+                encuentroParticipanteRepo.findByEncuentroIdEncuentro(encuentro.getIdEncuentro());
 
         if (participantes.isEmpty()) {
             throw new RuntimeException("El encuentro no tiene participantes");
@@ -304,14 +289,11 @@ public class EncuentroService {
         }
 
         for (EncuentroParticipante participante : participantes) {
-            CalificacionParticipanteDTO calificacion =
-                    calificaciones.get(participante.getIdReferencia());
+            CalificacionParticipanteDTO calificacion = calificaciones.get(participante.getIdReferencia());
             if (calificacion != null) {
                 participante.setCalificacion(calificacion.getCalificacion());
             }
-            participante.setGanador(
-                    participante.getIdReferencia().equals(ganador.getIdReferencia())
-            );
+            participante.setGanador(participante.getIdReferencia().equals(ganador.getIdReferencia()));
         }
 
         encuentro.setGanadorIdReferencia(ganador.getIdReferencia());
@@ -322,18 +304,48 @@ public class EncuentroService {
         return encuentroRepo.save(encuentro);
     }
 
+    // =====================================================
+    // DTO ADMIN (NULL-SAFE)
+    // =====================================================
     private EncuentroAdminDTO toAdminDTO(Encuentro e) {
+
+        String torneoNombre = "—";
+        String categoriaNombre = "—";
+
+        if (e.getCategoriaTorneo() != null) {
+            if (e.getCategoriaTorneo().getTorneo() != null &&
+                    e.getCategoriaTorneo().getTorneo().getNombre() != null) {
+                torneoNombre = e.getCategoriaTorneo().getTorneo().getNombre();
+            }
+            if (e.getCategoriaTorneo().getCategoria() != null) {
+                categoriaNombre = e.getCategoriaTorneo().getCategoria().name();
+            }
+        }
+
+        TipoEncuentro tipo = e.getTipo() != null ? e.getTipo() : TipoEncuentro.ELIMINACION_DIRECTA;
+        Integer ronda = e.getRonda() != null ? e.getRonda() : 1;
+        EstadoEncuentro estado = e.getEstado() != null ? e.getEstado() : EstadoEncuentro.PROGRAMADO;
+
+        String juez = "—";
+        if (e.getJuez() != null && e.getJuez().getUsuario() != null) {
+            juez = e.getJuez().getUsuario().getCorreo() != null
+                    ? e.getJuez().getUsuario().getCorreo()
+                    : "—";
+        }
+
+        String coliseo = e.getColiseo() != null && e.getColiseo().getNombre() != null
+                ? e.getColiseo().getNombre()
+                : "—";
+
         return new EncuentroAdminDTO(
                 e.getIdEncuentro(),
-                e.getCategoriaTorneo().getTorneo().getNombre(),
-                e.getCategoriaTorneo().getCategoria().name(),
-                e.getTipo(),
-                e.getRonda(),
-                e.getEstado(),
-                e.getJuez().getUsuario().getNombres(),
-                e.getColiseo().getNombre()
+                torneoNombre,
+                categoriaNombre,
+                tipo,
+                ronda,
+                estado,
+                juez,
+                coliseo
         );
     }
-
-
 }

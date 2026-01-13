@@ -50,11 +50,7 @@ public class InscripcionesConsultaController {
         );
     }
 
-    @GetMapping("/admin")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public List<InscripcionResumenDTO> listarTodas() {
-        return service.listarTodas();
-    }
+
 
 }
 

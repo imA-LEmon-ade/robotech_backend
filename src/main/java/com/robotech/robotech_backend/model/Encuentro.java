@@ -52,13 +52,6 @@ public class Encuentro {
     @PrePersist
     public void prePersist() {
 
-        if (idEncuentro == null) {
-            idEncuentro = UUID.randomUUID()
-                    .toString()
-                    .substring(0, 8)
-                    .toUpperCase();
-        }
-
         if (estado == null) {
             estado = EstadoEncuentro.PROGRAMADO;
         }
