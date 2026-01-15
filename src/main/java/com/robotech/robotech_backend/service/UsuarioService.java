@@ -2,8 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.model.*;
-import com.robotech.robotech_backend.repository.ClubRepository;
-import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository; // ✅ Importante
+import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.RolUsuario;
@@ -24,12 +23,9 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final CompetidorRepository competidorRepository;
-    private final CodigoRegistroCompetidorRepository codigoRepo; // ✅ Repositorio de códigos
+    private final CodigoRegistroCompetidorRepository codigoRepo;
     private final PasswordEncoder passwordEncoder;
-    private final NicknameValidator nicknameValidator;
-
-    // (Opcional: Si necesitas el ClubRepo para otras cosas, déjalo, si no, puedes quitarlo)
-    // private final ClubRepository clubRepository;
+    private final com.robotech.robotech_backend.service.NicknameValidator nicknameValidator;
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
@@ -53,41 +49,35 @@ public class UsuarioService {
         // --- 2. VALIDACIÓN DEL CÓDIGO DE REGISTRO ---
         String codigoLimpio = codigoIngresado != null ? codigoIngresado.trim() : "";
 
-        // Buscamos en la tabla de códigos
         CodigoRegistroCompetidor codigoEntidad = codigoRepo.findByCodigo(codigoLimpio)
                 .orElseThrow(() -> new RuntimeException("El código de registro no existe: " + codigoLimpio));
 
-        // Validamos si expiró (si tienes fecha de expiración)
         if (codigoEntidad.getExpiraEn() != null && codigoEntidad.getExpiraEn().before(new Date())) {
             throw new RuntimeException("Este código de invitación ha expirado.");
         }
 
-        // Validamos si ya alcanzó el límite de usos
         if (codigoEntidad.getUsosActuales() >= codigoEntidad.getLimiteUso()) {
             throw new RuntimeException("Este código ya alcanzó su límite de usos.");
         }
 
-        // Recuperamos el Club de ese código
         Club club = codigoEntidad.getClub();
 
-        // Actualizamos el uso del código (Importante para tu lógica de negocio)
         codigoEntidad.setUsosActuales(codigoEntidad.getUsosActuales() + 1);
         if (codigoEntidad.getUsosActuales() >= codigoEntidad.getLimiteUso()) {
             codigoEntidad.setUsado(true);
         }
         codigoRepo.save(codigoEntidad);
-        // ---------------------------------------------
 
-        // --- 3. CREAR USUARIO ---
+        // --- 3. CREAR USUARIO (CORREGIDO) ---
         Usuario usuario = Usuario.builder()
                 .nombres(dto.nombres())
                 .apellidos(dto.apellidos())
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .rol("COMPETIDOR")
-                .estado(EstadoUsuario.INACTIVO)
-                .rol(RolUsuario.ADMINISTRADOR) // o el rol que definas
+                // ⚠️ CORRECCIÓN: Usar el Enum RolUsuario.COMPETIDOR, no un String ni ADMINISTRADOR
+                .rol(RolUsuario.COMPETIDOR)
+                // ⚠️ CORRECCIÓN: Dejar solo un estado (ACTIVO para que pueda loguearse)
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -96,7 +86,7 @@ public class UsuarioService {
         // --- 4. CREAR COMPETIDOR ---
         Competidor competidor = new Competidor();
         competidor.setUsuario(uGuardado);
-        competidor.setClubActual(club); // ✅ Asignamos el club obtenido del código
+        competidor.setClubActual(club);
         competidor.setDni(dni);
         competidor.setEstadoValidacion(EstadoValidacion.PENDIENTE);
 
@@ -117,6 +107,7 @@ public class UsuarioService {
 
     public Optional<Usuario> login(String correo, String contrasena) {
         return usuarioRepository.findByCorreo(correo)
+                // ⚠️ Asegúrate de usar == para comparar Enums o .equals()
                 .filter(u -> u.getEstado() == EstadoUsuario.ACTIVO)
                 .filter(u -> passwordEncoder.matches(contrasena, u.getContrasenaHash()));
     }

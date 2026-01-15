@@ -27,7 +27,6 @@ public class UsuarioController {
         return ResponseEntity.ok(lista);
     }
 
-    // ⚠️ CAMBIO: @PathVariable String id
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable String id) {
         Usuario u = usuarioService.obtenerPorId(id);
@@ -37,7 +36,6 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<?> crearUsuario(@RequestBody Map<String, String> payload) {
         try {
-            // ... (Lógica de extracción igual que antes) ...
             String nombres = payload.get("nombres");
             String apellidos = payload.get("apellidos");
             String correo = payload.get("correo");
@@ -55,28 +53,31 @@ public class UsuarioController {
         }
     }
 
-    // ⚠️ CAMBIO: @PathVariable String id
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDTO> actualizarUsuario(@PathVariable String id, @RequestBody CrearUsuarioDTO dto) {
         Usuario u = usuarioService.actualizarUsuario(id, dto);
         return ResponseEntity.ok(convertirADTO(u));
     }
 
-    // ⚠️ CAMBIO: @PathVariable String id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable String id) {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build();
     }
 
+    // ==========================================
+    // MÉTODO CORREGIDO
+    // ==========================================
     private UsuarioDTO convertirADTO(Usuario u) {
         return new UsuarioDTO(
-                u.getIdUsuario(), // ⚠️ Ya es String, no hace falta String.valueOf()
+                u.getIdUsuario(),
                 u.getNombres(),
                 u.getApellidos(),
                 u.getCorreo(),
                 u.getRol(),
-                u.getEstado() != null ? u.getEstado().name() : "DESCONOCIDO",
+                // CORRECCIÓN: Pasamos el Enum 'EstadoUsuario' directamente.
+                // Ya no usamos .name() ni Strings como "DESCONOCIDO".
+                u.getEstado(),
                 u.getTelefono()
         );
     }
