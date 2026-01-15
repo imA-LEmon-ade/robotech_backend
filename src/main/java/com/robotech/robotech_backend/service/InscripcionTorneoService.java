@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -72,10 +70,12 @@ public class InscripcionTorneoService {
             throw new RuntimeException("No hay cupos disponibles");
         }
 
+        // ✅ CORRECCIÓN AQUÍ: Se agregó fechaInscripcion
         InscripcionTorneo inscripcion = InscripcionTorneo.builder()
                 .categoriaTorneo(categoria)
                 .robot(robot)
                 .estado(EstadoInscripcion.ACTIVA)
+                .fechaInscripcion(new Date()) // <-- LÍNEA AGREGADA PARA EVITAR ERROR 500
                 .build();
 
         inscripcionRepo.save(inscripcion);
@@ -88,8 +88,6 @@ public class InscripcionTorneoService {
 
         return inscripcion;
     }
-
-
 
     // ----------------------------------------------------------------------
     // ANULAR INSCRIPCIÓN (ADMIN)
@@ -109,6 +107,8 @@ public class InscripcionTorneoService {
 
         inscripcion.setEstado(EstadoInscripcion.ANULADA);
         inscripcion.setMotivoAnulacion(motivo);
+        // Opcional: También podrías actualizar la fecha de anulación si tu entidad la tiene
+        // inscripcion.setAnuladaEn(new Date());
 
         return inscripcionRepo.save(inscripcion);
     }
