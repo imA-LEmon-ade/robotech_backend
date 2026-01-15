@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.LoginAdminRequest;
+import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.security.JwtService;
@@ -33,8 +34,9 @@ public class AdminAuthController {
         }
 
         // Validar roles permitidos SOLO para este login
-        if (!usuario.getRol().equals("ADMINISTRADOR") &&
-                !usuario.getRol().equals("SUBADMINISTRADOR")) {
+
+        if (usuario.getRol() != RolUsuario.ADMINISTRADOR &&
+                usuario.getRol() != RolUsuario.SUBADMINISTRADOR) {
 
             throw new RuntimeException("No autorizado");
         }
