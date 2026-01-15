@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.LoginAdminRequest;
+import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.security.JwtService;
@@ -29,14 +30,15 @@ public class AdminAuthController {
                 .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
 
         if (!passwordEncoder.matches(req.getContrasena(), usuario.getContrasenaHash())) {
-            throw new RuntimeException("Credenciales incorrectas");
+            return ResponseEntity.status(401).body("Credenciales incorrectas");
         }
 
-        // Validar roles permitidos SOLO para este login
-        if (!usuario.getRol().equals("ADMINISTRADOR") &&
-                !usuario.getRol().equals("SUBADMINISTRADOR")) {
+        // ✅ VALIDACIÓN CORRECTA CON ENUM
+        if (usuario.getRol() != RolUsuario.ADMINISTRADOR &&
+                usuario.getRol() != RolUsuario.SUBADMINISTRADOR) {
 
-            throw new RuntimeException("No autorizado");
+            return ResponseEntity.status(403)
+                    .body("No tienes permisos de administrador");
         }
 
         String token = jwtService.generarToken(usuario);
@@ -48,4 +50,3 @@ public class AdminAuthController {
         ));
     }
 }
-
