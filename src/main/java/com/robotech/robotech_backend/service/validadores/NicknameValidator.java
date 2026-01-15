@@ -1,4 +1,4 @@
-package com.robotech.robotech_backend.service;
+package com.robotech.robotech_backend.service.validadores;
 
 import org.springframework.stereotype.Service;
 
@@ -8,25 +8,24 @@ import java.util.List;
 @Service
 public class NicknameValidator {
 
+    private static final int MIN_LENGTH = 3;
+    private static final int MAX_LENGTH = 20;
+
     private static final List<String> PALABRAS_PROHIBIDAS = List.of(
             "mierda", "puta", "puto", "perra", "maricon",
             "pendejo", "coño", "verga", "ctm", "conchatumadre",
             "culero", "chingar", "huevon", "idiota",
-            "imbecil", "estupido", "hdp", "pinga", "idiota"
+            "imbecil", "estupido", "hdp", "pinga"
     );
 
-    // Normaliza texto: quita tildes, símbolos y espacios
     private String normalizar(String texto) {
         if (texto == null) return "";
 
-        // 1️⃣ Pasar a minúsculas
         String limpio = texto.toLowerCase();
 
-        // 2️⃣ Quitar tildes (forma correcta)
         limpio = Normalizer.normalize(limpio, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 
-        // 3️⃣ Quitar todo lo que no sea letras o números
         limpio = limpio.replaceAll("[^a-z0-9]", "");
 
         return limpio;
@@ -36,6 +35,18 @@ public class NicknameValidator {
 
         if (nickname == null || nickname.isBlank()) {
             throw new RuntimeException("El nickname es obligatorio");
+        }
+
+        if (nickname.length() < MIN_LENGTH) {
+            throw new RuntimeException(
+                    "El nickname debe tener al menos " + MIN_LENGTH + " caracteres"
+            );
+        }
+
+        if (nickname.length() > MAX_LENGTH) {
+            throw new RuntimeException(
+                    "El nickname no puede superar los " + MAX_LENGTH + " caracteres"
+            );
         }
 
         String limpio = normalizar(nickname);

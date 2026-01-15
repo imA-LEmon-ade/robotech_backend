@@ -2,6 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class UsuarioService {
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .rol("ADMINISTRADOR") // o el rol que definas
+                .rol(RolUsuario.ADMINISTRADOR) // o el rol que definas
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 

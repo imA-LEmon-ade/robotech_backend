@@ -28,7 +28,10 @@ public class Club {
     private String correoContacto;
     private String telefonoContacto;
     private String direccionFiscal;
-    private String estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoClub estado;
 
     @OneToOne
     @JoinColumn(name = "id_usuario_propietario", nullable = false, unique = true)

@@ -5,6 +5,7 @@ import com.robotech.robotech_backend.dto.RobotResponseDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
+import com.robotech.robotech_backend.service.validadores.NicknameValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

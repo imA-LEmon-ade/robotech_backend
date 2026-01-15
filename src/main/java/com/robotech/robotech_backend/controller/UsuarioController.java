@@ -30,9 +30,9 @@ public class UsuarioController {
                         u.getNombres(),
                         u.getApellidos(),
                         u.getCorreo(),
-                        u.getTelefono(),
                         u.getRol(),
-                        u.getEstado().name()
+                        u.getEstado(),
+                        u.getTelefono()
                 ))
                 .toList();
     }
@@ -53,9 +53,9 @@ public class UsuarioController {
                         u.getNombres(),
                         u.getApellidos(),
                         u.getCorreo(),
-                        u.getTelefono(),
                         u.getRol(),
-                        u.getEstado().name()
+                        u.getEstado(),
+                        u.getTelefono()
                 )
         );
     }
