@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -35,29 +36,36 @@ public class Encuentro {
     @Column(nullable = false)
     private Integer ronda;
 
+    // 🔥 CAMPO AGREGADO PARA SOLUCIONAR EL ERROR
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date fecha;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoEncuentro tipo; // 🔥 AQUÍ
+    private TipoEncuentro tipo;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoEncuentro estado;
 
     private String ganadorIdReferencia;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private TipoParticipante ganadorTipo;
 
-
     @PrePersist
     public void prePersist() {
-
         if (estado == null) {
             estado = EstadoEncuentro.PROGRAMADO;
         }
-
         if (ronda == null) {
             ronda = 1;
+        }
+        // Aseguramos que tenga fecha si no se la pasaron
+        if (fecha == null) {
+            fecha = new Date();
         }
     }
 }
