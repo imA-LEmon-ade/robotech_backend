@@ -5,6 +5,9 @@ import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository; // ✅ Importante
 import com.robotech.robotech_backend.repository.CompetidorRepository;
+import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.RolUsuario;
+import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -84,6 +87,8 @@ public class UsuarioService {
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
                 .rol("COMPETIDOR")
                 .estado(EstadoUsuario.INACTIVO)
+                .rol(RolUsuario.ADMINISTRADOR) // o el rol que definas
+                .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         Usuario uGuardado = usuarioRepository.save(usuario);

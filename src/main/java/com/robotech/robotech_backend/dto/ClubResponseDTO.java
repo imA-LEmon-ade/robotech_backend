@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
+import com.robotech.robotech_backend.model.EstadoClub;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class ClubResponseDTO {
     private String correoContacto;
     private String telefonoContacto;
     private String direccionFiscal;
-    private String estado;
+    private EstadoClub estado;
 
 
     private String correoPropietario;

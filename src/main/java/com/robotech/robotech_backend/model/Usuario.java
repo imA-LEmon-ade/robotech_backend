@@ -33,9 +33,10 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasenaHash;  // Luego usaremos BCrypt
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String rol;
-    // ADMINISTRADOR, SUBADMINISTRADOR, JUEZ, CLUB, COMPETIDOR
+    private RolUsuario rol;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

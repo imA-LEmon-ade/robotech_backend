@@ -31,7 +31,7 @@ public class AdminController {
     public ResponseEntity<?> aprobarClub(@PathVariable String id) {
         Club club = clubRepository.findById(id).orElseThrow();
 
-        club.setEstado("ACTIVO");
+        club.setEstado(EstadoClub.ACTIVO);
         club.getUsuario().setEstado(EstadoUsuario.ACTIVO);
 
         usuarioRepository.save(club.getUsuario());

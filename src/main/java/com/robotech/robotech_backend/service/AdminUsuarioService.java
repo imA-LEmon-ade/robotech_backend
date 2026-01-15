@@ -3,6 +3,7 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class AdminUsuarioService {
                         u.getApellidos(),
                         u.getCorreo(),
                         u.getRol(),
-                        u.getEstado().name(),
+                        u.getEstado(),
                         u.getTelefono()
                 ))
                 .toList();
@@ -50,13 +51,14 @@ public class AdminUsuarioService {
             throw new RuntimeException("El teléfono ya está registrado");
         }
 
+
         Usuario u = Usuario.builder()
                 .nombres(dto.nombres())
                 .apellidos(dto.apellidos())
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .rol("COMPETIDOR") // o el que corresponda
+                .rol(RolUsuario.COMPETIDOR) // o el que corresponda
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -78,7 +80,7 @@ public class AdminUsuarioService {
         u.setNombres(dto.nombres().trim());
         u.setApellidos(dto.apellidos().trim());
         u.setRol(dto.rol());
-        u.setEstado(EstadoUsuario.valueOf(dto.estado()));
+        u.setEstado(dto.estado());
 
         return usuarioRepo.save(u);
     }
