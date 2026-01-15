@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.LoginAdminRequest;
+import com.robotech.robotech_backend.model.RolUsuario; // ⚠️ IMPORTANTE: Importar el Enum
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.security.JwtService;
@@ -10,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
 
 @RestController
 @RequestMapping("/api/admin")
@@ -25,20 +25,26 @@ public class AdminAuthController {
     @PostMapping("/login")
     public ResponseEntity<?> loginAdmin(@RequestBody LoginAdminRequest req) {
 
+        // 1. Buscar usuario
         Usuario usuario = usuarioRepo.findByCorreo(req.getCorreo())
-                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+                .orElse(null); // No lanzamos excepción aquí para manejarlo con ResponseEntity abajo
 
-        if (!passwordEncoder.matches(req.getContrasena(), usuario.getContrasenaHash())) {
-            throw new RuntimeException("Credenciales incorrectas");
+        // 2. Validar que exista y la contraseña coincida
+        if (usuario == null || !passwordEncoder.matches(req.getContrasena(), usuario.getContrasenaHash())) {
+            // Devolvemos 401 (Unauthorized) en lugar de error 500
+            return ResponseEntity.status(401).body("Credenciales incorrectas");
         }
 
-        // Validar roles permitidos SOLO para este login
-        if (!usuario.getRol().equals("ADMINISTRADOR") &&
-                !usuario.getRol().equals("SUBADMINISTRADOR")) {
+        // 3. Validar roles usando el ENUM (Corregido)
+        // Usamos != para comparar Enums. NO uses .equals("TEXTO")
+        if (usuario.getRol() != RolUsuario.ADMINISTRADOR &&
+                usuario.getRol() != RolUsuario.SUBADMINISTRADOR) {
 
-            throw new RuntimeException("No autorizado");
+            // Devolvemos 403 (Forbidden) porque sí existe pero no tiene permisos
+            return ResponseEntity.status(403).body("No tienes permisos de administrador");
         }
 
+        // 4. Generar Token
         String token = jwtService.generarToken(usuario);
 
         return ResponseEntity.ok(Map.of(
@@ -48,4 +54,3 @@ public class AdminAuthController {
         ));
     }
 }
-
