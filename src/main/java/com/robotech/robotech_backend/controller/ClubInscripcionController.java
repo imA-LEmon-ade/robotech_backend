@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.EquipoInscripcionDTO;
 import com.robotech.robotech_backend.dto.InscripcionIndividualDTO;
-import com.robotech.robotech_backend.dto.RobotDTO;
+import com.robotech.robotech_backend.dto.RobotDTO; // 👈 Importante
 import com.robotech.robotech_backend.model.CategoriaTorneo;
 import com.robotech.robotech_backend.model.Club;
 import com.robotech.robotech_backend.model.Robot;
@@ -10,14 +10,12 @@ import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
-import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.EquipoInscripcionService;
 import com.robotech.robotech_backend.service.InscripcionTorneoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,8 +31,6 @@ public class ClubInscripcionController {
     private final RobotRepository robotRepo;
     private final ClubRepository clubRepo;
     private final CategoriaTorneoRepository categoriaRepo;
-
-
 
     // ----------------------------------
     // INSCRIPCIÓN INDIVIDUAL
@@ -72,10 +68,13 @@ public class ClubInscripcionController {
         );
     }
 
+    // ----------------------------------
+    // LISTAR ROBOTS PARA INSCRIPCIÓN
+    // ----------------------------------
     @GetMapping("/robots-disponibles/{idCategoriaTorneo}")
-    public ResponseEntity<List<Robot>> robotsDisponibles(
-            @PathVariable String idCategoriaTorneo,
-            Authentication auth
+    public ResponseEntity<List<RobotDTO>> robotsDisponibles( // 👈 Devuelve DTOs
+                                                             @PathVariable String idCategoriaTorneo,
+                                                             Authentication auth
     ) {
         Usuario usuario = (Usuario) auth.getPrincipal();
 
@@ -85,14 +84,23 @@ public class ClubInscripcionController {
         CategoriaTorneo categoriaTorneo = categoriaRepo.findById(idCategoriaTorneo)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        // Buscamos las entidades
         List<Robot> robots = robotRepo.findRobotsDisponibles(
                 club.getIdClub(),
                 categoriaTorneo.getCategoria(),
                 categoriaTorneo.getTorneo().getIdTorneo()
         );
 
-        return ResponseEntity.ok(robots);
+        // 👇 CONVERTIMOS A DTO PARA EVITAR ERROR DE HIBERNATE/BYTEBUDDY
+        List<RobotDTO> dtos = robots.stream()
+                .map(r -> new RobotDTO(
+                        r.getNombre(),
+                        r.getCategoria().name(),
+                        r.getNickname(),
+                        r.getIdRobot()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(dtos);
     }
-
-
 }

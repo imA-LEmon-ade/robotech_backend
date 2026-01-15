@@ -1,8 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.RobotDTO; // 👈 FALTABA ESTA IMPORTACIÓN
 import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Robot;
-import com.robotech.robotech_backend.repository.TorneoRepository;
 import com.robotech.robotech_backend.service.ClubService;
 import com.robotech.robotech_backend.service.RobotService;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +25,11 @@ public class RobotClubController {
     private final ClubService clubService;
 
     @GetMapping
-    public List<Robot> misRobots(Authentication auth) {
+    public List<RobotDTO> misRobots(Authentication auth) {
+        // Obtenemos el club del usuario logueado
         Club club = clubService.obtenerPorUsuario(auth);
+
+        // Llamamos al servicio que ahora devuelve DTOs limpios (sin proxies)
         return robotService.listarPorClub(club);
     }
 }
