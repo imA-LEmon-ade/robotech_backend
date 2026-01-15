@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -18,45 +19,65 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    // -------------------------
-    // LISTAR
-    // -------------------------
     @GetMapping
-    public List<UsuarioDTO> listarUsuarios() {
-        return usuarioService.listarTodos()
-                .stream()
-                .map(u -> new UsuarioDTO(
-                        u.getIdUsuario(),
-                        u.getNombres(),
-                        u.getApellidos(),
-                        u.getCorreo(),
-                        u.getTelefono(),
-                        u.getRol(),
-                        u.getEstado().name()
-                ))
+    public ResponseEntity<List<UsuarioDTO>> listarUsuarios() {
+        List<UsuarioDTO> lista = usuarioService.listarTodos().stream()
+                .map(this::convertirADTO)
                 .toList();
+        return ResponseEntity.ok(lista);
     }
 
-    // -------------------------
-    // CREAR
-    // -------------------------
+    // ⚠️ CAMBIO: @PathVariable String id
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable String id) {
+        Usuario u = usuarioService.obtenerPorId(id);
+        return ResponseEntity.ok(convertirADTO(u));
+    }
+
     @PostMapping
-    public ResponseEntity<UsuarioDTO> crearUsuario(
-            @RequestBody CrearUsuarioDTO dto
-    ) {
+    public ResponseEntity<?> crearUsuario(@RequestBody Map<String, String> payload) {
+        try {
+            // ... (Lógica de extracción igual que antes) ...
+            String nombres = payload.get("nombres");
+            String apellidos = payload.get("apellidos");
+            String correo = payload.get("correo");
+            String telefono = payload.get("telefono");
+            String contrasena = payload.get("contrasena");
+            String dni = payload.get("dni");
+            String codigoClub = payload.get("codigoClub");
 
-        Usuario u = usuarioService.crearUsuario(dto);
+            CrearUsuarioDTO dto = new CrearUsuarioDTO(nombres, apellidos, correo, telefono, contrasena);
+            Usuario u = usuarioService.crearUsuario(dto, dni, codigoClub);
 
-        return ResponseEntity.ok(
-                new UsuarioDTO(
-                        u.getIdUsuario(),
-                        u.getNombres(),
-                        u.getApellidos(),
-                        u.getCorreo(),
-                        u.getTelefono(),
-                        u.getRol(),
-                        u.getEstado().name()
-                )
+            return ResponseEntity.ok(convertirADTO(u));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ⚠️ CAMBIO: @PathVariable String id
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> actualizarUsuario(@PathVariable String id, @RequestBody CrearUsuarioDTO dto) {
+        Usuario u = usuarioService.actualizarUsuario(id, dto);
+        return ResponseEntity.ok(convertirADTO(u));
+    }
+
+    // ⚠️ CAMBIO: @PathVariable String id
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable String id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private UsuarioDTO convertirADTO(Usuario u) {
+        return new UsuarioDTO(
+                u.getIdUsuario(), // ⚠️ Ya es String, no hace falta String.valueOf()
+                u.getNombres(),
+                u.getApellidos(),
+                u.getCorreo(),
+                u.getRol(),
+                u.getEstado() != null ? u.getEstado().name() : "DESCONOCIDO",
+                u.getTelefono()
         );
     }
 }
