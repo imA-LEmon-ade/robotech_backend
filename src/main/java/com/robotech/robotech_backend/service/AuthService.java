@@ -52,7 +52,7 @@ public class AuthService {
 
         switch (usuario.getRol()) {
 
-            case "CLUB" -> {
+            case CLUB -> {
                 Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                         .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
@@ -64,7 +64,7 @@ public class AuthService {
                 );
             }
 
-            case "COMPETIDOR" -> {
+            case COMPETIDOR -> {
                 Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                         .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
@@ -78,7 +78,7 @@ public class AuthService {
                 );
             }
 
-            case "JUEZ" -> {
+            case JUEZ -> {
                 Juez j = juezRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                         .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
@@ -88,7 +88,7 @@ public class AuthService {
                 );
             }
 
-            case "ADMINISTRADOR", "SUBADMINISTRADOR" -> {
+            case ADMINISTRADOR, SUBADMINISTRADOR -> {
                 entidad = usuario;
             }
 
@@ -126,7 +126,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol("COMPETIDOR")
+                .rol(RolUsuario.COMPETIDOR)
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 
@@ -158,7 +158,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol("CLUB")
+                .rol(RolUsuario.CLUB)
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 
@@ -172,7 +172,7 @@ public class AuthService {
                 .correoContacto(dto.getCorreo())
                 .telefonoContacto(dto.getTelefono())
                 .direccionFiscal(dto.getDireccionFiscal())
-                .estado("PENDIENTE")
+                .estado(EstadoClub.PENDIENTE)
                 .codigoClub(codigoClub)
                 .usuario(usuario)
                 .build();
@@ -194,7 +194,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol("JUEZ")
+                .rol(RolUsuario.JUEZ)
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 

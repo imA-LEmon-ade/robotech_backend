@@ -5,12 +5,15 @@ import lombok.Data;
 @Data
 public class CrearClubDTO {
 
+    // datos del club
     private String nombre;
     private String correoContacto;
     private String telefonoContacto;
     private String direccionFiscal;
 
-    // datos propietario
+    // datos del propietario (usuario)
+    private String nombresPropietario;
+    private String apellidosPropietario;
     private String correoPropietario;
     private String contrasenaPropietario;
     private String telefonoPropietario;

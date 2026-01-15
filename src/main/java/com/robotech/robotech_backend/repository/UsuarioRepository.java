@@ -15,4 +15,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     boolean existsByTelefono(String telefono);
 
     List<Usuario> findByEstado(EstadoUsuario estado);
+    boolean existsByCorreoIgnoreCase(String correo);
+
 }

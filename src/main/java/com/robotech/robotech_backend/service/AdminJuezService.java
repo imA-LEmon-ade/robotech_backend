@@ -1,10 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.JuezDTO;
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.EstadoValidacion;
-import com.robotech.robotech_backend.model.Juez;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.dto.JuezSelectDTO;
+import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 
@@ -32,7 +30,7 @@ public class AdminJuezService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol("JUEZ")
+                .rol(RolUsuario.JUEZ)
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -55,6 +53,20 @@ public class AdminJuezService {
     public List<Juez> listar() {
         return juezRepository.findAll();
     }
+
+    public List<JuezSelectDTO> listarJuecesParaSelect() {
+        return juezRepository.findByEstadoValidacion(EstadoValidacion.APROBADO)
+                .stream()
+                .map(j -> new JuezSelectDTO(
+                        j.getIdJuez(),
+                        j.getUsuario().getNombres() + " " + j.getUsuario().getApellidos()
+                ))
+                .toList();
+    }
+
+
+
+
 
     // ---------------------------------------------------------
     // EDITAR JUEZ
