@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.repository;
 
+import com.robotech.robotech_backend.model.Encuentro;
 import com.robotech.robotech_backend.model.EstadoValidacion;
 import com.robotech.robotech_backend.model.Juez;
 import org.springframework.data.jpa.repository.JpaRepository;

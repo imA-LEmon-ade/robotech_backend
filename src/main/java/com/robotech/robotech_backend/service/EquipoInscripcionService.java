@@ -23,9 +23,6 @@ public class EquipoInscripcionService {
     private final EquipoTorneoRepository equipoRepo;
     private final ClubRepository clubRepo;
 
-    // ---------------------------------------------------------
-    // INSCRIPCIÓN DE EQUIPO A CATEGORÍA (MODALIDAD EQUIPO)
-    // ---------------------------------------------------------
     public EquipoTorneo inscribirEquipo(
             String idClubSesion,
             EquipoInscripcionDTO dto
@@ -39,32 +36,50 @@ public class EquipoInscripcionService {
 
         Torneo torneo = categoria.getTorneo();
 
-        // 1️⃣ Validar modalidad de la categoría
-         if (categoria.getModalidad() != ModalidadCategoria.EQUIPO) {
+        // 1️⃣ Validar modalidad
+        if (categoria.getModalidad() != ModalidadCategoria.EQUIPO) {
             throw new RuntimeException(
                     "La modalidad de esta categoría es " + categoria.getModalidad()
             );
-         }
+        }
 
-        // 2️⃣ Validar fechas de inscripción
+        // 2️⃣ Validar fechas
         Date hoy = new Date();
         if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
                 hoy.after(torneo.getFechaCierreInscripcion())) {
             throw new RuntimeException("Inscripciones cerradas");
         }
 
-        // 3️⃣ Validar cantidad de robots
+        // 3️⃣ Validar nombre del equipo
+        if (dto.getNombreEquipo() == null || dto.getNombreEquipo().isBlank()) {
+            throw new RuntimeException("El nombre del equipo es obligatorio");
+        }
+
+        if (dto.getNombreEquipo().length() > 50) {
+            throw new RuntimeException("El nombre del equipo es demasiado largo");
+        }
+
+        boolean nombreRepetido = equipoRepo
+                .existsByNombreIgnoreCaseAndCategoriaTorneoIdCategoriaTorneo(
+                        dto.getNombreEquipo(),
+                        categoria.getIdCategoriaTorneo()
+                );
+
+        if (nombreRepetido) {
+            throw new RuntimeException(
+                    "Ya existe un equipo con ese nombre en esta categoría"
+            );
+        }
+
+        // 4️⃣ Validar robots
         if (dto.getRobots() == null || dto.getRobots().isEmpty()) {
             throw new RuntimeException("Debe seleccionar al menos un robot");
         }
 
         if (dto.getRobots().size() > categoria.getMaxIntegrantesEquipo()) {
-            throw new RuntimeException(
-                    "Excede el límite de integrantes por equipo"
-            );
+            throw new RuntimeException("Excede el límite de integrantes por equipo");
         }
 
-        // 4️⃣ Obtener robots y validar pertenencia + duplicados
         List<Robot> robots = dto.getRobots().stream()
                 .map(id -> robotRepo.findById(id)
                         .orElseThrow(() ->
@@ -90,27 +105,19 @@ public class EquipoInscripcionService {
             }
         }
 
-        // 5️⃣ Validar cupo de equipos
+        // 5️⃣ Validar cupos
         long equiposInscritos = equipoRepo
                 .countByCategoriaTorneoIdCategoriaTorneo(
                         categoria.getIdCategoriaTorneo()
                 );
 
-        Integer maxEquipos = categoria.getMaxEquipos();
-
-        if (maxEquipos == null) {
-            throw new RuntimeException(
-                    "La categoría no tiene definido el máximo de equipos"
-            );
-        }
-
-        if (equiposInscritos >= maxEquipos) {
+        if (equiposInscritos >= categoria.getMaxEquipos()) {
             throw new RuntimeException("Categoría sin cupos disponibles");
         }
 
-
         // 6️⃣ Crear equipo
         EquipoTorneo equipo = EquipoTorneo.builder()
+                .nombre(dto.getNombreEquipo())
                 .club(club)
                 .categoriaTorneo(categoria)
                 .robots(robots)
@@ -120,9 +127,6 @@ public class EquipoInscripcionService {
         return equipoRepo.save(equipo);
     }
 
-    // ---------------------------------------------------------
-    // INSCRIPCIÓN DE EQUIPO USANDO USUARIO AUTENTICADO
-    // ---------------------------------------------------------
     public EquipoTorneo inscribirEquipoPorUsuario(
             String idUsuario,
             EquipoInscripcionDTO dto
@@ -132,6 +136,4 @@ public class EquipoInscripcionService {
 
         return inscribirEquipo(club.getIdClub(), dto);
     }
-
-
 }

@@ -17,6 +17,12 @@ public interface EquipoTorneoRepository
             String idTorneo
     );
 
+    boolean existsByNombreIgnoreCaseAndCategoriaTorneoIdCategoriaTorneo(
+            String nombre,
+            String idCategoriaTorneo
+    );
+
+
     // Listar equipos de un club en un torneo
     List<EquipoTorneo> findByClubIdClubAndCategoriaTorneoTorneoIdTorneo(
             String idClub,

@@ -1,5 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.EncuentroDetalleJuezDTO;
+import com.robotech.robotech_backend.dto.EncuentroJuezDTO;
 import com.robotech.robotech_backend.dto.RegistrarResultadoEncuentroDTO;
 import com.robotech.robotech_backend.model.Encuentro;
 import com.robotech.robotech_backend.model.Juez;
@@ -12,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/juez/encuentros")
 @RequiredArgsConstructor
@@ -21,6 +25,35 @@ public class JuezEncuentrosController {
 
     private final EncuentroService encuentroService;
     private final JuezRepository juezRepo;
+
+
+    // 1️⃣ Listar encuentros asignados
+    @GetMapping
+    public ResponseEntity<List<EncuentroJuezDTO>> misEncuentros(Authentication auth) {
+
+        Usuario usuario = (Usuario) auth.getPrincipal(); // 🔥 AQUÍ ESTÁ LA CLAVE
+
+        String idUsuario = usuario.getIdUsuario();
+
+        Juez juez = juezRepo.findByUsuario_IdUsuario(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+
+        return ResponseEntity.ok(
+                encuentroService.listarEncuentrosPorJuez(juez.getIdJuez())
+        );
+    }
+
+
+    @GetMapping("/{idEncuentro}")
+    public ResponseEntity<EncuentroDetalleJuezDTO> obtenerDetalle(
+            @PathVariable String idEncuentro,
+            Authentication auth
+    ) {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        return ResponseEntity.ok(
+                encuentroService.obtenerDetalleParaJuez(usuario.getIdUsuario(), idEncuentro)
+        );
+    }
 
     @PostMapping("/{idEncuentro}/resultado")
     public ResponseEntity<Encuentro> registrarResultado(

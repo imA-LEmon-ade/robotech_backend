@@ -15,7 +15,8 @@ import java.util.UUID;
 public class InscripcionTorneo {
 
     @Id
-    @Column(length = 8)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String idInscripcion;
 
     @ManyToOne(optional = false)
@@ -32,19 +33,16 @@ public class InscripcionTorneo {
     private String motivoAnulacion;
 
     private String anuladaPor;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date anuladaEn;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false, updatable = false)
     private Date fechaInscripcion;
 
     @PrePersist
     public void prePersist() {
-        if (idInscripcion == null) {
-            idInscripcion = UUID.randomUUID()
-                    .toString()
-                    .substring(0, 8)
-                    .toUpperCase();
-        }
         if (fechaInscripcion == null) {
             fechaInscripcion = new Date();
         }

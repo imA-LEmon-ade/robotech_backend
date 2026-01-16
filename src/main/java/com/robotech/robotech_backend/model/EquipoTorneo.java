@@ -19,6 +19,9 @@ public class EquipoTorneo {
     @Column(length = 8)
     private String idEquipo;
 
+    @Column(nullable = false)
+    private String nombre; // 🔥 NUEVO
+
     @ManyToOne(optional = false)
     private Club club;
 

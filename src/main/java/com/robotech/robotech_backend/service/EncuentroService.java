@@ -1,9 +1,6 @@
 package com.robotech.robotech_backend.service;
 
-import com.robotech.robotech_backend.dto.CalificacionParticipanteDTO;
-import com.robotech.robotech_backend.dto.CrearEncuentrosDTO;
-import com.robotech.robotech_backend.dto.EncuentroAdminDTO;
-import com.robotech.robotech_backend.dto.RegistrarResultadoEncuentroDTO;
+import com.robotech.robotech_backend.dto.*;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.*;
 import jakarta.transaction.Transactional;
@@ -26,6 +23,8 @@ public class EncuentroService {
     private final JuezRepository juezRepo;
     private final ColiseoRepository coliseoRepo;
     private final EncuentroParticipanteRepository encuentroParticipanteRepo;
+    private final HistorialCalificacionRepository historialRepo;
+    private final RobotRepository robotRepo;
 
     // =====================================================
     // 1. GENERAR ENCUENTROS (MÉTODO PÚBLICO)
@@ -51,16 +50,18 @@ public class EncuentroService {
     // =====================================================
     // 2. REGISTRAR RESULTADO (MÉTODO PÚBLICO - JUEZ)
     // =====================================================
+    @Transactional
     public Encuentro registrarResultado(String idJuez, RegistrarResultadoEncuentroDTO dto) {
 
         Encuentro encuentro = encuentroRepo.findById(dto.getIdEncuentro())
                 .orElseThrow(() -> new RuntimeException("Encuentro no encontrado"));
 
-        // Validar que el juez asignado es el que está intentando registrar
+        // 1️⃣ Validar juez asignado
         if (!encuentro.getJuez().getIdJuez().equals(idJuez)) {
             throw new RuntimeException("No tiene autorización para calificar este encuentro.");
         }
 
+        // 2️⃣ Validar estado
         if (encuentro.getEstado() == EstadoEncuentro.FINALIZADO) {
             throw new RuntimeException("El encuentro ya fue finalizado previamente.");
         }
@@ -72,44 +73,84 @@ public class EncuentroService {
             throw new RuntimeException("Error crítico: El encuentro no tiene participantes registrados.");
         }
 
-        // Validar Ganador
-        if (dto.getIdGanador() == null || dto.getIdGanador().isBlank()) {
-            throw new RuntimeException("Debe seleccionar un ganador.");
+        // 3️⃣ Validar calificaciones
+        if (dto.getCalificaciones() == null || dto.getCalificaciones().isEmpty()) {
+            throw new RuntimeException("Debe registrar los puntajes de los participantes.");
         }
 
-        EncuentroParticipante ganador = participantes.stream()
-                .filter(p -> p.getIdReferencia().equals(dto.getIdGanador()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("El ID del ganador no corresponde a ningún participante de este encuentro."));
+        Map<String, Integer> puntajes = dto.getCalificaciones().stream()
+                .collect(Collectors.toMap(
+                        CalificacionParticipanteDTO::getIdReferencia,
+                        CalificacionParticipanteDTO::getCalificacion
+                ));
 
-        // Procesar Calificaciones (Puntajes) si existen
-        Map<String, CalificacionParticipanteDTO> mapaCalificaciones = Collections.emptyMap();
-        if (dto.getCalificaciones() != null && !dto.getCalificaciones().isEmpty()) {
-            mapaCalificaciones = dto.getCalificaciones().stream()
-                    .collect(Collectors.toMap(CalificacionParticipanteDTO::getIdReferencia, Function.identity()));
-        }
-
-        // Actualizar Participantes
+        // 4️⃣ Asignar puntajes + validar rango
         for (EncuentroParticipante participante : participantes) {
-            // Asignar puntaje si viene en el DTO
-            if (mapaCalificaciones.containsKey(participante.getIdReferencia())) {
-                participante.setCalificacion(mapaCalificaciones.get(participante.getIdReferencia()).getCalificacion());
+
+            Integer calificacion = puntajes.get(participante.getIdReferencia());
+
+            if (calificacion == null) {
+                throw new RuntimeException(
+                        "Falta puntaje para el participante " + participante.getIdReferencia()
+                );
             }
 
-            // Marcar si es ganador o no
-            boolean esGanador = participante.getIdReferencia().equals(ganador.getIdReferencia());
-            participante.setGanador(esGanador);
+            if (calificacion < 0 || calificacion > 100) {
+                throw new RuntimeException(
+                        "El puntaje debe estar entre 0 y 100"
+                );
+            }
+
+            participante.setCalificacion(calificacion);
         }
 
-        // Actualizar Encuentro
+        // 5️⃣ Calcular ganador (mayor puntaje)
+        int maxPuntaje = participantes.stream()
+                .mapToInt(EncuentroParticipante::getCalificacion)
+                .max()
+                .orElseThrow();
+
+        List<EncuentroParticipante> ganadores = participantes.stream()
+                .filter(p -> p.getCalificacion() == maxPuntaje)
+                .toList();
+
+        // 6️⃣ Validar empate
+        if (ganadores.size() > 1) {
+            throw new RuntimeException(
+                    "Empate detectado. No se puede definir un ganador."
+            );
+        }
+
+        EncuentroParticipante ganador = ganadores.get(0);
+
+        // 7️⃣ Marcar ganador + guardar historial
+        for (EncuentroParticipante participante : participantes) {
+
+            boolean esGanador = participante.getIdReferencia()
+                    .equals(ganador.getIdReferencia());
+
+            participante.setGanador(esGanador);
+
+            historialRepo.save(
+                    HistorialCalificacion.builder()
+                            .encuentro(encuentro)
+                            .tipo(participante.getTipo())
+                            .idReferencia(participante.getIdReferencia())
+                            .puntaje(participante.getCalificacion())
+                            .build()
+            );
+        }
+
+        // 8️⃣ Actualizar encuentro
         encuentro.setGanadorIdReferencia(ganador.getIdReferencia());
         encuentro.setGanadorTipo(ganador.getTipo());
         encuentro.setEstado(EstadoEncuentro.FINALIZADO);
 
-        // Guardar cambios
+        // 9️⃣ Persistir
         encuentroParticipanteRepo.saveAll(participantes);
         return encuentroRepo.save(encuentro);
     }
+
 
     // =====================================================
     // LÓGICA INTERNA: GENERACIÓN
@@ -258,4 +299,90 @@ public class EncuentroService {
                 nombreColiseo
         );
     }
+
+    public List<EncuentroJuezDTO> listarEncuentrosPorJuez(String idJuez) {
+
+        List<Encuentro> encuentros = encuentroRepo.findByJuezIdJuez(idJuez);
+
+        return encuentros.stream().map(encuentro -> {
+
+            List<EncuentroParticipante> participantes =
+                    encuentroParticipanteRepo.findByEncuentroIdEncuentro(
+                            encuentro.getIdEncuentro()
+                    );
+
+            List<ParticipanteEncuentroDTO> participantesDTO =
+                    participantes.stream().map(p -> ParticipanteEncuentroDTO.builder()
+                            .idReferencia(p.getIdReferencia())
+                            .tipo(p.getTipo())
+                            .calificacion(p.getCalificacion())
+                            .ganador(p.getGanador())
+                            .build()
+                    ).toList();
+
+            return EncuentroJuezDTO.builder()
+                    .idEncuentro(encuentro.getIdEncuentro())
+                    .categoria(encuentro.getCategoriaTorneo().getCategoria().name())
+                    .tipo(encuentro.getTipo())
+                    .estado(encuentro.getEstado())
+                    .coliseo(encuentro.getColiseo().getNombre())
+                    .fecha(encuentro.getFecha())
+                    .participantes(participantesDTO)
+                    .build();
+
+        }).toList();
+    }
+
+    public EncuentroDetalleJuezDTO obtenerDetalleParaJuez(
+            String idUsuario,
+            String idEncuentro
+    ) {
+
+        Juez juez = juezRepo.findByUsuario_IdUsuario(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+
+        Encuentro encuentro = encuentroRepo.findById(idEncuentro)
+                .orElseThrow(() -> new RuntimeException("Encuentro no encontrado"));
+
+        // 🔐 Validar que el encuentro pertenece al juez
+        if (!encuentro.getJuez().getIdJuez().equals(juez.getIdJuez())) {
+            throw new RuntimeException("No autorizado para ver este encuentro");
+        }
+
+        List<EncuentroParticipante> participantes =
+                encuentroParticipanteRepo.findByEncuentroIdEncuentro(idEncuentro);
+
+        List<ParticipanteJuezDTO> participantesDTO = participantes.stream()
+                .map(p -> new ParticipanteJuezDTO(
+                        p.getIdReferencia(),
+                        p.getTipo(),
+                        obtenerNombreParticipante(p.getTipo(), p.getIdReferencia())
+                ))
+                .toList();
+
+        return new EncuentroDetalleJuezDTO(
+                encuentro.getIdEncuentro(),
+                encuentro.getEstado(),
+                encuentro.getTipo(),
+                encuentro.getRonda(),
+                participantesDTO
+        );
+    }
+
+
+    private String obtenerNombreParticipante(
+            TipoParticipante tipo,
+            String idReferencia
+    ) {
+        if (tipo == TipoParticipante.ROBOT) {
+            return robotRepo.findById(idReferencia)
+                    .map(Robot::getNombre)
+                    .orElse(idReferencia);
+        }
+
+        return equipoRepo.findById(idReferencia)
+                .map(EquipoTorneo::getNombre)
+                .orElse(idReferencia);
+    }
+
 }

@@ -7,6 +7,5 @@ import java.util.List;
 @Data
 public class RegistrarResultadoEncuentroDTO {
     private String idEncuentro;
-    private String idGanador;
     private List<CalificacionParticipanteDTO> calificaciones;
 }
