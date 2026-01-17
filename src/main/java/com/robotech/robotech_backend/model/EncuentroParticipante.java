@@ -20,6 +20,7 @@ public class EncuentroParticipante {
     private String id;
 
     @ManyToOne
+    @JoinColumn(name = "encuentro_id_encuentro") // ✅ Coincide con el nombre en tu error de SQL
     private Encuentro encuentro;
 
     @Enumerated(EnumType.STRING)

@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
+@AllArgsConstructor // ✅ Este genera el constructor con los 9 campos
 @NoArgsConstructor
 public class TorneoPublicoDTO {
     private String idTorneo;
@@ -15,6 +15,23 @@ public class TorneoPublicoDTO {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private String estado;
-    private String descripcion; // Aquí irá toda la info
+    private String descripcion;
     private List<String> categorias;
+
+    // ✅ NUEVOS CAMPOS PARA RESULTADOS
+    private String ganador;
+    private List<ResultadoTorneoDTO> resultados;
+
+    // ✅ Constructor de compatibilidad (Corregido para no perder datos)
+    public TorneoPublicoDTO(String idTorneo, String nombre, LocalDate fechaInicio, LocalDate fechaFin, String estado, String descripcion, List<String> categorias) {
+        this.idTorneo = idTorneo;
+        this.nombre = nombre;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+        this.estado = estado;
+        this.descripcion = descripcion;
+        this.categorias = categorias;
+        this.ganador = null; // Inicializado por defecto
+        this.resultados = new java.util.ArrayList<>(); // Inicializado vacío
+    }
 }

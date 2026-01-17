@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ParticipanteEncuentroDTO {
     private String idReferencia;
+    private String nombre; // ✅ IMPORTANTE: Este campo debe existir
     private TipoParticipante tipo;
     private Integer calificacion;
     private Boolean ganador;
 }
-

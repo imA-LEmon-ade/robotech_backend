@@ -1,13 +1,11 @@
 package com.robotech.robotech_backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Table(name = "encuentros")
@@ -22,8 +20,18 @@ public class Encuentro {
     private String idEncuentro;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "id_categoria_torneo", nullable = false)
+    @JoinColumn(name = "id_categoria_torneo", referencedColumnName = "id_categoria_torneo", nullable = false)
     private CategoriaTorneo categoriaTorneo;
+
+    // ✅ RELACIÓN DE CASCADA HACIA PARTICIPANTES
+    @OneToMany(mappedBy = "encuentro", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<EncuentroParticipante> participantes = new ArrayList<>();
+
+    // ✅ RELACIÓN DE CASCADA HACIA CALIFICACIONES
+    @OneToMany(mappedBy = "encuentro", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<HistorialCalificacion> calificaciones = new ArrayList<>();
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_juez", nullable = false)
@@ -36,7 +44,6 @@ public class Encuentro {
     @Column(nullable = false)
     private Integer ronda;
 
-    // 🔥 CAMPO AGREGADO PARA SOLUCIONAR EL ERROR
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date fecha;
@@ -57,15 +64,8 @@ public class Encuentro {
 
     @PrePersist
     public void prePersist() {
-        if (estado == null) {
-            estado = EstadoEncuentro.PROGRAMADO;
-        }
-        if (ronda == null) {
-            ronda = 1;
-        }
-        // Aseguramos que tenga fecha si no se la pasaron
-        if (fecha == null) {
-            fecha = new Date();
-        }
+        if (estado == null) estado = EstadoEncuentro.PROGRAMADO;
+        if (ronda == null) ronda = 1;
+        if (fecha == null) fecha = new Date();
     }
 }

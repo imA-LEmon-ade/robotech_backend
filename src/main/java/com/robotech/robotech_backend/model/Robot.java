@@ -2,7 +2,6 @@ package com.robotech.robotech_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.security.SecureRandom;
 
 @Entity
@@ -14,28 +13,26 @@ import java.security.SecureRandom;
 public class Robot {
 
     @Id
-    @Column(length = 8)
+    @Column(name = "id_robot", length = 8, nullable = false, updatable = false)
     private String idRobot;
 
-    @Column(nullable = false, unique = true )
+    @Column(nullable = false, unique = true)
     private String nombre;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CategoriaCompetencia categoria;
 
-
     @Column(nullable = false, unique = true)
-    private String nickname; // NUEVO
+    private String nickname;
 
     @ManyToOne
-    @JoinColumn(name = "id_competidor", nullable = false)
+    @JoinColumn(name = "id_competidor", referencedColumnName = "id_competidor", nullable = false) // ✅ Ahora sí coinciden
     private Competidor competidor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoRobot estado;
-
 
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -51,4 +48,3 @@ public class Robot {
         if (idRobot == null) idRobot = generarId();
     }
 }
-

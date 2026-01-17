@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface RobotRepository extends JpaRepository<Robot, String> {
 
-    // Obtener todos los robots de un competidor
+    // ✅ Crucial para el modal: Obtener todos los robots de un competidor
     List<Robot> findByCompetidor_IdCompetidor(String idCompetidor);
 
     // Verificar si ya registró un robot en la categoría
@@ -28,6 +28,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     // Listar por Club (Entidad completa)
     List<Robot> findByCompetidor_ClubActual(Club club);
 
+    // Conteo rápido para estadísticas del competidor
     int countByCompetidor_IdCompetidor(String idCompetidor);
 
     // -------------------------------------------------------
@@ -48,8 +49,6 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     // -------------------------------------------------------
     // 🏆 ROBOTS DISPONIBLES PARA INSCRIPCIÓN (Para el Club)
     // -------------------------------------------------------
-    // Nota: Asegúrate de que tu entidad de inscripción se llame 'InscripcionTorneo'.
-    // Si se llama solo 'Inscripcion', cambia la palabra en el FROM de la subquery.
     @Query("""
     SELECT r
     FROM Robot r
@@ -72,7 +71,6 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             String idClub,
             EstadoRobot estado
     );
-    // En RobotRepository.java
 
     @Query("SELECT COUNT(r) FROM Robot r WHERE r.competidor.clubActual.idClub = :idClub")
     long contarRobotsPorClub(@Param("idClub") String idClub);

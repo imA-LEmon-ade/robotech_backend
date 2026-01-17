@@ -4,6 +4,7 @@ import com.robotech.robotech_backend.dto.JuezDTO;
 import com.robotech.robotech_backend.dto.JuezSelectDTO;
 import com.robotech.robotech_backend.service.AdminJuezService;
 
+import jakarta.validation.Valid; // ✅ Necesario para activar las validaciones del DTO
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class AdminJuezController {
 
     // CRUD NORMAL
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody JuezDTO dto) {
+    public ResponseEntity<?> crear(@Valid @RequestBody JuezDTO dto) { // ✅ Añadido @Valid
         return ResponseEntity.ok(juezService.crear(dto));
     }
 
@@ -38,7 +39,7 @@ public class AdminJuezController {
     @PutMapping("/{id}")
     public ResponseEntity<?> editar(
             @PathVariable String id,
-            @RequestBody JuezDTO dto
+            @Valid @RequestBody JuezDTO dto // ✅ Añadido @Valid
     ) {
         return ResponseEntity.ok(juezService.editar(id, dto));
     }

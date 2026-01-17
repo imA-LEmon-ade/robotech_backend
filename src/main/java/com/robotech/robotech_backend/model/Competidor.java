@@ -16,7 +16,7 @@ import java.util.*;
 public class Competidor {
 
     @Id
-    @Column(length = 8, nullable = false, unique = true)
+    @Column(name = "id_competidor", length = 8, nullable = false, unique = true) // ✅ Agregamos el name
     private String idCompetidor;
 
     // PERFIL BASE
