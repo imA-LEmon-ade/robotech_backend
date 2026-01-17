@@ -13,4 +13,6 @@ public interface CodigoRegistroCompetidorRepository extends JpaRepository<Codigo
     boolean existsByCodigo(String codigo);
     List<CodigoRegistroCompetidor> findByClub_IdClub(String idClub);
 
+    // ✅ Método para contar (Este es el que usaremos para el contador de la interfaz)
+    long countByClubIdClub(String idClub);
 }

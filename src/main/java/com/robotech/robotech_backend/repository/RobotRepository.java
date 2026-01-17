@@ -72,4 +72,8 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             String idClub,
             EstadoRobot estado
     );
+    // En RobotRepository.java
+
+    @Query("SELECT COUNT(r) FROM Robot r WHERE r.competidor.clubActual.idClub = :idClub")
+    long contarRobotsPorClub(@Param("idClub") String idClub);
 }
