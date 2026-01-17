@@ -2,19 +2,13 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.EstadoValidacion;
-import com.robotech.robotech_backend.model.Usuario;
-import com.robotech.robotech_backend.repository.CompetidorRepository;
-import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.CompetidorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -23,80 +17,68 @@ import java.util.Map;
 public class CompetidorController {
 
     @Autowired
-    private CompetidorRepository competidorRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private CompetidorService competidorService;
 
-    // ✔ LISTAR COMPETIDORES DE UN CLUB
+    // -------------------------------------------------------------------
+    // 1. LISTAR COMPETIDORES (Con filtro de búsqueda opcional)
+    // -------------------------------------------------------------------
+    // El frontend envía: GET /api/competidores/club/123?busqueda=juan
     @GetMapping("/club/{idClub}")
-    public ResponseEntity<?> listarPorClub(@PathVariable String idClub) {
-        return ResponseEntity.ok(
-                competidorService.listarPorClub(idClub)
-        );
-    }
-
-
-    // ✔ OBTENER PERFIL
-    @GetMapping("/{idCompetidor}")
-    public ResponseEntity<CompetidorPerfilDTO> obtenerPerfil(
-            @PathVariable String idCompetidor
+    public ResponseEntity<?> listarPorClub(
+            @PathVariable String idClub,
+            @RequestParam(required = false) String busqueda // ✨ NUEVO: Recibe el filtro
     ) {
+        // Llamamos al método sobrecargado del servicio
         return ResponseEntity.ok(
-                competidorService.obtenerPerfil(idCompetidor)
+                competidorService.listarPorClub(idClub, busqueda)
         );
     }
 
-    // ✔ APROBAR COMPETIDOR
+    // -------------------------------------------------------------------
+    // 2. APROBAR (Lógica delegada al servicio)
+    // -------------------------------------------------------------------
     @PutMapping("/{idCompetidor}/aprobar")
     public ResponseEntity<?> aprobarCompetidor(@PathVariable String idCompetidor) {
-
-        Competidor c = competidorRepository.findById(idCompetidor)
-                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
-
-        c.setEstadoValidacion(EstadoValidacion.APROBADO);
-        competidorRepository.save(c);
-
-        Usuario u = c.getUsuario();
-        u.setEstado(EstadoUsuario.ACTIVO);
-        usuarioRepository.save(u);
-
-        return ResponseEntity.ok("Competidor aprobado");
+        try {
+            competidorService.aprobarCompetidor(idCompetidor);
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Competidor aprobado correctamente"));
+        } catch (RuntimeException e) {
+            // Devolvemos el error del servicio (ej: "Ya estaba aprobado")
+            return ResponseEntity.badRequest().body(Collections.singletonMap("mensaje", e.getMessage()));
+        }
     }
 
-    // ✔ RECHAZAR COMPETIDOR
+    // -------------------------------------------------------------------
+    // 3. RECHAZAR (Lógica delegada al servicio)
+    // -------------------------------------------------------------------
     @PutMapping("/{idCompetidor}/rechazar")
     public ResponseEntity<?> rechazarCompetidor(@PathVariable String idCompetidor) {
-
-        Competidor c = competidorRepository.findById(idCompetidor)
-                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
-
-        c.setEstadoValidacion(EstadoValidacion.RECHAZADO);
-        competidorRepository.save(c);
-
-        Usuario u = c.getUsuario();
-        u.setEstado(EstadoUsuario.INACTIVO);
-        usuarioRepository.save(u);
-
-        return ResponseEntity.ok("Competidor rechazado");
+        try {
+            competidorService.rechazarCompetidor(idCompetidor);
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Competidor rechazado correctamente"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("mensaje", e.getMessage()));
+        }
     }
 
-    // ✔ SUBIR FOTO
+    // -------------------------------------------------------------------
+    // 4. OTROS MÉTODOS (Intactos, solo limpieza)
+    // -------------------------------------------------------------------
+
+    @GetMapping("/{idCompetidor}")
+    public ResponseEntity<CompetidorPerfilDTO> obtenerPerfil(@PathVariable String idCompetidor) {
+        return ResponseEntity.ok(competidorService.obtenerPerfil(idCompetidor));
+    }
+
     @PostMapping("/{idCompetidor}/foto")
     public ResponseEntity<?> subirFoto(
             @PathVariable String idCompetidor,
             @RequestParam("foto") MultipartFile foto
     ) {
         String url = competidorService.subirFoto(idCompetidor, foto);
-        return ResponseEntity.ok(
-                Map.of("fotoUrl", url)
-        );
+        return ResponseEntity.ok(Map.of("fotoUrl", url));
     }
 
-    // ✔ ACTUALIZAR PERFIL
     @PutMapping("/{idCompetidor}")
     public ResponseEntity<?> actualizarPerfil(
             @PathVariable String idCompetidor,

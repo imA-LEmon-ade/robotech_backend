@@ -25,7 +25,7 @@ public class UsuarioService {
     private final CompetidorRepository competidorRepository;
     private final CodigoRegistroCompetidorRepository codigoRepo;
     private final PasswordEncoder passwordEncoder;
-    private final com.robotech.robotech_backend.service.NicknameValidator nicknameValidator;
+    private final com.robotech.robotech_backend.service.validadores.NicknameValidator nicknameValidator;
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
