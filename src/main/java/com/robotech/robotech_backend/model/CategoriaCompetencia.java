@@ -5,5 +5,6 @@ public enum CategoriaCompetencia {
     MICROSUMO,
     MEGASUMO,
     DRONE,
-    FOLLOWER
+    FOLLOWER,
+    SOCCER
 }

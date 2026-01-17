@@ -13,4 +13,5 @@ public interface CompetidorRepository extends JpaRepository<Competidor, String> 
     Optional<Competidor> findByUsuario_IdUsuario(String idUsuario);
     boolean existsByDni(String dni);
     long countByClubActual_IdClub(String idClub);
+
 }

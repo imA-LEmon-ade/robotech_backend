@@ -1,6 +1,7 @@
-package com.robotech.robotech_backend.service;
+package com.robotech.robotech_backend.service.validadores;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;

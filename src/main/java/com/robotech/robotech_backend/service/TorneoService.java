@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp; // Importante para la conversión de fechas
 import java.util.Date;
 import java.util.List;
 
@@ -25,18 +26,35 @@ public class TorneoService {
     // --------------------------------------------------
     public Torneo crearTorneo(CrearTorneoDTO dto, Authentication auth) {
 
-        Torneo t = Torneo.builder()
-                .nombre(dto.getNombre())
-                .descripcion(dto.getDescripcion())
-                .fechaInicio(dto.getFechaInicio())
-                .fechaFin(dto.getFechaFin())
-                .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion())
-                .fechaCierreInscripcion(dto.getFechaCierreInscripcion())
-                .build();
+        // 1. Usamos el constructor vacío y setters para tener control total de los tipos
+        Torneo t = new Torneo();
 
-        // Reglas de negocio aquí
-        t.setEstado("BORRADOR");
+        t.setNombre(dto.getNombre());
+        t.setDescripcion(dto.getDescripcion());
 
+        // 2. CONVERSIÓN DE FECHAS (LocalDateTime -> Timestamp)
+        // Esto es vital porque el DTO trae el formato del Frontend y la BD espera formato SQL
+        if (dto.getFechaInicio() != null)
+            t.setFechaInicio(Timestamp.valueOf(dto.getFechaInicio()));
+
+        if (dto.getFechaFin() != null)
+            t.setFechaFin(Timestamp.valueOf(dto.getFechaFin()));
+
+        if (dto.getFechaAperturaInscripcion() != null)
+            t.setFechaAperturaInscripcion(Timestamp.valueOf(dto.getFechaAperturaInscripcion()));
+
+        if (dto.getFechaCierreInscripcion() != null)
+            t.setFechaCierreInscripcion(Timestamp.valueOf(dto.getFechaCierreInscripcion()));
+
+        // 3. ASIGNACIÓN DE ESTADO (CORREGIDO)
+        // Usamos la variable 't' y manejamos String para ser consistentes con el resto del archivo
+        if (dto.getEstado() != null && !dto.getEstado().isEmpty()) {
+            t.setEstado(dto.getEstado()); // Guardamos el String directo (ej: "INSCRIPCIONES_ABIERTAS")
+        } else {
+            t.setEstado("BORRADOR");
+        }
+
+        // 4. ASIGNAR CREADOR
         if (auth != null && auth.getPrincipal() instanceof Usuario usuario) {
             t.setCreadoPor(usuario.getIdUsuario());
         } else {
@@ -67,8 +85,6 @@ public class TorneoService {
                 .orElseThrow(() -> new RuntimeException("Torneo no encontrado"));
     }
 
-
-
     // --------------------------------------------------
     // EDITAR TORNEO
     // --------------------------------------------------
@@ -82,6 +98,11 @@ public class TorneoService {
         t.setFechaAperturaInscripcion(datos.getFechaAperturaInscripcion());
         t.setFechaCierreInscripcion(datos.getFechaCierreInscripcion());
 
+        // Si quisieras permitir editar estado aquí también:
+        if (datos.getEstado() != null) {
+            t.setEstado(datos.getEstado());
+        }
+
         return torneoRepo.save(t);
     }
 
@@ -90,7 +111,6 @@ public class TorneoService {
     // --------------------------------------------------
     public Torneo abrirInscripciones(String id) {
         Torneo t = obtener(id);
-
         Date hoy = new Date();
 
         if (hoy.before(t.getFechaAperturaInscripcion())) {
@@ -110,7 +130,7 @@ public class TorneoService {
     // --------------------------------------------------
     public Torneo cerrarInscripciones(String id) {
         Torneo t = obtener(id);
-        t.setEstado("EN_PROGRESO");
+        t.setEstado("EN_PROGRESO"); // O el estado que prefieras para cerrado
         return torneoRepo.save(t);
     }
 
@@ -118,7 +138,6 @@ public class TorneoService {
     // CAMBIAR ESTADO MANUALMENTE (ADMIN)
     // --------------------------------------------------
     public Torneo cambiarEstado(String id, String nuevoEstado) {
-
         Torneo t = obtener(id);
 
         if ("FINALIZADO".equals(t.getEstado())) {
@@ -134,7 +153,7 @@ public class TorneoService {
         );
 
         if (!permitidos.contains(nuevoEstado)) {
-            throw new RuntimeException("Estado inválido");
+            throw new RuntimeException("Estado inválido: " + nuevoEstado);
         }
 
         t.setEstado(nuevoEstado);
@@ -169,7 +188,6 @@ public class TorneoService {
     // LISTAR TORNEOS POR ADMINISTRADOR
     // --------------------------------------------------
     public List<Torneo> listarPorAdministrador(Authentication auth) {
-
         if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
             return torneoRepo.findAll();
         }
@@ -180,6 +198,4 @@ public class TorneoService {
 
         return torneoRepo.findByCreadoPor(usuario.getIdUsuario());
     }
-
-
 }
