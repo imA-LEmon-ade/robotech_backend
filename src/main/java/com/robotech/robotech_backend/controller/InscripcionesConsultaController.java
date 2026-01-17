@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,30 +24,42 @@ public class InscripcionesConsultaController {
     // --------------------------------------------------
     @GetMapping("/club")
     @PreAuthorize("hasAuthority('CLUB')")
-    public ResponseEntity<?> verInscripcionesClub(Authentication auth) {
-
+    public ResponseEntity<?> verInscripcionesClub(
+            Authentication auth,
+            @RequestParam(required = false) String busqueda,
+            @RequestParam(required = false) String estado
+    ) {
         Usuario usuario = (Usuario) auth.getPrincipal();
 
         return ResponseEntity.ok(
-                service.listarInscripcionesClub(usuario.getIdUsuario())
+                service.listarInscripcionesClub(usuario.getIdUsuario(), busqueda, estado)
         );
     }
 
     // --------------------------------------------------
-    // VISTA COMPETIDOR
+    // VISTA COMPETIDOR (CORREGIDA)
     // --------------------------------------------------
     @GetMapping("/competidor")
     @PreAuthorize("hasAuthority('COMPETIDOR')")
-    public ResponseEntity<?> verInscripcionesCompetidor(Authentication auth) {
-
+    public ResponseEntity<?> verInscripcionesCompetidor(
+            Authentication auth,
+            @RequestParam(required = false) String busqueda, // ✨ Recibe búsqueda del competidor
+            @RequestParam(required = false) String estado    // ✨ Recibe filtro (ACTIVA/ANULADA)
+    ) {
         Usuario usuario = (Usuario) auth.getPrincipal();
 
+        // Enviamos los filtros al service para procesarlos en memoria
         return ResponseEntity.ok(
-                service.listarInscripcionesCompetidor(usuario.getIdUsuario())
+                service.listarInscripcionesCompetidor(usuario.getIdUsuario(), busqueda, estado)
         );
     }
 
-
-
+    // --------------------------------------------------
+    // VISTA ADMIN
+    // --------------------------------------------------
+    @GetMapping("/todas")
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
+    public ResponseEntity<?> verTodas() {
+        return ResponseEntity.ok(service.listarTodas());
+    }
 }
-

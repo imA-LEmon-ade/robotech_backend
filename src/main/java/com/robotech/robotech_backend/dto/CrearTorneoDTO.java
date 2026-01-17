@@ -1,17 +1,19 @@
 package com.robotech.robotech_backend.dto;
 
 import lombok.Data;
-import java.util.Date;
+import java.time.LocalDateTime; // Usaremos LocalDateTime para ser precisos
 
 @Data
 public class CrearTorneoDTO {
     private String nombre;
     private String descripcion;
-    private Date fechaInicio;
-    private Date fechaFin;
-    private Date fechaAperturaInscripcion;
-    private Date fechaCierreInscripcion;
-    private String tipo; // INDIVIDUAL o EQUIPOS
-    private Integer maxParticipantes;
-    private Integer numeroEncuentros;
+
+    // Cambiamos a LocalDateTime para coincidir con el input datetime-local del front
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
+    private LocalDateTime fechaAperturaInscripcion;
+    private LocalDateTime fechaCierreInscripcion;
+
+    // ⚠️ IMPORTANTE: Agregamos este campo para recibir el estado
+    private String estado;
 }

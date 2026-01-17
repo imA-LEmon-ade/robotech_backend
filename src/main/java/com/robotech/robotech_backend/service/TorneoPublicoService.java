@@ -21,7 +21,17 @@ public class TorneoPublicoService {
 
     @Transactional(readOnly = true)
     public List<TorneoPublicoDTO> obtenerTodos() {
-        return torneoRepo.findAll().stream()
+        // 1. Definimos qué estados son visibles para el público
+        // (Excluimos explícitamente "BORRADOR")
+        List<String> estadosVisibles = List.of(
+                "INSCRIPCIONES_ABIERTAS",
+                "INSCRIPCIONES_CERRADAS",
+                "EN_PROGRESO",
+                "FINALIZADO"
+        );
+
+        // 2. Buscamos solo esos torneos en la BD
+        return torneoRepo.findByEstadoIn(estadosVisibles).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }

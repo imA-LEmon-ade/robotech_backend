@@ -28,7 +28,6 @@ public interface InscripcionTorneoRepository
             EstadoInscripcion estado
     );
 
-
     long countByCategoriaTorneo_IdCategoriaTorneoAndEstado(
             String idCategoriaTorneo,
             EstadoInscripcion estado
@@ -58,6 +57,10 @@ public interface InscripcionTorneoRepository
     // VISTA CLUB
     // =========================
 
+    List<InscripcionTorneo> findByRobotCompetidorClubActualUsuarioIdUsuario(String idUsuario);
+
+    List<InscripcionTorneo> findByRobotCompetidorClubActualIdClub(String idClub);
+
     List<InscripcionTorneo>
     findByRobotCompetidorClubActualUsuarioIdUsuarioAndEstado(
             String idUsuarioClub,
@@ -68,6 +71,11 @@ public interface InscripcionTorneoRepository
     // VISTA COMPETIDOR
     // =========================
 
+    // ✅ NUEVO: Trae todas las inscripciones del competidor (sin importar el estado)
+    // Esto permitirá que el filtro de "ANULADA" funcione en la vista de competidor
+    List<InscripcionTorneo> findByRobotCompetidorUsuarioIdUsuario(String idUsuario);
+
+    // Mantenemos el que ya tenías para no romper otras llamadas
     List<InscripcionTorneo>
     findByRobotCompetidorUsuarioIdUsuarioAndEstado(
             String idUsuario,
