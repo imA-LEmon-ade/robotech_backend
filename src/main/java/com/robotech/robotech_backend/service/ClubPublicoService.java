@@ -17,12 +17,15 @@ public class ClubPublicoService {
 
     public List<ClubPublicoDTO> obtenerClubesParaPublico() {
         return clubRepo.findAll().stream().map(club -> {
-            // Contamos cuántos competidores están asociados a este club
+            // 1. Conteo de competidores usando el ID del club
             long conteo = competidorRepo.countByClubActual_IdClub(club.getIdClub());
 
+            // 2. Creación del DTO con los datos directos de la entidad Club
             return new ClubPublicoDTO(
                     club.getIdClub(),
                     club.getNombre(),
+                    club.getDireccionFiscal(), // ✅ Campo directo de tu entidad
+                    club.getCorreoContacto(),  // ✅ Campo directo de tu entidad
                     conteo
             );
         }).toList();

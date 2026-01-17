@@ -2,10 +2,10 @@ package com.robotech.robotech_backend.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-
 import lombok.*;
 
 import java.security.SecureRandom;
+import java.util.ArrayList; // ✅ Aseguramos la inicialización
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +18,7 @@ import java.util.List;
 public class Torneo {
 
     @Id
-    @Column(length = 8, nullable = false)
+    @Column(name = "id_torneo", length = 8, nullable = false)
     private String idTorneo;
 
     @Column(nullable = false, unique = true)
@@ -40,7 +40,6 @@ public class Torneo {
 
     @Column(nullable = false)
     private String estado;
-    // BORRADOR, INSCRIPCIONES_ABIERTAS, EN_PROGRESO, FINALIZADO
 
     @Column
     private String creadoPor;
@@ -48,10 +47,11 @@ public class Torneo {
     @OneToMany(
             mappedBy = "torneo",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true // ✅ Esto es la clave para el borrado
     )
     @JsonManagedReference
-    private List<CategoriaTorneo> categorias;
+    @Builder.Default // ✅ Importante para que Lombok respete la inicialización
+    private List<CategoriaTorneo> categorias = new ArrayList<>(); // ✅ Inicializada para evitar Nulls
 
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();

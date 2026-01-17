@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp; // ⚠️ IMPORTANTE: Necesario para que funcione 'editar'
+import java.sql.Timestamp;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/torneos")
@@ -30,18 +31,14 @@ public class TorneoController {
     // 2. Listar torneos
     @GetMapping
     public ResponseEntity<?> listar() {
-        // Mantenemos tu log para depuración si lo deseas
-        System.out.println("🔥 LISTANDO TODOS LOS TORNEOS");
         return ResponseEntity.ok(torneoService.listar());
     }
 
-    // 3. Editar torneo (AQUÍ ESTABA EL ERROR, YA CORREGIDO)
+    // 3. Editar torneo
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(
-            @PathVariable String id,
-            @RequestBody CrearTorneoDTO dto
-    ) {
-        // Convertimos LocalDateTime (del DTO) a Timestamp (de la Entidad)
+    public ResponseEntity<?> editar(@PathVariable String id, @RequestBody CrearTorneoDTO dto) {
+        // Mapeo manual para asegurar que los tipos LocalDateTime del DTO
+        // se conviertan correctamente a los Timestamps de la entidad Torneo
         Torneo data = Torneo.builder()
                 .nombre(dto.getNombre())
                 .descripcion(dto.getDescripcion())
@@ -49,7 +46,7 @@ public class TorneoController {
                 .fechaFin(dto.getFechaFin() != null ? Timestamp.valueOf(dto.getFechaFin()) : null)
                 .fechaAperturaInscripcion(dto.getFechaAperturaInscripcion() != null ? Timestamp.valueOf(dto.getFechaAperturaInscripcion()) : null)
                 .fechaCierreInscripcion(dto.getFechaCierreInscripcion() != null ? Timestamp.valueOf(dto.getFechaCierreInscripcion()) : null)
-                .estado(dto.getEstado()) // Agregamos estado por si se edita desde aquí
+                .estado(dto.getEstado())
                 .build();
 
         return ResponseEntity.ok(torneoService.editar(id, data));
@@ -57,20 +54,20 @@ public class TorneoController {
 
     // 4. Cambiar estado
     @PutMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(
-            @PathVariable String id,
-            @RequestBody CambiarEstadoTorneoDTO dto
-    ) {
-        return ResponseEntity.ok(
-                torneoService.cambiarEstado(id, dto.getEstado())
-        );
+    public ResponseEntity<?> cambiarEstado(@PathVariable String id, @RequestBody CambiarEstadoTorneoDTO dto) {
+        return ResponseEntity.ok(torneoService.cambiarEstado(id, dto.getEstado()));
     }
 
-    // 5. Eliminar torneo
+    // 5. Eliminar torneo (CORREGIDO PARA MEJOR RESPUESTA)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable String id) {
-        torneoService.eliminar(id);
-        return ResponseEntity.ok("Torneo eliminado");
+        try {
+            torneoService.eliminar(id);
+            // Retornamos un JSON en lugar de un String simple para que el Front lo maneje mejor
+            return ResponseEntity.ok(Map.of("message", "Torneo eliminado exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 6. Cerrar inscripciones

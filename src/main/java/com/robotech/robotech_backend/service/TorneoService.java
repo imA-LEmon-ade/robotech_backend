@@ -9,8 +9,9 @@ import com.robotech.robotech_backend.repository.TorneoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp; // Importante para la conversión de fechas
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -24,37 +25,27 @@ public class TorneoService {
     // --------------------------------------------------
     // CREAR TORNEO
     // --------------------------------------------------
+    @Transactional
     public Torneo crearTorneo(CrearTorneoDTO dto, Authentication auth) {
-
-        // 1. Usamos el constructor vacío y setters para tener control total de los tipos
         Torneo t = new Torneo();
-
         t.setNombre(dto.getNombre());
         t.setDescripcion(dto.getDescripcion());
 
-        // 2. CONVERSIÓN DE FECHAS (LocalDateTime -> Timestamp)
-        // Esto es vital porque el DTO trae el formato del Frontend y la BD espera formato SQL
         if (dto.getFechaInicio() != null)
             t.setFechaInicio(Timestamp.valueOf(dto.getFechaInicio()));
-
         if (dto.getFechaFin() != null)
             t.setFechaFin(Timestamp.valueOf(dto.getFechaFin()));
-
         if (dto.getFechaAperturaInscripcion() != null)
             t.setFechaAperturaInscripcion(Timestamp.valueOf(dto.getFechaAperturaInscripcion()));
-
         if (dto.getFechaCierreInscripcion() != null)
             t.setFechaCierreInscripcion(Timestamp.valueOf(dto.getFechaCierreInscripcion()));
 
-        // 3. ASIGNACIÓN DE ESTADO (CORREGIDO)
-        // Usamos la variable 't' y manejamos String para ser consistentes con el resto del archivo
         if (dto.getEstado() != null && !dto.getEstado().isEmpty()) {
-            t.setEstado(dto.getEstado()); // Guardamos el String directo (ej: "INSCRIPCIONES_ABIERTAS")
+            t.setEstado(dto.getEstado());
         } else {
             t.setEstado("BORRADOR");
         }
 
-        // 4. ASIGNAR CREADOR
         if (auth != null && auth.getPrincipal() instanceof Usuario usuario) {
             t.setCreadoPor(usuario.getIdUsuario());
         } else {
@@ -64,22 +55,17 @@ public class TorneoService {
         return torneoRepo.save(t);
     }
 
-
     // --------------------------------------------------
-    // LISTAR TODOS
+    // LISTAR Y OBTENER
     // --------------------------------------------------
     public List<Torneo> listar() {
         return torneoRepo.findAll();
     }
 
-    // TORNEOS DISPONIBLES PARA CLUBES
     public List<Torneo> listarDisponibles() {
         return torneoRepo.findByEstado("INSCRIPCIONES_ABIERTAS");
     }
 
-    // --------------------------------------------------
-    // OBTENER POR ID
-    // --------------------------------------------------
     public Torneo obtener(String id) {
         return torneoRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Torneo no encontrado"));
@@ -88,9 +74,9 @@ public class TorneoService {
     // --------------------------------------------------
     // EDITAR TORNEO
     // --------------------------------------------------
+    @Transactional
     public Torneo editar(String id, Torneo datos) {
         Torneo t = obtener(id);
-
         t.setNombre(datos.getNombre());
         t.setDescripcion(datos.getDescripcion());
         t.setFechaInicio(datos.getFechaInicio());
@@ -98,104 +84,85 @@ public class TorneoService {
         t.setFechaAperturaInscripcion(datos.getFechaAperturaInscripcion());
         t.setFechaCierreInscripcion(datos.getFechaCierreInscripcion());
 
-        // Si quisieras permitir editar estado aquí también:
         if (datos.getEstado() != null) {
             t.setEstado(datos.getEstado());
         }
-
         return torneoRepo.save(t);
     }
 
     // --------------------------------------------------
-    // ABRIR INSCRIPCIONES (AUTOMÁTICO)
+    // GESTIÓN DE ESTADOS
     // --------------------------------------------------
+    @Transactional
     public Torneo abrirInscripciones(String id) {
         Torneo t = obtener(id);
         Date hoy = new Date();
-
-        if (hoy.before(t.getFechaAperturaInscripcion())) {
-            throw new RuntimeException("Aún no es la fecha de apertura");
-        }
-
-        if (hoy.after(t.getFechaCierreInscripcion())) {
-            throw new RuntimeException("La fecha de inscripción ya expiró");
-        }
-
+        if (hoy.before(t.getFechaAperturaInscripcion())) throw new RuntimeException("Aún no es la fecha de apertura");
+        if (hoy.after(t.getFechaCierreInscripcion())) throw new RuntimeException("La fecha de inscripción ya expiró");
         t.setEstado("INSCRIPCIONES_ABIERTAS");
         return torneoRepo.save(t);
     }
 
-    // --------------------------------------------------
-    // CERRAR INSCRIPCIONES
-    // --------------------------------------------------
+    @Transactional
     public Torneo cerrarInscripciones(String id) {
         Torneo t = obtener(id);
-        t.setEstado("EN_PROGRESO"); // O el estado que prefieras para cerrado
+        t.setEstado("EN_PROGRESO");
         return torneoRepo.save(t);
     }
 
-    // --------------------------------------------------
-    // CAMBIAR ESTADO MANUALMENTE (ADMIN)
-    // --------------------------------------------------
+    @Transactional
     public Torneo cambiarEstado(String id, String nuevoEstado) {
         Torneo t = obtener(id);
+        if ("FINALIZADO".equals(t.getEstado())) throw new RuntimeException("No se puede modificar un torneo finalizado");
 
-        if ("FINALIZADO".equals(t.getEstado())) {
-            throw new RuntimeException("No se puede modificar un torneo finalizado");
-        }
-
-        List<String> permitidos = List.of(
-                "BORRADOR",
-                "INSCRIPCIONES_ABIERTAS",
-                "INSCRIPCIONES_CERRADAS",
-                "EN_PROGRESO",
-                "FINALIZADO"
-        );
-
-        if (!permitidos.contains(nuevoEstado)) {
-            throw new RuntimeException("Estado inválido: " + nuevoEstado);
-        }
+        List<String> permitidos = List.of("BORRADOR", "INSCRIPCIONES_ABIERTAS", "INSCRIPCIONES_CERRADAS", "EN_PROGRESO", "FINALIZADO");
+        if (!permitidos.contains(nuevoEstado)) throw new RuntimeException("Estado inválido: " + nuevoEstado);
 
         t.setEstado(nuevoEstado);
         return torneoRepo.save(t);
     }
 
     // --------------------------------------------------
-    // ELIMINAR TORNEO
+    // ELIMINAR TORNEO (VERSIÓN DEFINITIVA CORREGIDA)
     // --------------------------------------------------
+    @Transactional
     public void eliminar(String id) {
-        torneoRepo.deleteById(id);
+        // 1. Buscamos el torneo con sus relaciones
+        Torneo torneo = torneoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Torneo no encontrado para eliminar"));
+
+        // 2. Limpiamos las categorías manualmente.
+        // Esto dispara el borrado en cascada (orphanRemoval) de Categorías, Encuentros e Inscripciones.
+        if (torneo.getCategorias() != null) {
+            torneo.getCategorias().clear();
+        }
+
+        // 3. Sincronizamos con la DB para borrar los hijos primero y evitar conflictos con Robots
+        torneoRepo.saveAndFlush(torneo);
+
+        // 4. Finalmente borramos el registro padre del torneo
+        torneoRepo.delete(torneo);
     }
 
     // --------------------------------------------------
-    // LISTAR TORNEOS PÚBLICOS
+    // LISTADOS ADICIONALES
     // --------------------------------------------------
     public List<Torneo> listarPublicos() {
-        return torneoRepo.findByEstadoIn(
-                List.of("INSCRIPCIONES_ABIERTAS", "EN_PROGRESO", "FINALIZADO")
-        );
+        return torneoRepo.findByEstadoIn(List.of("INSCRIPCIONES_ABIERTAS", "EN_PROGRESO", "FINALIZADO"));
     }
 
-    // --------------------------------------------------
-    // LISTAR CATEGORÍAS DE UN TORNEO
-    // --------------------------------------------------
     public List<CategoriaTorneo> listarCategorias(String idTorneo) {
         Torneo torneo = obtener(idTorneo);
         return categoriaRepo.findByTorneo(torneo);
     }
 
-    // --------------------------------------------------
-    // LISTAR TORNEOS POR ADMINISTRADOR
-    // --------------------------------------------------
     public List<Torneo> listarPorAdministrador(Authentication auth) {
         if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
             return torneoRepo.findAll();
         }
-
         if ("ADMIN".equals(usuario.getRol())) {
             return torneoRepo.findAll();
         }
-
         return torneoRepo.findByCreadoPor(usuario.getIdUsuario());
     }
 }

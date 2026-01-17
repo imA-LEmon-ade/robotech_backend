@@ -21,6 +21,7 @@ public class HistorialCalificacion {
     private String id;
 
     @ManyToOne
+    @JoinColumn(name = "encuentro_id_encuentro", referencedColumnName = "idEncuentro")
     private Encuentro encuentro;
 
     @Enumerated(EnumType.STRING)
