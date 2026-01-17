@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "inscripciones_torneo")
@@ -16,13 +15,15 @@ public class InscripcionTorneo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(name = "id_inscripcion", length = 36)
     private String idInscripcion;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_torneo_id_categoria_torneo", nullable = false) // ✅ Añadido nullable=false
     private CategoriaTorneo categoriaTorneo;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_robot", referencedColumnName = "id_robot", nullable = false) // ✅ Forzamos que use id_robot
     private Robot robot;
 
     @Enumerated(EnumType.STRING)

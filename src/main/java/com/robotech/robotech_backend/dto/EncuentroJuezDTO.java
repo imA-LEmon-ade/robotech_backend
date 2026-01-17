@@ -17,6 +17,7 @@ import java.util.List;
 public class EncuentroJuezDTO {
 
     private String idEncuentro;
+    private String nombreTorneo; // ✅ AGREGADO: Para que coincida con el Service
     private String categoria;
     private TipoEncuentro tipo;
     private EstadoEncuentro estado;

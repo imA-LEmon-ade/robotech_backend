@@ -4,16 +4,21 @@ import com.robotech.robotech_backend.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // Importante añadir
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -22,14 +27,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 RUTAS PÚBLICAS
+                        // ✅ SE AGREGÓ "/api/rankings/**" A LA LISTA DE PERMIT ALL
                         .requestMatchers(
                                 "/api/usuarios/login",
                                 "/api/admin/login",
@@ -37,21 +40,29 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/codigos/validar/**",
                                 "/uploads/**",
-                                "/api/public/**" // ✅ NUEVA RUTA PÚBLICA PARA CLUBES
+                                "/api/public/**",
+                                "/api/rankings/**" // 🔓 Ruta liberada para el público
                         ).permitAll()
-
-                        // Permitir GET a /api/public/clubes explícitamente por seguridad extra
-                        .requestMatchers(HttpMethod.GET, "/api/public/clubes/**").permitAll()
-
-                        .requestMatchers("/api/torneos/**").authenticated()
+                        .requestMatchers("/api/admin/**").authenticated()
                         .anyRequest().authenticated()
                 )
-
                 .userDetailsService(userDetailsService)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(Customizer.withDefaults());
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean

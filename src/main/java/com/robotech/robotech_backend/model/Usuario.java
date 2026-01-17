@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.security.SecureRandom;
 
-
 @Entity
 @Table(name = "usuarios")
 @Data
@@ -26,22 +25,21 @@ public class Usuario {
     @Column
     private String apellidos;
 
-
-    @Column(nullable = false, unique = true, length = 9)
+    // ✅ CORRECCIÓN: Cambiado a nullable = true.
+    // Si es obligatorio, el DTO debe validarlo, pero en BD es mejor permitir null si no hay dato.
+    @Column(nullable = true, unique = true, length = 15)
     private String telefono;
 
     @Column(nullable = false)
-    private String contrasenaHash;  // Luego usaremos BCrypt
+    private String contrasenaHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RolUsuario rol;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoUsuario estado;
-
 
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -54,11 +52,14 @@ public class Usuario {
         return sb.toString();
     }
 
-    // ---------- SE EJECUTA ANTES DE INSERTAR EN LA BD ----------
     @PrePersist
     public void prePersist() {
         if (this.idUsuario == null) {
             this.idUsuario = generarIdAlfanumerico();
+        }
+        // Limpieza de campos para evitar errores de unicidad con strings vacíos
+        if (this.telefono != null && this.telefono.isBlank()) {
+            this.telefono = null;
         }
     }
 }

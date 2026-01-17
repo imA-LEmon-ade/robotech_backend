@@ -18,15 +18,12 @@ public class InscripcionTorneoService {
     private final InscripcionTorneoRepository inscripcionRepo;
     private final ClubRepository clubRepo;
 
-    // ----------------------------------------------------------------------
-    // INSCRIBIR ROBOT (MODALIDAD INDIVIDUAL - CLUB)
-    // ----------------------------------------------------------------------
     @Transactional
     public InscripcionTorneo inscribirIndividualComoClub(
             String idUsuarioClub,
             InscripcionIndividualDTO dto
     ) {
-
+        // 1. Recuperar entidades con sus relaciones cargadas
         Club club = clubRepo.findByUsuario_IdUsuario(idUsuarioClub)
                 .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
@@ -40,64 +37,53 @@ public class InscripcionTorneoService {
         Robot robot = robotRepo.findById(dto.getIdRobot())
                 .orElseThrow(() -> new RuntimeException("Robot no encontrado"));
 
-        // 🔒 Validar que el robot pertenece al club
-        if (!robot.getCompetidor().getClubActual().getIdClub()
-                .equals(club.getIdClub())) {
+        // 2. Validaciones de seguridad
+        if (robot.getCompetidor() == null || robot.getCompetidor().getClubActual() == null ||
+                !robot.getCompetidor().getClubActual().getIdClub().equals(club.getIdClub())) {
             throw new RuntimeException("El robot no pertenece a este club");
         }
 
-        // 🔒 Validar duplicado
-        boolean yaInscrito =
-                inscripcionRepo.existsByRobot_IdRobotAndCategoriaTorneo_Torneo_IdTorneoAndEstado(
-                        robot.getIdRobot(),
-                        categoria.getTorneo().getIdTorneo(),
-                        EstadoInscripcion.ACTIVA
-                );
-
+        // 3. Validar duplicados y cupos
+        boolean yaInscrito = inscripcionRepo.existsByRobot_IdRobotAndCategoriaTorneo_Torneo_IdTorneoAndEstado(
+                robot.getIdRobot(),
+                categoria.getTorneo().getIdTorneo(),
+                EstadoInscripcion.ACTIVA
+        );
 
         if (yaInscrito) {
-            throw new RuntimeException("El robot ya está inscrito");
+            throw new RuntimeException("El robot ya está inscrito en este torneo");
         }
 
-        // 🔒 Validar cupos
-        long inscritos = inscripcionRepo
-                .countByCategoriaTorneoIdCategoriaTorneoAndEstado(
-                        categoria.getIdCategoriaTorneo(),
-                        EstadoInscripcion.ACTIVA
-                );
+        long inscritos = inscripcionRepo.countByCategoriaTorneoIdCategoriaTorneoAndEstado(
+                categoria.getIdCategoriaTorneo(),
+                EstadoInscripcion.ACTIVA
+        );
 
         if (inscritos >= categoria.getMaxParticipantes()) {
             throw new RuntimeException("No hay cupos disponibles");
         }
 
-        // ✅ CORRECCIÓN AQUÍ: Se agregó fechaInscripcion
-        InscripcionTorneo inscripcion = InscripcionTorneo.builder()
-                .categoriaTorneo(categoria)
-                .robot(robot)
-                .estado(EstadoInscripcion.ACTIVA)
-                .fechaInscripcion(new Date()) // <-- LÍNEA AGREGADA PARA EVITAR ERROR 500
-                .build();
+        // 4. CREACIÓN Y GUARDADO (Ajuste para asegurar mapeo correcto)
+        InscripcionTorneo inscripcion = new InscripcionTorneo();
+        inscripcion.setCategoriaTorneo(categoria);
+        inscripcion.setRobot(robot);
+        inscripcion.setEstado(EstadoInscripcion.ACTIVA);
+        inscripcion.setFechaInscripcion(new Date());
 
-        inscripcionRepo.save(inscripcion);
+        // Guardamos explícitamente
+        InscripcionTorneo guardada = inscripcionRepo.save(inscripcion);
 
-        // 🔒 Cerrar inscripciones si se llenó
+        // 5. Gestión de cupos
         if (inscritos + 1 >= categoria.getMaxParticipantes()) {
             categoria.setInscripcionesCerradas(true);
             categoriaRepo.save(categoria);
         }
 
-        return inscripcion;
+        return guardada;
     }
 
-    // ----------------------------------------------------------------------
-    // ANULAR INSCRIPCIÓN (ADMIN)
-    // ----------------------------------------------------------------------
     @Transactional
-    public InscripcionTorneo anularInscripcion(
-            String idInscripcion,
-            String motivo
-    ) {
-
+    public InscripcionTorneo anularInscripcion(String idInscripcion, String motivo) {
         InscripcionTorneo inscripcion = inscripcionRepo.findById(idInscripcion)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
 
@@ -107,7 +93,7 @@ public class InscripcionTorneoService {
 
         inscripcion.setEstado(EstadoInscripcion.ANULADA);
         inscripcion.setMotivoAnulacion(motivo);
-        // Opcional: También podrías actualizar la fecha de anulación si tu entidad la tiene
+        // Sugerencia: Actualizar fecha de anulación si existe el campo
         // inscripcion.setAnuladaEn(new Date());
 
         return inscripcionRepo.save(inscripcion);

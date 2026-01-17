@@ -1,6 +1,5 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.Encuentro;
 import com.robotech.robotech_backend.model.EstadoValidacion;
 import com.robotech.robotech_backend.model.Juez;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,20 +8,25 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface JuezRepository extends JpaRepository<Juez, String> {
+
+    // ✅ Consulta optimizada para traer al Juez con su Usuario (nombres/apellidos) de un solo golpe
+    @Query("SELECT j FROM Juez j JOIN FETCH j.usuario")
+    List<Juez> findAllWithUsuario();
 
     boolean existsByUsuario_IdUsuario(String idUsuario);
 
     Optional<Juez> findByUsuario_IdUsuario(String idUsuario);
 
-    // ✅ LISTAR JUECES APROBADOS
-    List<Juez> findByEstadoValidacion(EstadoValidacion estado);
+    // ✅ Lista jueces por estado, cargando también sus datos de usuario
+    @Query("SELECT j FROM Juez j JOIN FETCH j.usuario WHERE j.estadoValidacion = :estado")
+    List<Juez> findByEstadoValidacion(@Param("estado") EstadoValidacion estado);
 
     // 🔎 BUSCAR JUEZ PUNTUAL
     @Query("""
         SELECT j FROM Juez j
+        JOIN FETCH j.usuario
         WHERE j.idJuez = :idJuez
         AND j.estadoValidacion = :estado
     """)

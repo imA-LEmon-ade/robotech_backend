@@ -2,6 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CompetidorPublicoDTO;
 import com.robotech.robotech_backend.model.Competidor;
+import com.robotech.robotech_backend.model.Robot;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,34 +17,46 @@ import java.util.Comparator;
 public class CompetidorPublicoService {
 
     private final CompetidorRepository competidorRepo;
-    private final RobotRepository robotRepo; // Para contar sus robots
+    private final RobotRepository robotRepo;
 
     public List<CompetidorPublicoDTO> obtenerRanking() {
         List<Competidor> competidores = competidorRepo.findAll();
 
-        // Convertimos a DTO
+        // Convertimos a DTO con lógica de robots incluida
         List<CompetidorPublicoDTO> dtos = competidores.stream().map(comp -> {
 
-            // 1. Contar robots reales de este competidor
-            int cantidadRobots = robotRepo.countByCompetidor_IdCompetidor(comp.getIdCompetidor());
+            // 1. Obtener los objetos Robot reales para extraer sus nombres
+            List<Robot> robotsDelCompetidor = robotRepo.findByCompetidor_IdCompetidor(comp.getIdCompetidor());
 
-            // 2. Obtener Nombre Completo (Seguro)
+            // 2. Mapear solo los nombres a una lista de Strings para el modal
+            List<String> nombresRobots = robotsDelCompetidor.stream()
+                    .map(Robot::getNombre)
+                    .collect(Collectors.toList());
+
+            // 3. Obtener Nombre Completo desde la relación con Usuario
             String nombre = comp.getUsuario().getNombres() + " " + comp.getUsuario().getApellidos();
-            // O si usas Usuario: comp.getUsuario().getNombre();
 
-            // 3. Nombre del Club
+            // 4. Nombre del Club con validación de nulos
             String club = (comp.getClubActual() != null) ? comp.getClubActual().getNombre() : "Agente Libre";
 
-            // 4. Puntos (Si aún no tienes lógica, pon 0 o un random para probar)
-            int puntos = 0; // Aquí iría comp.getPuntosAcumulados();
+            // 5. Puntos (Aquí podrías sumar puntos de sus robots si fuera necesario)
+            int puntos = 0;
 
-            return new CompetidorPublicoDTO(nombre, club, cantidadRobots, puntos, 0);
+            // Creamos el DTO usando el constructor que incluye la lista de nombres
+            return new CompetidorPublicoDTO(
+                    nombre,
+                    club,
+                    nombresRobots, // ✅ Se añade la lista de nombres aquí
+                    robotsDelCompetidor.size(),
+                    puntos,
+                    0
+            );
         }).collect(Collectors.toList());
 
-        // 5. Ordenar por Puntos (De mayor a menor) para simular Ranking real
+        // 6. Ordenar por Puntos (De mayor a menor)
         dtos.sort(Comparator.comparingInt(CompetidorPublicoDTO::getPuntosRanking).reversed());
 
-        // 6. Asignar la posición del ranking (1, 2, 3...)
+        // 7. Asignar la posición del ranking (1, 2, 3...)
         for (int i = 0; i < dtos.size(); i++) {
             dtos.get(i).setRanking(i + 1);
         }

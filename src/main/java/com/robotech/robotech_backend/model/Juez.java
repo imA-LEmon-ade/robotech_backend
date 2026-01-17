@@ -17,26 +17,27 @@ public class Juez {
     @Column(length = 8, nullable = false, unique = true)
     private String idJuez;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    // ✅ CAMBIO: FetchType.EAGER asegura que el Usuario cargue sus nombres siempre
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
     @Column(nullable = false, unique = true)
     private String licencia;
 
-    //flujo correctamente soportado
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoValidacion estadoValidacion;
-    // PENDIENTE, APROBADO, RECHAZADO
-    private String creadoPor;          // id del admin que creó el juez
-    private String validadoPor;        // id del admin que valida el juez
-    private Date creadoEn;             // fecha creación
-    private Date validadoEn;           // fecha validación (solo cuando se aprueba o rechaza)
 
-    // ------------------------------------------------------------
-    // GENERADOR DE ID ALFANUMÉRICO (8 CARACTERES)
-    // ------------------------------------------------------------
+    private String creadoPor;
+    private String validadoPor;
+
+    @Temporal(TemporalType.TIMESTAMP) // Recomendado para fechas precisas
+    private Date creadoEn;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date validadoEn;
+
     private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -48,9 +49,6 @@ public class Juez {
         return sb.toString();
     }
 
-    // ------------------------------------------------------------
-    // PRE-PERSIST
-    // ------------------------------------------------------------
     @PrePersist
     public void prePersist() {
         if (this.idJuez == null) {
@@ -64,8 +62,5 @@ public class Juez {
         if (this.estadoValidacion == null) {
             this.estadoValidacion = EstadoValidacion.PENDIENTE;
         }
-
-        // validadoEn NO se coloca aquí
-        // solo se llenará cuando el admin apruebe o rechace
     }
 }
