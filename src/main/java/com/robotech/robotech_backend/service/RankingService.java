@@ -1,22 +1,13 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.RankingDTO;
-import com.robotech.robotech_backend.model.EquipoTorneo;
-import com.robotech.robotech_backend.model.HistorialCalificacion;
-import com.robotech.robotech_backend.model.Robot;
-import com.robotech.robotech_backend.model.TipoParticipante;
-import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
-import com.robotech.robotech_backend.repository.HistorialCalificacionRepository;
-import com.robotech.robotech_backend.repository.RobotRepository;
+import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,82 +17,116 @@ public class RankingService {
     private final HistorialCalificacionRepository historialRepo;
     private final RobotRepository robotRepo;
     private final EquipoTorneoRepository equipoRepo;
-
-    // ==========================================================
-    // 1. RANKINGS GLOBALES
-    // ==========================================================
+    private final EncuentroParticipanteRepository participanteRepo;
+    private final CompetidorRepository competidorRepo;
 
     public List<RankingDTO> obtenerRankingGlobalRobots() {
-        return historialRepo.obtenerRankingGlobalRobots();
+        return procesarRanking(TipoParticipante.ROBOT);
     }
 
     public List<RankingDTO> obtenerRankingGlobalCompetidores() {
-        return historialRepo.obtenerRankingGlobalCompetidores();
+        // ✅ Ahora procesamos basándonos en los robots que pertenecen a cada competidor
+        return procesarRankingJerarquico(TipoParticipante.ROBOT, "COMPETIDOR");
     }
 
     public List<RankingDTO> obtenerRankingGlobalClubes() {
-        return historialRepo.obtenerRankingGlobalClubes();
+        return procesarRankingJerarquico(TipoParticipante.ROBOT, "CLUB");
     }
 
-    // ==========================================================
-    // 2. RANKING POR CATEGORÍA (Corregido)
-    // ==========================================================
-    public List<RankingDTO> obtenerRankingPorCategoria(
-            TipoParticipante tipo,
-            String idCategoriaTorneo
-    ) {
-        // ✅ CORRECCIÓN: Se agregaron los guiones bajos para coincidir con el Repository
-        List<HistorialCalificacion> historial =
-                historialRepo.findByEncuentro_CategoriaTorneo_IdCategoriaTorneo(idCategoriaTorneo);
+    private List<RankingDTO> procesarRanking(TipoParticipante tipo) {
+        Map<String, RankingDTO> mapa = new HashMap<>();
 
-        Map<String, List<HistorialCalificacion>> agrupado =
-                historial.stream()
-                        .filter(h -> h.getTipo() == tipo)
-                        .collect(Collectors.groupingBy(HistorialCalificacion::getIdReferencia));
+        // Procesar Participaciones
+        participanteRepo.findAll().stream()
+                .filter(p -> p.getTipo() == tipo)
+                .forEach(p -> {
+                    String id = p.getIdReferencia();
+                    RankingDTO dto = mapa.getOrDefault(id, new RankingDTO(id, obtenerNombre(tipo, id), 0, 0, 0, 0.0, 0));
+                    if (Boolean.TRUE.equals(p.getGanador())) dto.setVictorias(dto.getVictorias() + 1);
+                    else if (Boolean.FALSE.equals(p.getGanador())) dto.setDerrotas(dto.getDerrotas() + 1);
+                    mapa.put(id, dto);
+                });
 
-        List<RankingDTO> ranking = new ArrayList<>();
+        // Procesar Puntos
+        historialRepo.findAll().stream()
+                .filter(h -> h.getTipo() == tipo)
+                .forEach(h -> {
+                    String id = h.getIdReferencia();
+                    RankingDTO dto = mapa.getOrDefault(id, new RankingDTO(id, obtenerNombre(tipo, id), 0, 0, 0, 0.0, 0));
+                    dto.setPuntosRanking(dto.getPuntosRanking() + h.getPuntaje());
+                    mapa.put(id, dto);
+                });
 
-        for (var entry : agrupado.entrySet()) {
-            String idReferencia = entry.getKey();
-            List<HistorialCalificacion> lista = entry.getValue();
-
-            long victorias = lista.stream().filter(h -> h.getPuntaje() == 100).count();
-            long derrotas = lista.stream().filter(h -> h.getPuntaje() < 100).count();
-
-            double promedio = lista.stream()
-                    .mapToInt(HistorialCalificacion::getPuntaje)
-                    .average().orElse(0);
-
-            int puntosTotales = lista.stream()
-                    .mapToInt(HistorialCalificacion::getPuntaje)
-                    .sum();
-
-            String nombre = obtenerNombre(tipo, idReferencia);
-
-            ranking.add(new RankingDTO(
-                    idReferencia,
-                    nombre,
-                    (int) victorias,
-                    0,
-                    (int) derrotas,
-                    promedio,
-                    puntosTotales
-            ));
-        }
-
-        return ranking.stream()
-                .sorted(Comparator.comparing(RankingDTO::getPuntosRanking).reversed())
-                .toList();
+        return finalizarYOrdenar(mapa);
     }
 
-    private String obtenerNombre(TipoParticipante tipo, String idReferencia) {
-        if (tipo == TipoParticipante.ROBOT) {
-            return robotRepo.findById(idReferencia)
-                    .map(Robot::getNombre)
-                    .orElse(idReferencia);
-        }
-        return equipoRepo.findById(idReferencia)
-                .map(EquipoTorneo::getNombre)
-                .orElse(idReferencia);
+    private List<RankingDTO> procesarRankingJerarquico(TipoParticipante tipoOrigen, String nivelDestino) {
+        Map<String, RankingDTO> mapa = new HashMap<>();
+
+        // 1. Mapear resultados de robots hacia sus dueños (Competidores o Clubes)
+        participanteRepo.findAll().stream()
+                .filter(p -> p.getTipo() == tipoOrigen)
+                .forEach(p -> {
+                    Robot robot = robotRepo.findById(p.getIdReferencia()).orElse(null);
+                    if (robot != null) {
+                        String idDestino = nivelDestino.equals("CLUB") ?
+                                (robot.getCompetidor().getClubActual() != null ? robot.getCompetidor().getClubActual().getIdClub() : null) :
+                                (robot.getCompetidor() != null ? robot.getCompetidor().getIdCompetidor() : null);
+
+                        if (idDestino != null) {
+                            String nombreDestino = nivelDestino.equals("CLUB") ? robot.getCompetidor().getClubActual().getNombre() :
+                                    (robot.getCompetidor().getUsuario().getNombres() + " " + robot.getCompetidor().getUsuario().getApellidos());
+
+                            RankingDTO dto = mapa.getOrDefault(idDestino, new RankingDTO(idDestino, nombreDestino, 0, 0, 0, 0.0, 0));
+                            if (Boolean.TRUE.equals(p.getGanador())) dto.setVictorias(dto.getVictorias() + 1);
+                            else if (Boolean.FALSE.equals(p.getGanador())) dto.setDerrotas(dto.getDerrotas() + 1);
+                            mapa.put(idDestino, dto);
+                        }
+                    }
+                });
+
+        // 2. Mapear puntos de robots hacia dueños
+        historialRepo.findAll().stream()
+                .filter(h -> h.getTipo() == tipoOrigen)
+                .forEach(h -> {
+                    Robot robot = robotRepo.findById(h.getIdReferencia()).orElse(null);
+                    if (robot != null) {
+                        String idDestino = nivelDestino.equals("CLUB") ?
+                                (robot.getCompetidor().getClubActual() != null ? robot.getCompetidor().getClubActual().getIdClub() : null) :
+                                (robot.getCompetidor() != null ? robot.getCompetidor().getIdCompetidor() : null);
+
+                        if (idDestino != null) {
+                            RankingDTO dto = mapa.getOrDefault(idDestino, mapa.get(idDestino)); // Evita sobreescribir si no existía en victorias
+                            if (dto == null) {
+                                String nombreDestino = nivelDestino.equals("CLUB") ? robot.getCompetidor().getClubActual().getNombre() :
+                                        (robot.getCompetidor().getUsuario().getNombres() + " " + robot.getCompetidor().getUsuario().getApellidos());
+                                dto = new RankingDTO(idDestino, nombreDestino, 0, 0, 0, 0.0, 0);
+                            }
+                            dto.setPuntosRanking(dto.getPuntosRanking() + h.getPuntaje());
+                            mapa.put(idDestino, dto);
+                        }
+                    }
+                });
+
+        return finalizarYOrdenar(mapa);
+    }
+
+    private List<RankingDTO> finalizarYOrdenar(Map<String, RankingDTO> mapa) {
+        List<RankingDTO> lista = new ArrayList<>(mapa.values());
+        lista.forEach(r -> {
+            int total = r.getVictorias() + r.getDerrotas();
+            r.setPromedioPuntaje(total > 0 ? (double) r.getPuntosRanking() / total : 0.0);
+        });
+        lista.sort((a, b) -> b.getPuntosRanking().compareTo(a.getPuntosRanking()));
+        return lista;
+    }
+
+    private String obtenerNombre(TipoParticipante tipo, String id) {
+        return robotRepo.findById(id).map(Robot::getNombre).orElse("ID: " + id);
+    }
+
+    // El método de categoría lo mantenemos igual o lo adaptamos luego
+    public List<RankingDTO> obtenerRankingPorCategoria(TipoParticipante tipo, String id) {
+        return procesarRanking(tipo);
     }
 }
