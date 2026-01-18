@@ -12,28 +12,20 @@ import java.util.List;
 
 public interface RobotRepository extends JpaRepository<Robot, String> {
 
-    // ✅ Crucial para el modal: Obtener todos los robots de un competidor
+    @Query("SELECT r FROM Robot r JOIN FETCH r.competidor c JOIN FETCH c.usuario u LEFT JOIN FETCH c.clubActual cl")
+    List<Robot> findAllWithDetalles();
+
     List<Robot> findByCompetidor_IdCompetidor(String idCompetidor);
 
-    // Verificar si ya registró un robot en la categoría
-    boolean existsByCompetidor_IdCompetidorAndCategoria(
-            String idCompetidor,
-            CategoriaCompetencia categoria
-    );
+    boolean existsByCompetidor_IdCompetidorAndCategoria(String idCompetidor, CategoriaCompetencia categoria);
 
-    // Validaciones de unicidad
     boolean existsByNickname(String nickname);
     boolean existsByNombre(String nombre);
 
-    // Listar por Club (Entidad completa)
     List<Robot> findByCompetidor_ClubActual(Club club);
 
-    // Conteo rápido para estadísticas del competidor
     int countByCompetidor_IdCompetidor(String idCompetidor);
 
-    // -------------------------------------------------------
-    // 🔍 FILTRO AVANZADO (Para el Admin)
-    // -------------------------------------------------------
     @Query("""
     SELECT r FROM Robot r
     WHERE (:nombre IS NULL OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
@@ -46,9 +38,6 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idClub") String idClub
     );
 
-    // -------------------------------------------------------
-    // 🏆 ROBOTS DISPONIBLES PARA INSCRIPCIÓN (Para el Club)
-    // -------------------------------------------------------
     @Query("""
     SELECT r
     FROM Robot r
@@ -67,10 +56,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idTorneo") String idTorneo
     );
 
-    List<Robot> findByCompetidorClubActualIdClubAndEstado(
-            String idClub,
-            EstadoRobot estado
-    );
+    List<Robot> findByCompetidorClubActualIdClubAndEstado(String idClub, EstadoRobot estado);
 
     @Query("SELECT COUNT(r) FROM Robot r WHERE r.competidor.clubActual.idClub = :idClub")
     long contarRobotsPorClub(@Param("idClub") String idClub);
