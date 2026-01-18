@@ -13,6 +13,6 @@ public class RobotPublicoDTO {
     private String nombre;
     private String categoria;
     private String nickname;
-    private String nombreDueño; // ✅ Campo nuevo
-    private String nombreClub;  // ✅ Campo nuevo
+    private String nombreDueño;
+    private String nombreClub;
 }
