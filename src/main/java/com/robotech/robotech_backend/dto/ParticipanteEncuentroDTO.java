@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ParticipanteEncuentroDTO {
     private String idReferencia;
-    private String nombre; // ✅ IMPORTANTE: Este campo debe existir
+    private String nombre;
     private TipoParticipante tipo;
     private Integer calificacion;
     private Boolean ganador;
