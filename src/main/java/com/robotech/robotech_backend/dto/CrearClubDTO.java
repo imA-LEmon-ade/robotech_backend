@@ -12,6 +12,7 @@ public class CrearClubDTO {
     private String direccionFiscal;
 
     // datos del propietario (usuario)
+    private String dniPropietario;
     private String nombresPropietario;
     private String apellidosPropietario;
     private String correoPropietario;

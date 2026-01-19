@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.JuezAdminDTO;
 import com.robotech.robotech_backend.dto.JuezDTO;
 import com.robotech.robotech_backend.dto.JuezSelectDTO;
 import com.robotech.robotech_backend.service.AdminJuezService;
@@ -26,9 +27,10 @@ public class AdminJuezController {
     }
 
     @GetMapping
-    public ResponseEntity<?> listar() {
+    public ResponseEntity<List<JuezAdminDTO>> listar() {
         return ResponseEntity.ok(juezService.listar());
     }
+
 
     // ✅ ENDPOINT PARA SELECT
     @GetMapping("/select")

@@ -53,7 +53,7 @@ public class CompetidorService {
                 .idCompetidor(c.getIdCompetidor())
                 .nombres(u.getNombres())
                 .apellidos(u.getApellidos())
-                .dni(c.getDni())
+                .dni(c.getUsuario().getDni())
                 .correo(u.getCorreo())
                 .telefono(u.getTelefono())
                 .clubNombre(c.getClubActual() != null ? c.getClubActual().getNombre() : "Sin club")
@@ -109,7 +109,7 @@ public class CompetidorService {
 
         // 2. Actualizar DNI
         if (dto.getDni() != null) {
-            competidor.setDni(dto.getDni());
+            competidor.getUsuario().setDni(dto.getDni());
         }
 
         // 3. Actualizar Correo
@@ -150,7 +150,7 @@ public class CompetidorService {
                         // Null-safe checks
                         String nombres = c.getUsuario().getNombres() != null ? c.getUsuario().getNombres().toLowerCase() : "";
                         String apellidos = c.getUsuario().getApellidos() != null ? c.getUsuario().getApellidos().toLowerCase() : "";
-                        String dni = c.getDni() != null ? c.getDni() : "";
+                        String dni = c.getUsuario().getDni() != null ? c.getUsuario().getDni() : "";
                         String correo = c.getUsuario().getCorreo() != null ? c.getUsuario().getCorreo().toLowerCase() : "";
 
                         // Búsqueda flexible
@@ -168,7 +168,7 @@ public class CompetidorService {
                         c.getIdCompetidor(),
                         c.getUsuario().getNombres(),
                         c.getUsuario().getApellidos(),
-                        c.getDni(),
+                        c.getUsuario().getDni(),
                         c.getEstadoValidacion().name(),
                         c.getUsuario().getCorreo()
                 ))

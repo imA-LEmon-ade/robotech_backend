@@ -44,7 +44,7 @@ public class AdminRobotService {
                         // COMPETIDOR → usamos DNI (modelo final)
                         .competidor(
                                 Optional.ofNullable(r.getCompetidor())
-                                        .map(c -> c.getDni())
+                                        .map(c -> c.getUsuario().getDni())
                                         .orElse(null)
                         )
 

@@ -20,13 +20,13 @@ public interface JuezRepository extends JpaRepository<Juez, String> {
     Optional<Juez> findByUsuario_IdUsuario(String idUsuario);
 
     // ✅ Lista jueces por estado, cargando también sus datos de usuario
-    @Query("SELECT j FROM Juez j JOIN FETCH j.usuario WHERE j.estadoValidacion = :estado")
+    @Query("SELECT j FROM Juez j LEFT JOIN FETCH j.usuario WHERE j.estadoValidacion = :estado")
     List<Juez> findByEstadoValidacion(@Param("estado") EstadoValidacion estado);
 
     // 🔎 BUSCAR JUEZ PUNTUAL
     @Query("""
         SELECT j FROM Juez j
-        JOIN FETCH j.usuario
+        LEFT JOIN FETCH j.usuario
         WHERE j.idJuez = :idJuez
         AND j.estadoValidacion = :estado
     """)

@@ -3,12 +3,13 @@ package com.robotech.robotech_backend.dto;
 import lombok.Data;
 
 @Data
-public class RegistroCompetidorDTO {
+public class CrearJuezDTO {
+
     private String dni;
-    private String nombre;
-    private String apellido;
+    private String nombres;
+    private String apellidos;
     private String correo;
     private String telefono;
+    private String licencia;
     private String contrasena;
-    private String codigoClub;
 }

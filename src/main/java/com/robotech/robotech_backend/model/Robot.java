@@ -27,8 +27,9 @@ public class Robot {
     private String nickname;
 
     @ManyToOne
-    @JoinColumn(name = "id_competidor", referencedColumnName = "id_competidor", nullable = false) // ✅ Ahora sí coinciden
+    @JoinColumn(name = "id_competidor", nullable = false)
     private Competidor competidor;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

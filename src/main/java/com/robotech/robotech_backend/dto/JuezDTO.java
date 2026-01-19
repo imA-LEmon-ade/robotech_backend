@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JuezDTO {
 
+    @NotBlank(message = "El DNI es obligatorio")
+    private String dni;
+
     @NotBlank(message = "Los nombres son obligatorios")
     private String nombres;
 

@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-public record CrearUsuarioDTO(
+public record CrearAdminDTO(
         String dni,
         String nombres,
         String apellidos,

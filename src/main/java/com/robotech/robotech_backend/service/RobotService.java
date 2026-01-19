@@ -59,7 +59,7 @@ public class RobotService {
                     System.err.println("❌ Competidor no encontrado.");
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Competidor no encontrado");
                 });
-        System.out.println("   -> Competidor encontrado: " + comp.getDni());
+        System.out.println("   -> Competidor encontrado: " + comp.getUsuario().getDni());
 
         // 4. Parsear categoría
         CategoriaCompetencia categoriaEnum = parseCategoria(categoriaLimpia);

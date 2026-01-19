@@ -37,28 +37,27 @@ public class AdminClubService {
     // =========================
     public ClubResponseDTO crearClub(CrearClubDTO dto) {
 
-        // normalizar correos
+        // Normalizar correos
         String correoPropietario = normalizarCorreo(dto.getCorreoPropietario());
         String correoContacto   = normalizarCorreo(dto.getCorreoContacto());
 
-        // validar formato
+        // Validar formatos
         emailValidator.validar(correoPropietario);
         emailValidator.validar(correoContacto);
 
         telefonoValidator.validar(dto.getTelefonoPropietario());
         telefonoValidator.validar(dto.getTelefonoContacto());
 
-        // duplicados club
+        // Validar duplicados CLUB
         if (clubRepo.existsByNombreIgnoreCase(dto.getNombre())) {
             throw new RuntimeException("Ya existe un club con ese nombre");
         }
 
         if (clubRepo.existsByCorreoContacto(correoContacto)) {
-
             List<String> suggestions =
                     emailSuggestionService.sugerirCorreosHumanosDisponibles(
                             correoContacto,
-                            dto.getNombre(), // base: nombre del club
+                            dto.getNombre(),
                             "",
                             6
                     );
@@ -70,9 +69,12 @@ public class AdminClubService {
             );
         }
 
-        // duplicados usuario
-        if (usuarioRepo.existsByCorreoIgnoreCase(correoPropietario)) {
+        if (clubRepo.existsByTelefonoContacto(dto.getTelefonoContacto())) {
+            throw new RuntimeException("El teléfono de contacto del club ya está registrado");
+        }
 
+        // Validar duplicados USUARIO (propietario)
+        if (usuarioRepo.existsByCorreoIgnoreCase(correoPropietario)) {
             List<String> suggestions =
                     emailSuggestionService.sugerirCorreosHumanosDisponibles(
                             correoPropietario,
@@ -92,8 +94,13 @@ public class AdminClubService {
             throw new RuntimeException("El teléfono del propietario ya está registrado");
         }
 
-        // crear propietario
+        if (usuarioRepo.existsByDni(dto.getDniPropietario())) {
+            throw new RuntimeException("El DNI del propietario ya está registrado");
+        }
+
+        // Crear USUARIO propietario
         Usuario propietario = Usuario.builder()
+                .dni(dto.getDniPropietario())
                 .nombres(dto.getNombresPropietario())
                 .apellidos(dto.getApellidosPropietario())
                 .correo(correoPropietario)
@@ -105,7 +112,7 @@ public class AdminClubService {
 
         usuarioRepo.save(propietario);
 
-        // crear club
+        // Crear CLUB
         Club club = Club.builder()
                 .codigoClub(generarCodigoClub())
                 .nombre(dto.getNombre())
@@ -122,19 +129,25 @@ public class AdminClubService {
     }
 
     // =========================
-    // LISTAR
+    // LISTAR CLUBES
     // =========================
     public List<ClubResponseDTO> listar(String nombre) {
+
         if (nombre == null || nombre.isBlank()) {
-            return clubRepo.findAll().stream().map(this::mapClub).toList();
+            return clubRepo.findAllWithUsuario()
+                    .stream()
+                    .map(this::mapClub)
+                    .toList();
         }
 
         return clubRepo.findByNombreContainingIgnoreCase(nombre)
-                .stream().map(this::mapClub).toList();
+                .stream()
+                .map(this::mapClub)
+                .toList();
     }
 
     // =========================
-    // EDITAR
+    // EDITAR CLUB
     // =========================
     public ClubResponseDTO editar(String idClub, EditarClubDTO dto) {
 
@@ -154,6 +167,11 @@ public class AdminClubService {
         if (!club.getCorreoContacto().equalsIgnoreCase(correoContacto)
                 && clubRepo.existsByCorreoContacto(correoContacto)) {
             throw new RuntimeException("El correo de contacto del club ya está registrado");
+        }
+
+        if (!club.getTelefonoContacto().equals(dto.getTelefonoContacto())
+                && clubRepo.existsByTelefonoContacto(dto.getTelefonoContacto())) {
+            throw new RuntimeException("El teléfono de contacto del club ya está registrado");
         }
 
         club.setNombre(dto.getNombre());

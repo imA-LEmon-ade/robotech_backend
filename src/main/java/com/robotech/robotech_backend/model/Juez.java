@@ -14,11 +14,10 @@ import java.util.Date;
 public class Juez {
 
     @Id
-    @Column(length = 8, nullable = false, unique = true)
+    @Column(name = "id_juez", length = 8)
     private String idJuez;
 
-    // ✅ CAMBIO: FetchType.EAGER asegura que el Usuario cargue sus nombres siempre
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
@@ -32,7 +31,7 @@ public class Juez {
     private String creadoPor;
     private String validadoPor;
 
-    @Temporal(TemporalType.TIMESTAMP) // Recomendado para fechas precisas
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creadoEn;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -54,11 +53,9 @@ public class Juez {
         if (this.idJuez == null) {
             this.idJuez = generarId();
         }
-
         if (this.creadoEn == null) {
             this.creadoEn = new Date();
         }
-
         if (this.estadoValidacion == null) {
             this.estadoValidacion = EstadoValidacion.PENDIENTE;
         }

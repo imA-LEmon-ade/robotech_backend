@@ -27,6 +27,7 @@ public class AdminUsuarioService {
                 .stream()
                 .map(u -> new UsuarioDTO(
                         u.getIdUsuario(),
+                        u.getDni(),
                         u.getNombres(),
                         u.getApellidos(),
                         u.getCorreo(),
@@ -53,6 +54,7 @@ public class AdminUsuarioService {
 
 
         Usuario u = Usuario.builder()
+                .dni(dto.dni())
                 .nombres(dto.nombres())
                 .apellidos(dto.apellidos())
                 .correo(dto.correo())

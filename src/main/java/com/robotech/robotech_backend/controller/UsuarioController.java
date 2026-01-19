@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.CrearAdminDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.Usuario;
@@ -36,16 +37,16 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<?> crearUsuario(@RequestBody Map<String, String> payload) {
         try {
+            String dni = payload.get("dni");
             String nombres = payload.get("nombres");
             String apellidos = payload.get("apellidos");
             String correo = payload.get("correo");
             String telefono = payload.get("telefono");
             String contrasena = payload.get("contrasena");
-            String dni = payload.get("dni");
             String codigoClub = payload.get("codigoClub");
 
-            CrearUsuarioDTO dto = new CrearUsuarioDTO(nombres, apellidos, correo, telefono, contrasena);
-            Usuario u = usuarioService.crearUsuario(dto, dni, codigoClub);
+            CrearUsuarioDTO dto = new CrearUsuarioDTO(dni, nombres, apellidos, correo, telefono, contrasena);
+            Usuario u = usuarioService.crearUsuario(dto, codigoClub);
 
             return ResponseEntity.ok(convertirADTO(u));
         } catch (RuntimeException e) {
@@ -71,6 +72,7 @@ public class UsuarioController {
     private UsuarioDTO convertirADTO(Usuario u) {
         return new UsuarioDTO(
                 u.getIdUsuario(),
+                u.getDni(),
                 u.getNombres(),
                 u.getApellidos(),
                 u.getCorreo(),
@@ -81,4 +83,15 @@ public class UsuarioController {
                 u.getTelefono()
         );
     }
+
+    @PostMapping("/admin")
+    public ResponseEntity<?> crearAdmin(@RequestBody CrearAdminDTO dto) {
+        try {
+            Usuario admin = usuarioService.crearAdministrador(dto);
+            return ResponseEntity.ok(admin);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

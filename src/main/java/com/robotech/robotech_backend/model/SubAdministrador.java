@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.security.SecureRandom;
+
 import java.util.Date;
 
 @Entity
@@ -14,40 +14,29 @@ import java.util.Date;
 public class SubAdministrador {
 
     @Id
-    @Column(length = 8, nullable = false, unique = true)
-    private String idSubadmin;
+    @Column(name = "id_usuario", length = 8)
+    private String idUsuario;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
-    private String descripcionCargo; // opcional: funciones del subadmin
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoSubAdmin estado;
 
-    private String estado; // ACTIVO, INACTIVO, SUSPENDIDO
+    @Column(name = "creado_por")
     private String creadoPor;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "creado_en")
     private Date creadoEn;
 
-    // ------------------------------------------------------------
-    //      GENERADOR DE ID ALFANUMÉRICO (8 CARACTERES)
-    // ------------------------------------------------------------
-    private static final String ALPHA_NUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final SecureRandom RANDOM = new SecureRandom();
-
-    private static String generarId() {
-        StringBuilder sb = new StringBuilder(8);
-        for (int i = 0; i < 8; i++) {
-            sb.append(ALPHA_NUM.charAt(RANDOM.nextInt(ALPHA_NUM.length())));
-        }
-        return sb.toString();
-    }
-
-    // ------------------------------------------------------------
-    //     SE EJECUTA AUTOMÁTICAMENTE ANTES DE INSERTAR EN BD
-    // ------------------------------------------------------------
     @PrePersist
     public void prePersist() {
-        if (this.idSubadmin == null) {
-            this.idSubadmin = generarId();
+        if (this.estado == null) {
+            this.estado = EstadoSubAdmin.ACTIVO;
         }
         if (this.creadoEn == null) {
             this.creadoEn = new Date();

@@ -5,6 +5,7 @@ import com.robotech.robotech_backend.model.RolUsuario;
 
 public record UsuarioDTO(
         String idUsuario,
+        String dni,
         String nombres,
         String apellidos,
         String correo,

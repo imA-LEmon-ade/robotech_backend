@@ -1,7 +1,9 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.JuezAdminDTO;
 import com.robotech.robotech_backend.dto.JuezDTO;
 import com.robotech.robotech_backend.dto.JuezSelectDTO;
+import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -25,11 +27,29 @@ public class AdminJuezService {
     // ---------------------------------------------------------
     // LISTAR (CORREGIDO PARA TRAER NOMBRES)
     // ---------------------------------------------------------
-    public List<Juez> listar() {
-        // ✅ CAMBIO CLAVE: Usamos el método optimizado del repositorio
-        // Esto evita las consultas repetitivas y trae Usuario (nombres/apellidos) de golpe.
-        return juezRepository.findAllWithUsuario();
+    public List<JuezAdminDTO> listar() {
+        return juezRepository.findAllWithUsuario()
+                .stream()
+                .map(j -> new JuezAdminDTO(
+                        j.getIdJuez(),
+                        j.getLicencia(),
+                        j.getEstadoValidacion(),
+                        new UsuarioDTO(
+                                j.getUsuario().getIdUsuario(),
+                                j.getUsuario().getDni(),
+                                j.getUsuario().getNombres(),
+                                j.getUsuario().getApellidos(),
+                                j.getUsuario().getCorreo(),
+                                j.getUsuario().getRol(),
+                                j.getUsuario().getEstado(),
+                                j.getUsuario().getTelefono()
+                        )
+                ))
+                .toList();
     }
+
+
+
 
     // ---------------------------------------------------------
     // CREAR JUEZ
@@ -37,6 +57,7 @@ public class AdminJuezService {
     @Transactional
     public Juez crear(JuezDTO dto) {
         Usuario u = Usuario.builder()
+                .dni(dto.getDni())
                 .nombres(dto.getNombres())
                 .apellidos(dto.getApellidos())
                 .correo(dto.getCorreo())
@@ -68,6 +89,7 @@ public class AdminJuezService {
                 .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
         Usuario u = j.getUsuario();
+        u.setDni(dto.getDni());
         u.setNombres(dto.getNombres());
         u.setApellidos(dto.getApellidos());
         u.setCorreo(dto.getCorreo());

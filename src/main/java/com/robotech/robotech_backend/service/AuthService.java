@@ -121,6 +121,7 @@ public class AuthService {
                 codigoService.validarCodigo(dto.getCodigoClub());
 
         Usuario usuario = Usuario.builder()
+                .dni(dto.getDni())
                 .nombres(dto.getNombre())
                 .apellidos(dto.getApellido())
                 .correo(dto.getCorreo())
@@ -133,7 +134,6 @@ public class AuthService {
         usuarioRepo.save(usuario);
 
         Competidor competidor = Competidor.builder()
-                .dni(dto.getDni())
                 .usuario(usuario)
                 .clubActual(codigo.getClub())
                 .estadoValidacion(EstadoValidacion.PENDIENTE)

@@ -16,7 +16,7 @@ public class JuezService {
     }
 
     public List<Juez> listar() {
-        return juezRepository.findAll();
+        return juezRepository.findAllWithUsuario();
     }
 
     public Optional<Juez> obtener(String id) {

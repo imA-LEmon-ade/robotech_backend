@@ -24,4 +24,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     @Query("SELECT COUNT(u) FROM Usuario u JOIN Competidor c ON c.usuario.idUsuario = u.idUsuario WHERE c.clubActual.idClub = :idClub")
     long contarUsuariosPorClub(@Param("idClub") String idClub);
 
+
+    boolean existsByDni(String dni);
 }

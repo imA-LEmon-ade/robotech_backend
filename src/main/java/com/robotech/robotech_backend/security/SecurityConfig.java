@@ -35,13 +35,15 @@ public class SecurityConfig {
                         // ✅ SE AGREGÓ "/api/rankings/**" A LA LISTA DE PERMIT ALL
                         .requestMatchers(
                                 "/api/usuarios/login",
+                                "/api/usuarios/admin",
                                 "/api/admin/login",
                                 "/api/usuarios",
                                 "/api/auth/**",
                                 "/api/codigos/validar/**",
                                 "/uploads/**",
                                 "/api/public/**",
-                                "/api/rankings/**" // 🔓 Ruta liberada para el público
+                                "/api/rankings/**",
+                                "/api/util/dni/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").authenticated()
                         .anyRequest().authenticated()

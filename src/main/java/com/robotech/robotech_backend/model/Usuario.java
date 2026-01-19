@@ -19,6 +19,9 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String correo;
 
+    @Column(nullable = false, unique = true, length = 12)
+    private String dni;
+
     @Column
     private String nombres;
 
@@ -56,6 +59,10 @@ public class Usuario {
     public void prePersist() {
         if (this.idUsuario == null) {
             this.idUsuario = generarIdAlfanumerico();
+        }
+
+        if (this.estado == null) {
+            this.estado = EstadoUsuario.PENDIENTE;
         }
         // Limpieza de campos para evitar errores de unicidad con strings vacíos
         if (this.telefono != null && this.telefono.isBlank()) {

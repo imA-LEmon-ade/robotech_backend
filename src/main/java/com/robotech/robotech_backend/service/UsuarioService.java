@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CrearAdminDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository;
@@ -37,14 +38,16 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario crearUsuario(CrearUsuarioDTO dto, String dni, String codigoIngresado) {
+    public Usuario crearUsuario(CrearUsuarioDTO dto, String codigoIngresado) {
         // --- 1. VALIDACIONES BÁSICAS ---
         nicknameValidator.validar(dto.nombres());
         nicknameValidator.validar(dto.apellidos());
 
         if (usuarioRepository.existsByCorreo(dto.correo())) throw new RuntimeException("Correo registrado");
         if (usuarioRepository.existsByTelefono(dto.telefono())) throw new RuntimeException("Teléfono registrado");
-        if (competidorRepository.existsByDni(dni)) throw new RuntimeException("DNI registrado");
+        if (usuarioRepository.existsByDni(dto.dni())) {
+            throw new RuntimeException("DNI registrado");
+        }
 
         // --- 2. VALIDACIÓN DEL CÓDIGO DE REGISTRO ---
         String codigoLimpio = codigoIngresado != null ? codigoIngresado.trim() : "";
@@ -70,6 +73,7 @@ public class UsuarioService {
 
         // --- 3. CREAR USUARIO (CORREGIDO) ---
         Usuario usuario = Usuario.builder()
+                .dni(dto.dni())
                 .nombres(dto.nombres())
                 .apellidos(dto.apellidos())
                 .correo(dto.correo())
@@ -87,7 +91,6 @@ public class UsuarioService {
         Competidor competidor = new Competidor();
         competidor.setUsuario(uGuardado);
         competidor.setClubActual(club);
-        competidor.setDni(dni);
         competidor.setEstadoValidacion(EstadoValidacion.PENDIENTE);
 
         competidorRepository.save(competidor);
@@ -117,4 +120,34 @@ public class UsuarioService {
         u.setEstado(EstadoUsuario.INACTIVO);
         usuarioRepository.save(u);
     }
+
+    @Transactional
+    public Usuario crearAdministrador(CrearAdminDTO dto) {
+
+        if (usuarioRepository.existsByCorreo(dto.correo())) {
+            throw new RuntimeException("Correo registrado");
+        }
+
+        if (usuarioRepository.existsByTelefono(dto.telefono())) {
+            throw new RuntimeException("Teléfono registrado");
+        }
+
+        if (usuarioRepository.existsByDni(dto.dni())) {
+            throw new RuntimeException("DNI registrado");
+        }
+
+        Usuario admin = Usuario.builder()
+                .dni(dto.dni())
+                .nombres(dto.nombres())
+                .apellidos(dto.apellidos())
+                .correo(dto.correo())
+                .telefono(dto.telefono())
+                .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
+                .rol(RolUsuario.ADMINISTRADOR)          // 👈 FIJO
+                .estado(EstadoUsuario.ACTIVO)
+                .build();
+
+        return usuarioRepository.save(admin);
+    }
+
 }

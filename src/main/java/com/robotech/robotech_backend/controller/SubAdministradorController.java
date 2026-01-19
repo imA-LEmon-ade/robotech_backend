@@ -1,60 +1,57 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.SubAdministrador;
+import com.robotech.robotech_backend.dto.CambiarEstadoSubAdminDTO;
+import com.robotech.robotech_backend.dto.CrearSubAdminDTO;
+import com.robotech.robotech_backend.dto.EditarSubAdminDTO;
+import com.robotech.robotech_backend.dto.SubAdminResponseDTO;
+import com.robotech.robotech_backend.model.EstadoSubAdmin;
 import com.robotech.robotech_backend.service.SubAdministradorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/subadmin")
+@RequestMapping("/api/admin/subadmins")
 @RequiredArgsConstructor
 public class SubAdministradorController {
 
-    private final SubAdministradorService subadminService;
+    private final SubAdministradorService subAdminService;
 
-    // Crear subadmin
-    @PostMapping("/crear/{idUsuario}")
-    public ResponseEntity<?> crearSubadmin(
-            @PathVariable String idUsuario,
-            @RequestBody SubAdministrador body
+    // CREAR
+    @PostMapping
+    public ResponseEntity<SubAdminResponseDTO> crear(
+            @RequestBody @Valid CrearSubAdminDTO dto
     ) {
-        return ResponseEntity.ok(subadminService.crearSubadmin(idUsuario, body));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(subAdminService.crear(dto));
     }
 
-    // Obtener por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable String id) {
-        return ResponseEntity.ok(subadminService.obtenerPorId(id));
+    // LISTAR
+    @GetMapping
+    public ResponseEntity<List<SubAdminResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(subAdminService.listarTodos());
     }
 
-    // Obtener por usuario
-    @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<?> obtenerPorUsuario(@PathVariable String idUsuario) {
-        return ResponseEntity.ok(subadminService.obtenerPorUsuario(idUsuario));
-    }
-
-    // Listar por estado
-    @GetMapping("/estado/{estado}")
-    public ResponseEntity<?> listarPorEstado(@PathVariable String estado) {
-        return ResponseEntity.ok(subadminService.listarPorEstado(estado));
-    }
-
-    // Actualizar subadmin
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<?> actualizar(
+    // CAMBIAR ESTADO ✅
+    @PutMapping("/{id}/estado")
+    public SubAdminResponseDTO cambiarEstado(
             @PathVariable String id,
-            @RequestBody SubAdministrador body
+            @RequestBody CambiarEstadoSubAdminDTO dto
     ) {
-        return ResponseEntity.ok(subadminService.actualizar(id, body));
+        return subAdminService.cambiarEstado(id, dto.getEstado());
     }
 
-    // Eliminar
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable String id) {
-        subadminService.eliminar(id);
-        return ResponseEntity.ok("Subadministrador eliminado");
+    // EDITAR ✅
+    @PutMapping("/{id}")
+    public SubAdminResponseDTO editar(
+            @PathVariable String id,
+            @RequestBody EditarSubAdminDTO dto
+    ) {
+        return subAdminService.editar(id, dto);
     }
 }
