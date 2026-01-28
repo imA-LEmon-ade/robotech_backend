@@ -13,6 +13,7 @@ public class SubAdminResponseDTO {
     private String apellidos;
     private String correo;
     private String telefono;
+    private String dni;
     private EstadoSubAdmin estado;
 }
 

@@ -111,7 +111,9 @@ public class SubAdministradorService {
                 u.getApellidos(),
                 u.getCorreo(),
                 u.getTelefono(),
+                u.getDni(),
                 s.getEstado()
+
         );
     }
 
