@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/public")
+@RequestMapping("/api/public/sugerencias")
 @RequiredArgsConstructor
 public class SugerenciasController {
 
     private final EmailSuggestionService emailSuggestionService;
 
-    @GetMapping("/email-sugerencias")
+    @GetMapping("/emails")
     public List<String> sugerir(
             @RequestParam String correo,
             @RequestParam String nombres,

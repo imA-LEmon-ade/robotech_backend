@@ -204,7 +204,11 @@ public class AdminClubService {
                 c.getTelefonoContacto(),
                 c.getDireccionFiscal(),
                 c.getEstado(),
-                c.getUsuario().getCorreo()
+                c.getUsuario().getCorreo(),
+                c.getUsuario().getDni(),        // 👈 Mapear DNI
+                c.getUsuario().getNombres(),    // 👈 Mapear Nombres
+                c.getUsuario().getApellidos(),
+                c.getUsuario().getTelefono()// 👈 Mapear Apellidos
         );
     }
 
