@@ -183,7 +183,7 @@ public class EncuentroService {
 
     private List<String> obtenerParticipantes(CategoriaTorneo categoria) {
         if (categoria.getModalidad() == ModalidadCategoria.INDIVIDUAL) {
-            return inscripcionRepo.findByCategoriaTorneoIdCategoriaTorneoAndEstado(categoria.getIdCategoriaTorneo(), EstadoInscripcion.ACTIVA)
+            return inscripcionRepo.findByCategoriaTorneoIdCategoriaTorneoAndEstado(categoria.getIdCategoriaTorneo(), EstadoInscripcion.ACTIVADA)
                     .stream().filter(i -> i.getRobot() != null).map(i -> i.getRobot().getIdRobot()).collect(Collectors.toList());
         } else {
             return equipoRepo.findByCategoriaTorneoIdCategoriaTorneo(categoria.getIdCategoriaTorneo())

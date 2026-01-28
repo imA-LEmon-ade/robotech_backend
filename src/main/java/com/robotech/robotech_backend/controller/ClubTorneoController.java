@@ -1,9 +1,12 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.service.CategoriaTorneoService;
 import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +18,15 @@ public class ClubTorneoController {
     private final TorneoService torneoService;
     private final CategoriaTorneoService categoriaTorneoService;
 
-    // 🔥 TORNEOS DISPONIBLES
+    // Torneos disponibles
     @GetMapping("/disponibles")
-    public ResponseEntity<?> listarDisponibles() {
-        return ResponseEntity.ok(torneoService.listarDisponibles());
+    @PreAuthorize("hasAuthority('CLUB')")
+    public ResponseEntity<?> listarDisponibles(Authentication auth) {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        return ResponseEntity.ok(torneoService.listarDisponiblesParaClub(usuario.getIdUsuario()));
     }
-    // 🔥 CATEGORÍAS DE UN TORNEO
+
+    // Categorias de un torneo
     @GetMapping("/{idTorneo}/categorias")
     public ResponseEntity<?> categoriasPorTorneo(@PathVariable String idTorneo) {
         return ResponseEntity.ok(

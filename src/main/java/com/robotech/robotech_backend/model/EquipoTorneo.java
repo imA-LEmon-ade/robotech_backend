@@ -40,6 +40,11 @@ public class EquipoTorneo {
     @Column(nullable = false)
     private EstadoEquipoTorneo estado;
 
+    @Column(length = 500)
+    private String motivoAnulacion;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date anuladaEn;
 
     @Column(nullable = false)
     private Date fechaInscripcion;
@@ -52,7 +57,11 @@ public class EquipoTorneo {
                     .substring(0,8)
                     .toUpperCase();
         }
-        fechaInscripcion = new Date();
-        estado = EstadoEquipoTorneo.PENDIENTE;
+        if (fechaInscripcion == null) {
+            fechaInscripcion = new Date();
+        }
+        if (estado == null) {
+            estado = EstadoEquipoTorneo.ACTIVADA;
+        }
     }
 }

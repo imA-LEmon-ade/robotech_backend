@@ -88,15 +88,16 @@ public class EquipoInscripcionService {
 
         for (Robot r : robots) {
 
-            if (!r.getCompetidor().getClubActual().equals(club.getIdClub())) {
+            if (!r.getCompetidor().getClubActual().getIdClub().equals(club.getIdClub())) {
                 throw new RuntimeException(
                         "Robot " + r.getNombre() + " no pertenece al club");
             }
 
             boolean yaInscrito = equipoRepo
-                    .existsByRobotsIdRobotAndCategoriaTorneoTorneoIdTorneo(
+                    .existsByRobotsIdRobotAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
                             r.getIdRobot(),
-                            torneo.getIdTorneo()
+                            torneo.getIdTorneo(),
+                            EstadoEquipoTorneo.ANULADA
                     );
 
             if (yaInscrito) {
@@ -107,8 +108,9 @@ public class EquipoInscripcionService {
 
         // 5️⃣ Validar cupos
         long equiposInscritos = equipoRepo
-                .countByCategoriaTorneoIdCategoriaTorneo(
-                        categoria.getIdCategoriaTorneo()
+                .countByCategoriaTorneoIdCategoriaTorneoAndEstadoNot(
+                        categoria.getIdCategoriaTorneo(),
+                        EstadoEquipoTorneo.ANULADA
                 );
 
         if (equiposInscritos >= categoria.getMaxEquipos()) {
@@ -121,7 +123,7 @@ public class EquipoInscripcionService {
                 .club(club)
                 .categoriaTorneo(categoria)
                 .robots(robots)
-                .estado(EstadoEquipoTorneo.PENDIENTE)
+                .estado(EstadoEquipoTorneo.ACTIVADA)
                 .build();
 
         return equipoRepo.save(equipo);
@@ -135,5 +137,20 @@ public class EquipoInscripcionService {
                 .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
         return inscribirEquipo(club.getIdClub(), dto);
+    }
+
+    public EquipoTorneo anularEquipo(String idEquipo, String motivo) {
+        EquipoTorneo equipo = equipoRepo.findById(idEquipo)
+                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+
+        if (equipo.getEstado() == EstadoEquipoTorneo.ANULADA) {
+            throw new RuntimeException("La inscripción ya está anulada");
+        }
+
+        equipo.setEstado(EstadoEquipoTorneo.ANULADA);
+        equipo.setMotivoAnulacion(motivo);
+        equipo.setAnuladaEn(new Date());
+
+        return equipoRepo.save(equipo);
     }
 }

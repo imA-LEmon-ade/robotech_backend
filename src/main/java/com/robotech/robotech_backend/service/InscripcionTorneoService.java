@@ -47,7 +47,7 @@ public class InscripcionTorneoService {
         boolean yaInscrito = inscripcionRepo.existsByRobot_IdRobotAndCategoriaTorneo_Torneo_IdTorneoAndEstado(
                 robot.getIdRobot(),
                 categoria.getTorneo().getIdTorneo(),
-                EstadoInscripcion.ACTIVA
+                EstadoInscripcion.ACTIVADA
         );
 
         if (yaInscrito) {
@@ -56,7 +56,7 @@ public class InscripcionTorneoService {
 
         long inscritos = inscripcionRepo.countByCategoriaTorneoIdCategoriaTorneoAndEstado(
                 categoria.getIdCategoriaTorneo(),
-                EstadoInscripcion.ACTIVA
+                EstadoInscripcion.ACTIVADA
         );
 
         if (inscritos >= categoria.getMaxParticipantes()) {
@@ -67,7 +67,7 @@ public class InscripcionTorneoService {
         InscripcionTorneo inscripcion = new InscripcionTorneo();
         inscripcion.setCategoriaTorneo(categoria);
         inscripcion.setRobot(robot);
-        inscripcion.setEstado(EstadoInscripcion.ACTIVA);
+        inscripcion.setEstado(EstadoInscripcion.ACTIVADA);
         inscripcion.setFechaInscripcion(new Date());
 
         // Guardamos explícitamente

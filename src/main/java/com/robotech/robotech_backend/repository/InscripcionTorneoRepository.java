@@ -61,6 +61,12 @@ public interface InscripcionTorneoRepository
 
     List<InscripcionTorneo> findByRobotCompetidorClubActualIdClub(String idClub);
 
+    boolean existsByRobotCompetidorClubActualIdClubAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
+            String idClub,
+            String idTorneo,
+            EstadoInscripcion estado
+    );
+
     List<InscripcionTorneo>
     findByRobotCompetidorClubActualUsuarioIdUsuarioAndEstado(
             String idUsuarioClub,

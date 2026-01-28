@@ -11,10 +11,21 @@ public interface EquipoTorneoRepository
     // Equipos inscritos por categoría
     long countByCategoriaTorneoIdCategoriaTorneo(String idCategoria);
 
+    long countByCategoriaTorneoIdCategoriaTorneoAndEstadoNot(
+            String idCategoria,
+            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
+    );
+
     // Ver si un robot ya está inscrito en este torneo
     boolean existsByRobotsIdRobotAndCategoriaTorneoTorneoIdTorneo(
             String idRobot,
             String idTorneo
+    );
+
+    boolean existsByRobotsIdRobotAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
+            String idRobot,
+            String idTorneo,
+            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
     );
 
     boolean existsByNombreIgnoreCaseAndCategoriaTorneoIdCategoriaTorneo(
@@ -27,6 +38,12 @@ public interface EquipoTorneoRepository
     List<EquipoTorneo> findByClubIdClubAndCategoriaTorneoTorneoIdTorneo(
             String idClub,
             String idTorneo
+    );
+
+    boolean existsByClubIdClubAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
+            String idClub,
+            String idTorneo,
+            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
     );
 
     // 🔹 Vista CLUB

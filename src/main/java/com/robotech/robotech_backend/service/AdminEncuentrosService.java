@@ -53,7 +53,7 @@ public class AdminEncuentrosService {
             inscritos = (int) inscripcionRepo
                     .countByCategoriaTorneoIdCategoriaTorneoAndEstado(
                             categoria.getIdCategoriaTorneo(),
-                            EstadoInscripcion.ACTIVA
+                            EstadoInscripcion.ACTIVADA
                     );
 
             max = categoria.getMaxParticipantes();
@@ -65,7 +65,10 @@ public class AdminEncuentrosService {
                             categoria.getIdCategoriaTorneo()
                     )
                     .stream()
-                    .filter(equipo -> equipo.getEstado() == EstadoEquipoTorneo.APROBADO)
+                    .filter(equipo ->
+                            equipo.getEstado() != EstadoEquipoTorneo.ANULADA &&
+                                    equipo.getEstado() != EstadoEquipoTorneo.RECHAZADO
+                    )
                     .count();
 
             max = categoria.getMaxEquipos();

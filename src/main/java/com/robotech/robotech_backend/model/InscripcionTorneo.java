@@ -48,7 +48,7 @@ public class InscripcionTorneo {
             fechaInscripcion = new Date();
         }
         if (estado == null) {
-            estado = EstadoInscripcion.ACTIVA;
+            estado = EstadoInscripcion.ACTIVADA;
         }
     }
 }

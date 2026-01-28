@@ -2,9 +2,15 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearTorneoDTO;
 import com.robotech.robotech_backend.model.CategoriaTorneo;
+import com.robotech.robotech_backend.model.Club;
+import com.robotech.robotech_backend.model.EstadoEquipoTorneo;
+import com.robotech.robotech_backend.model.EstadoInscripcion;
 import com.robotech.robotech_backend.model.Torneo;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
+import com.robotech.robotech_backend.repository.ClubRepository;
+import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
+import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
 import com.robotech.robotech_backend.repository.TorneoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -21,6 +27,9 @@ public class TorneoService {
 
     private final TorneoRepository torneoRepo;
     private final CategoriaTorneoRepository categoriaRepo;
+    private final ClubRepository clubRepo;
+    private final EquipoTorneoRepository equipoRepo;
+    private final InscripcionTorneoRepository inscripcionRepo;
 
     // --------------------------------------------------
     // CREAR TORNEO
@@ -64,6 +73,15 @@ public class TorneoService {
 
     public List<Torneo> listarDisponibles() {
         return torneoRepo.findByEstado("INSCRIPCIONES_ABIERTAS");
+    }
+
+    public List<Torneo> listarDisponiblesParaClub(String idUsuarioClub) {
+        Club club = clubRepo.findByUsuario_IdUsuario(idUsuarioClub)
+                .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+
+        return torneoRepo.findByEstado("INSCRIPCIONES_ABIERTAS").stream()
+                .filter(torneo -> !clubTieneInscripcionEnTorneo(club.getIdClub(), torneo.getIdTorneo()))
+                .toList();
     }
 
     public Torneo obtener(String id) {
@@ -164,5 +182,25 @@ public class TorneoService {
             return torneoRepo.findAll();
         }
         return torneoRepo.findByCreadoPor(usuario.getIdUsuario());
+    }
+
+    private boolean clubTieneInscripcionEnTorneo(String idClub, String idTorneo) {
+        boolean tieneEquipos = equipoRepo
+                .existsByClubIdClubAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
+                        idClub,
+                        idTorneo,
+                        EstadoEquipoTorneo.ANULADA
+                );
+
+        if (tieneEquipos) {
+            return true;
+        }
+
+        return inscripcionRepo
+                .existsByRobotCompetidorClubActualIdClubAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
+                        idClub,
+                        idTorneo,
+                        EstadoInscripcion.ANULADA
+                );
     }
 }
