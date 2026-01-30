@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class RegistroJuezDTO {
+    private String dni;
     private String correo;
     private String telefono;
     private String contrasena;

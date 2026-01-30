@@ -7,6 +7,7 @@ import com.robotech.robotech_backend.model.EstadoInscripcion;
 import com.robotech.robotech_backend.model.ModalidadCategoria;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
+import com.robotech.robotech_backend.repository.EncuentroRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class AdminEncuentrosService {
     private final CategoriaTorneoRepository categoriaRepo;
     private final InscripcionTorneoRepository inscripcionRepo;
     private final EquipoTorneoRepository equipoRepo;
+    private final EncuentroRepository encuentroRepo;
 
     // ----------------------------------------------------
     // LISTAR CATEGORÍAS PARA GESTIÓN DE ENCUENTROS
@@ -83,6 +85,7 @@ public class AdminEncuentrosService {
                 .torneo(categoria.getTorneo().getNombre())
                 .idTorneo(categoria.getTorneo().getIdTorneo())
                 .inscripcionesCerradas(inscripcionesCerradas)
+                .hasEncuentros(encuentroRepo.existsByCategoriaTorneoIdCategoriaTorneo(categoria.getIdCategoriaTorneo()))
                 .build();
     }
 }

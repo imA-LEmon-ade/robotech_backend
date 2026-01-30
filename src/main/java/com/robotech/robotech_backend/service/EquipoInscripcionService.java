@@ -46,7 +46,12 @@ public class EquipoInscripcionService {
         // 2️⃣ Validar fechas
         Date hoy = new Date();
         if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
-                hoy.after(torneo.getFechaCierreInscripcion())) {
+                hoy.after(torneo.getFechaCierreInscripcion()) ||
+                Boolean.TRUE.equals(categoria.getInscripcionesCerradas())) {
+            if (hoy.after(torneo.getFechaCierreInscripcion())) {
+                categoria.setInscripcionesCerradas(true);
+                categoriaRepo.save(categoria);
+            }
             throw new RuntimeException("Inscripciones cerradas");
         }
 

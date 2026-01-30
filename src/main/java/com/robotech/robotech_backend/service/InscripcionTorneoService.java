@@ -30,6 +30,8 @@ public class InscripcionTorneoService {
         CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        Torneo torneo = categoria.getTorneo();
+
         if (categoria.getModalidad() != ModalidadCategoria.INDIVIDUAL) {
             throw new RuntimeException("La categoría no es individual");
         }
@@ -41,6 +43,18 @@ public class InscripcionTorneoService {
         if (robot.getCompetidor() == null || robot.getCompetidor().getClubActual() == null ||
                 !robot.getCompetidor().getClubActual().getIdClub().equals(club.getIdClub())) {
             throw new RuntimeException("El robot no pertenece a este club");
+        }
+
+        // 2.5 Validar fechas y cierre de inscripciones
+        Date hoy = new Date();
+        if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
+                hoy.after(torneo.getFechaCierreInscripcion()) ||
+                Boolean.TRUE.equals(categoria.getInscripcionesCerradas())) {
+            if (hoy.after(torneo.getFechaCierreInscripcion())) {
+                categoria.setInscripcionesCerradas(true);
+                categoriaRepo.save(categoria);
+            }
+            throw new RuntimeException("Inscripciones cerradas");
         }
 
         // 3. Validar duplicados y cupos

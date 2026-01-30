@@ -9,6 +9,8 @@ import com.robotech.robotech_backend.model.EstadoValidacion; // Importante
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class CompetidorService {
     private final CompetidorRepository competidorRepo;
     private final RobotRepository robotRepo;
     private final UsuarioRepository usuarioRepo;
+    private final DniValidator dniValidator;
+    private final TelefonoValidator telefonoValidator;
 
     // =============================
     // CRUD BÁSICO (INTACTO)
@@ -101,6 +105,13 @@ public class CompetidorService {
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
         Usuario usuario = competidor.getUsuario();
+
+        if (dto.getDni() != null) {
+            dniValidator.validar(dto.getDni());
+        }
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
 
         // 1. Actualizar Usuario
         usuario.setNombres(dto.getNombres());

@@ -32,7 +32,7 @@ public class CategoriaTorneoController {
 
     @DeleteMapping("/{idCategoria}")
     public ResponseEntity<?> eliminar(@PathVariable String idCategoria) {
-        categoriaService.eliminar(idCategoria);
-        return ResponseEntity.ok().build();
+        String mensaje = categoriaService.eliminar(idCategoria);
+        return ResponseEntity.ok(mensaje);
     }
 }

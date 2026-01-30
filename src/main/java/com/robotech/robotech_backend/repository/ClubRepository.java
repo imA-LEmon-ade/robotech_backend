@@ -4,6 +4,7 @@ import com.robotech.robotech_backend.model.Club;
 import com.robotech.robotech_backend.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,14 @@ import java.util.Optional;
 public interface ClubRepository extends JpaRepository<Club, String> {
 
     Optional<Club> findByUsuario_IdUsuario(String idUsuario);
+
+    @Query("""
+        SELECT c
+        FROM Club c
+        JOIN FETCH c.usuario
+        WHERE c.usuario.idUsuario = :idUsuario
+    """)
+    Optional<Club> findByUsuarioIdUsuarioFetch(@Param("idUsuario") String idUsuario);
 
     List<Club> findByNombreContainingIgnoreCase(String nombre);
 

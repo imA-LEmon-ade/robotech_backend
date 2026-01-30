@@ -1,5 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.ActualizarEncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.CategoriaEncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.CrearEncuentrosDTO;
 import com.robotech.robotech_backend.dto.EncuentroAdminDTO;
@@ -43,6 +44,43 @@ public class AdminEncuentrosController {
     ) {
         return ResponseEntity.ok(
                 encuentroService.generarEncuentros(dto)
+        );
+    }
+
+    // ----------------------------------------------------
+    // 2.1 REGENERAR ENCUENTROS (BORRA Y CREA DE NUEVO)
+    // ----------------------------------------------------
+    @PostMapping("/regenerar")
+    public ResponseEntity<List<EncuentroAdminDTO>> regenerarEncuentros(
+            @Valid @RequestBody CrearEncuentrosDTO dto
+    ) {
+        return ResponseEntity.ok(
+                encuentroService.regenerarEncuentros(dto)
+        );
+    }
+
+    // ----------------------------------------------------
+    // 3. LISTAR ENCUENTROS POR CATEGORIA
+    // ----------------------------------------------------
+    @GetMapping("/categoria/{idCategoriaTorneo}")
+    public ResponseEntity<List<EncuentroAdminDTO>> listarPorCategoria(
+            @PathVariable String idCategoriaTorneo
+    ) {
+        return ResponseEntity.ok(
+                encuentroService.listarEncuentrosAdminPorCategoria(idCategoriaTorneo)
+        );
+    }
+
+    // ----------------------------------------------------
+    // 4. EDITAR ENCUENTRO
+    // ----------------------------------------------------
+    @PutMapping("/{idEncuentro}")
+    public ResponseEntity<EncuentroAdminDTO> actualizar(
+            @PathVariable String idEncuentro,
+            @RequestBody ActualizarEncuentroAdminDTO dto
+    ) {
+        return ResponseEntity.ok(
+                encuentroService.actualizarEncuentroAdmin(idEncuentro, dto)
         );
     }
 

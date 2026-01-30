@@ -5,10 +5,12 @@ import com.robotech.robotech_backend.dto.CrearClubDTO;
 import com.robotech.robotech_backend.dto.EditarClubDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
+import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.EmailSuggestionService;
 import com.robotech.robotech_backend.service.validadores.EmailTakenException;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,10 +28,12 @@ public class AdminClubService {
 
     private final ClubRepository clubRepo;
     private final UsuarioRepository usuarioRepo;
+    private final CompetidorRepository competidorRepo;
     private final PasswordEncoder passwordEncoder;
 
     private final EmailValidator emailValidator;
     private final TelefonoValidator telefonoValidator;
+    private final DniValidator dniValidator;
     private final EmailSuggestionService emailSuggestionService;
 
     // =========================
@@ -47,6 +51,7 @@ public class AdminClubService {
 
         telefonoValidator.validar(dto.getTelefonoPropietario());
         telefonoValidator.validar(dto.getTelefonoContacto());
+        dniValidator.validar(dto.getDniPropietario());
 
         // Validar duplicados CLUB
         if (clubRepo.existsByNombreIgnoreCase(dto.getNombre())) {
@@ -106,7 +111,7 @@ public class AdminClubService {
                 .correo(correoPropietario)
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
                 .telefono(dto.getTelefonoPropietario())
-                .rol(RolUsuario.CLUB)
+                .rol(RolUsuario.CLUB_COMPETIDOR)
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -124,6 +129,14 @@ public class AdminClubService {
                 .build();
 
         clubRepo.save(club);
+
+        // Crear perfil competidor para el propietario
+        Competidor competidor = Competidor.builder()
+                .usuario(propietario)
+                .clubActual(club)
+                .estadoValidacion(EstadoValidacion.APROBADO)
+                .build();
+        competidorRepo.save(competidor);
 
         return mapClub(club);
     }
@@ -154,6 +167,8 @@ public class AdminClubService {
         Club club = clubRepo.findById(idClub)
                 .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
+        EstadoClub estadoAnterior = club.getEstado();
+
         if (!club.getNombre().equalsIgnoreCase(dto.getNombre())
                 && clubRepo.existsByNombreIgnoreCase(dto.getNombre())) {
             throw new RuntimeException("Ya existe un club con ese nombre");
@@ -178,9 +193,39 @@ public class AdminClubService {
         club.setCorreoContacto(correoContacto);
         club.setTelefonoContacto(dto.getTelefonoContacto());
         club.setDireccionFiscal(dto.getDireccionFiscal());
-        club.setEstado(dto.getEstado());
+        if (dto.getEstado() != null) {
+            club.setEstado(dto.getEstado());
+        }
 
         clubRepo.save(club);
+
+        if (dto.getEstado() != null && dto.getEstado() != estadoAnterior) {
+            if (dto.getEstado() == EstadoClub.INACTIVO) {
+                Usuario owner = club.getUsuario();
+                owner.setEstado(EstadoUsuario.INACTIVO);
+                usuarioRepo.save(owner);
+
+                List<Competidor> competidores = competidorRepo.findByClubActual_IdClub(club.getIdClub());
+                for (Competidor c : competidores) {
+                    Usuario u = c.getUsuario();
+                    u.setEstado(EstadoUsuario.INACTIVO);
+                    usuarioRepo.save(u);
+                }
+            } else if (dto.getEstado() == EstadoClub.ACTIVO) {
+                Usuario owner = club.getUsuario();
+                owner.setEstado(EstadoUsuario.ACTIVO);
+                usuarioRepo.save(owner);
+
+                List<Competidor> competidores = competidorRepo.findByClubActual_IdClub(club.getIdClub());
+                for (Competidor c : competidores) {
+                    if (c.getEstadoValidacion() == EstadoValidacion.APROBADO) {
+                        Usuario u = c.getUsuario();
+                        u.setEstado(EstadoUsuario.ACTIVO);
+                        usuarioRepo.save(u);
+                    }
+                }
+            }
+        }
 
         return mapClub(club);
     }

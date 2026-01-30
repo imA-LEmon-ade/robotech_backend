@@ -19,4 +19,5 @@ public class CategoriaEncuentroAdminDTO {
     private Integer inscritos;
 
     private boolean inscripcionesCerradas;
+    private boolean hasEncuentros;
 }

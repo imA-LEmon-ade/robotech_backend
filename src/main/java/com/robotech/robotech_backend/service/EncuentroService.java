@@ -24,14 +24,13 @@ public class EncuentroService {
     private final EncuentroParticipanteRepository encuentroParticipanteRepo;
     private final HistorialCalificacionRepository historialRepo;
     private final RobotRepository robotRepo;
-    private final TorneoRepository torneoRepo;
 
     // =====================================================
     // 1. GENERAR ENCUENTROS
     // =====================================================
     public List<EncuentroAdminDTO> generarEncuentros(CrearEncuentrosDTO dto) {
         try {
-            List<Encuentro> encuentros = generarEncuentrosInterno(dto);
+            List<Encuentro> encuentros = generarEncuentrosInterno(dto, false);
             return encuentros.stream()
                     .map(this::toAdminDTO)
                     .collect(Collectors.toList());
@@ -39,6 +38,70 @@ public class EncuentroService {
             System.err.println("❌ ERROR AL GENERAR ENCUENTROS: " + e.getMessage());
             throw e;
         }
+    }
+
+    public List<EncuentroAdminDTO> regenerarEncuentros(CrearEncuentrosDTO dto) {
+        try {
+            encuentroRepo.deleteByCategoriaTorneoIdCategoriaTorneo(dto.getIdCategoriaTorneo());
+            encuentroRepo.flush();
+            List<Encuentro> encuentros = generarEncuentrosInterno(dto, true);
+            return encuentros.stream()
+                    .map(this::toAdminDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("❌ ERROR AL REGENERAR ENCUENTROS: " + e.getMessage());
+            throw e;
+        }
+    }
+
+
+    // =====================================================
+    // 1.1 LISTAR ENCUENTROS POR CATEGORIA (ADMIN)
+    // =====================================================
+    public List<EncuentroAdminDTO> listarEncuentrosAdminPorCategoria(String idCategoriaTorneo) {
+        return encuentroRepo.findByCategoriaTorneoIdCategoriaTorneo(idCategoriaTorneo)
+                .stream()
+                .map(this::toAdminDTO)
+                .toList();
+    }
+
+    // =====================================================
+    // 1.2 ACTUALIZAR ENCUENTRO (ADMIN)
+    // =====================================================
+    public EncuentroAdminDTO actualizarEncuentroAdmin(String idEncuentro, ActualizarEncuentroAdminDTO dto) {
+        Encuentro encuentro = encuentroRepo.findById(idEncuentro)
+                .orElseThrow(() -> new RuntimeException("Encuentro no encontrado"));
+
+        if (encuentro.getEstado() == EstadoEncuentro.FINALIZADO) {
+            throw new RuntimeException("No se puede editar un encuentro finalizado");
+        }
+
+        if (dto.getIdJuez() != null && !dto.getIdJuez().isBlank()) {
+            Juez juez = juezRepo.findById(dto.getIdJuez())
+                    .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+            encuentro.setJuez(juez);
+        }
+
+        if (dto.getIdColiseo() != null && !dto.getIdColiseo().isBlank()) {
+            Coliseo coliseo = coliseoRepo.findById(dto.getIdColiseo())
+                    .orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
+            encuentro.setColiseo(coliseo);
+        }
+
+        if (dto.getRonda() != null) {
+            encuentro.setRonda(dto.getRonda());
+        }
+
+        if (dto.getFecha() != null) {
+            encuentro.setFecha(dto.getFecha());
+        }
+
+        if (dto.getEstado() != null) {
+            encuentro.setEstado(dto.getEstado());
+        }
+
+        Encuentro guardado = encuentroRepo.save(encuentro);
+        return toAdminDTO(guardado);
     }
 
     // =====================================================
@@ -100,17 +163,7 @@ public class EncuentroService {
         encuentroParticipanteRepo.saveAll(participantes);
         Encuentro guardado = encuentroRepo.save(encuentro);
 
-        // Cierre automático del torneo
-        try {
-            String idTorneo = encuentro.getCategoriaTorneo().getTorneo().getIdTorneo();
-            long pendientes = encuentroRepo.countByCategoriaTorneo_Torneo_IdTorneoAndEstadoNot(idTorneo, EstadoEncuentro.FINALIZADO);
-            if (pendientes == 0) {
-                Torneo torneo = encuentro.getCategoriaTorneo().getTorneo();
-                torneo.setEstado("FINALIZADO");
-                torneoRepo.save(torneo);
-            }
-        } catch (Exception ignored) {}
-
+        generarSiguienteRondaSiCorresponde(guardado);
         return guardado;
     }
 
@@ -158,6 +211,41 @@ public class EncuentroService {
     }
 
     // =====================================================
+    // 4. VISTA PÚBLICA (BRACKET / LIGA)
+    // =====================================================
+    public List<EncuentroPublicoDTO> listarEncuentrosPublicosPorCategoria(String idCategoriaTorneo) {
+        return encuentroRepo.findByCategoriaTorneoIdCategoriaTorneo(idCategoriaTorneo).stream().map(encuentro -> {
+            List<ParticipanteEncuentroDTO> participantesDTO = encuentroParticipanteRepo
+                    .findByEncuentroIdEncuentro(encuentro.getIdEncuentro()).stream()
+                    .map(p -> ParticipanteEncuentroDTO.builder()
+                            .idReferencia(p.getIdReferencia())
+                            .nombre(obtenerNombreParticipante(p.getTipo(), p.getIdReferencia()))
+                            .tipo(p.getTipo())
+                            .calificacion(p.getCalificacion())
+                            .ganador(p.getGanador())
+                            .build())
+                    .toList();
+
+            String nombreTorneo = (encuentro.getCategoriaTorneo() != null && encuentro.getCategoriaTorneo().getTorneo() != null)
+                    ? encuentro.getCategoriaTorneo().getTorneo().getNombre() : "-";
+            String nombreCategoria = (encuentro.getCategoriaTorneo() != null && encuentro.getCategoriaTorneo().getCategoria() != null)
+                    ? encuentro.getCategoriaTorneo().getCategoria().name() : "-";
+
+            return EncuentroPublicoDTO.builder()
+                    .idEncuentro(encuentro.getIdEncuentro())
+                    .torneo(nombreTorneo)
+                    .categoria(nombreCategoria)
+                    .tipo(encuentro.getTipo())
+                    .estado(encuentro.getEstado())
+                    .ronda(encuentro.getRonda())
+                    .fecha(encuentro.getFecha())
+                    .coliseo(encuentro.getColiseo() != null ? encuentro.getColiseo().getNombre() : "-")
+                    .participantes(participantesDTO)
+                    .build();
+        }).toList();
+    }
+
+    // =====================================================
     // MÉTODOS AUXILIARES
     // =====================================================
     private String obtenerNombreParticipante(TipoParticipante tipo, String idReferencia) {
@@ -167,10 +255,15 @@ public class EncuentroService {
         return equipoRepo.findById(idReferencia).map(EquipoTorneo::getNombre).orElse(idReferencia);
     }
 
-    private List<Encuentro> generarEncuentrosInterno(CrearEncuentrosDTO dto) {
-        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo()).orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+
+    private List<Encuentro> generarEncuentrosInterno(CrearEncuentrosDTO dto, boolean permitirRecrear) {
+        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo()).orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
         Juez juez = juezRepo.findById(dto.getIdJuez()).orElseThrow(() -> new RuntimeException("Juez no encontrado"));
         Coliseo coliseo = coliseoRepo.findById(dto.getIdColiseo()).orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
+
+        if (!permitirRecrear && encuentroRepo.existsByCategoriaTorneoIdCategoriaTorneo(categoria.getIdCategoriaTorneo())) {
+            throw new RuntimeException("Ya se generaron encuentros para esta categoria");
+        }
 
         List<String> participantes = obtenerParticipantes(categoria);
         if (participantes.isEmpty()) throw new RuntimeException("No hay participantes activos.");
@@ -192,11 +285,14 @@ public class EncuentroService {
     }
 
     private List<Encuentro> generarEliminacionDirecta(CategoriaTorneo categoria, Juez juez, Coliseo coliseo, List<String> participantes) {
-        if (participantes.size() % 2 != 0) throw new RuntimeException("Se requiere número par.");
+        if (participantes.size() % 2 != 0) {
+            throw new RuntimeException("No se puede generar eliminacion directa con numero impar de inscritos: "
+                    + participantes.size() + ". Debe ser par.");
+        }
         Collections.shuffle(participantes);
         List<Encuentro> encuentros = new ArrayList<>();
         for (int i = 0; i < participantes.size(); i += 2) {
-            Encuentro e = crearEncuentroBase(categoria, juez, coliseo, TipoEncuentro.ELIMINACION_DIRECTA);
+            Encuentro e = crearEncuentroBase(categoria, juez, coliseo, TipoEncuentro.ELIMINACION_DIRECTA, 1);
             crearParticipantes(e, participantes.get(i), participantes.get(i + 1), categoria.getModalidad());
             encuentros.add(e);
         }
@@ -204,22 +300,42 @@ public class EncuentroService {
     }
 
     private List<Encuentro> generarTodosContraTodos(CategoriaTorneo categoria, Juez juez, Coliseo coliseo, List<String> participantes) {
+        List<String> lista = new ArrayList<>(participantes);
+        if (lista.size() % 2 != 0) {
+            // Agregamos un BYE para poder distribuir por rondas sin repetir rivales
+            lista.add(null);
+        }
+
+        int n = lista.size();
+        int rounds = n - 1;
+        int half = n / 2;
         List<Encuentro> encuentros = new ArrayList<>();
-        for (int i = 0; i < participantes.size(); i++) {
-            for (int j = i + 1; j < participantes.size(); j++) {
-                Encuentro e = crearEncuentroBase(categoria, juez, coliseo, TipoEncuentro.TODOS_CONTRA_TODOS);
-                crearParticipantes(e, participantes.get(i), participantes.get(j), categoria.getModalidad());
+
+        for (int r = 1; r <= rounds; r++) {
+            for (int i = 0; i < half; i++) {
+                String p1 = lista.get(i);
+                String p2 = lista.get(n - 1 - i);
+                if (p1 == null || p2 == null) {
+                    continue; // BYE
+                }
+                Encuentro e = crearEncuentroBase(categoria, juez, coliseo, TipoEncuentro.TODOS_CONTRA_TODOS, r);
+                crearParticipantes(e, p1, p2, categoria.getModalidad());
                 encuentros.add(e);
             }
+
+            // Rotación tipo "circle method": fija el primero y rota el resto
+            String last = lista.remove(n - 1);
+            lista.add(1, last);
         }
+
         return encuentros;
     }
 
-    private Encuentro crearEncuentroBase(CategoriaTorneo cat, Juez juez, Coliseo col, TipoEncuentro tipo) {
+    private Encuentro crearEncuentroBase(CategoriaTorneo cat, Juez juez, Coliseo col, TipoEncuentro tipo, int ronda) {
         Encuentro encuentro = Encuentro.builder()
                 .idEncuentro(UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .categoriaTorneo(cat).juez(juez).coliseo(col).tipo(tipo)
-                .estado(EstadoEncuentro.PROGRAMADO).ronda(1).fecha(new Date()).build();
+                .estado(EstadoEncuentro.PROGRAMADO).ronda(ronda).fecha(new Date()).build();
         return encuentroRepo.save(encuentro);
     }
 
@@ -231,9 +347,75 @@ public class EncuentroService {
     }
 
     private EncuentroAdminDTO toAdminDTO(Encuentro e) {
-        String nombreTorneo = (e.getCategoriaTorneo() != null && e.getCategoriaTorneo().getTorneo() != null) ? e.getCategoriaTorneo().getTorneo().getNombre() : "—";
-        String nombreCategoria = (e.getCategoriaTorneo() != null) ? e.getCategoriaTorneo().getCategoria().name() : "—";
-        String nombreJuez = (e.getJuez() != null && e.getJuez().getUsuario() != null) ? e.getJuez().getUsuario().getNombres() + " " + e.getJuez().getUsuario().getApellidos() : "—";
+        String nombreTorneo = (e.getCategoriaTorneo() != null && e.getCategoriaTorneo().getTorneo() != null) ? e.getCategoriaTorneo().getTorneo().getNombre() : "-";
+        String nombreCategoria = (e.getCategoriaTorneo() != null) ? e.getCategoriaTorneo().getCategoria().name() : "-";
+        String nombreJuez = (e.getJuez() != null && e.getJuez().getUsuario() != null) ? e.getJuez().getUsuario().getNombres() + " " + e.getJuez().getUsuario().getApellidos() : "-";
         return new EncuentroAdminDTO(e.getIdEncuentro(), nombreTorneo, nombreCategoria, e.getTipo(), e.getRonda(), e.getEstado(), nombreJuez, e.getColiseo().getNombre());
+    }
+
+    private void generarSiguienteRondaSiCorresponde(Encuentro encuentroFinalizado) {
+        if (encuentroFinalizado.getTipo() != TipoEncuentro.ELIMINACION_DIRECTA) {
+            return;
+        }
+
+        Integer rondaActual = encuentroFinalizado.getRonda();
+        if (rondaActual == null || rondaActual < 1) {
+            return;
+        }
+
+        String idCategoriaTorneo = encuentroFinalizado.getCategoriaTorneo().getIdCategoriaTorneo();
+        int siguienteRonda = rondaActual + 1;
+
+        if (encuentroRepo.existsByCategoriaTorneoIdCategoriaTorneoAndTipoAndRonda(
+                idCategoriaTorneo,
+                TipoEncuentro.ELIMINACION_DIRECTA,
+                siguienteRonda
+        )) {
+            return; // ya existe, no recrear
+        }
+
+        List<Encuentro> rondaActualEncuentros = encuentroRepo
+                .findByCategoriaTorneoIdCategoriaTorneoAndTipoAndRonda(
+                        idCategoriaTorneo,
+                        TipoEncuentro.ELIMINACION_DIRECTA,
+                        rondaActual
+                );
+
+        if (rondaActualEncuentros.isEmpty()) {
+            return;
+        }
+
+        boolean todosFinalizados = rondaActualEncuentros.stream()
+                .allMatch(e -> e.getEstado() == EstadoEncuentro.FINALIZADO);
+        if (!todosFinalizados) {
+            return;
+        }
+
+        List<String> ganadores = new ArrayList<>();
+        for (Encuentro e : rondaActualEncuentros) {
+            if (e.getGanadorIdReferencia() == null) {
+                return;
+            }
+            ganadores.add(e.getGanadorIdReferencia());
+        }
+
+        if (ganadores.size() <= 1) {
+            return; // torneo finalizado
+        }
+
+        if (ganadores.size() % 2 != 0) {
+            throw new RuntimeException("No se puede generar la siguiente ronda con número impar de ganadores");
+        }
+
+        for (int i = 0; i < ganadores.size(); i += 2) {
+            Encuentro nuevo = crearEncuentroBase(
+                    encuentroFinalizado.getCategoriaTorneo(),
+                    encuentroFinalizado.getJuez(),
+                    encuentroFinalizado.getColiseo(),
+                    TipoEncuentro.ELIMINACION_DIRECTA,
+                    siguienteRonda
+            );
+            crearParticipantes(nuevo, ganadores.get(i), ganadores.get(i + 1), encuentroFinalizado.getCategoriaTorneo().getModalidad());
+        }
     }
 }

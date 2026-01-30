@@ -5,9 +5,11 @@ import com.robotech.robotech_backend.dto.CrearClubDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.service.validadores.EmailSuggestionService;
 import com.robotech.robotech_backend.service.validadores.EmailTakenException;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,12 @@ public class SubAdminClubService {
 
     private final ClubRepository clubRepo;
     private final UsuarioRepository usuarioRepo;
+    private final CompetidorRepository competidorRepo;
     private final PasswordEncoder passwordEncoder;
 
     private final EmailValidator emailValidator;
     private final TelefonoValidator telefonoValidator;
+    private final DniValidator dniValidator;
     private final EmailSuggestionService emailSuggestionService;
 
     // =========================
@@ -45,6 +49,7 @@ public class SubAdminClubService {
 
         telefonoValidator.validar(dto.getTelefonoPropietario());
         telefonoValidator.validar(dto.getTelefonoContacto());
+        dniValidator.validar(dto.getDniPropietario());
 
         // Duplicados CLUB
         if (clubRepo.existsByNombreIgnoreCase(dto.getNombre())) {
@@ -80,7 +85,7 @@ public class SubAdminClubService {
                 .correo(correoPropietario)
                 .telefono(dto.getTelefonoPropietario())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
-                .rol(RolUsuario.CLUB)
+                .rol(RolUsuario.CLUB_COMPETIDOR)
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -98,6 +103,14 @@ public class SubAdminClubService {
                 .build();
 
         clubRepo.save(club);
+
+        // Crear perfil competidor para el propietario
+        Competidor competidor = Competidor.builder()
+                .usuario(propietario)
+                .clubActual(club)
+                .estadoValidacion(EstadoValidacion.APROBADO)
+                .build();
+        competidorRepo.save(competidor);
 
         return mapClub(club);
     }

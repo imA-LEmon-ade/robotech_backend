@@ -6,6 +6,8 @@ import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,8 @@ public class SubAdminCompetidorService {
     private final CompetidorRepository competidorRepo;
     private final ClubRepository clubRepo; // Necesario para validar el club
     private final PasswordEncoder passwordEncoder;
+    private final DniValidator dniValidator;
+    private final TelefonoValidator telefonoValidator;
 
     public List<CompetidorResponseDTO> listarTodos() {
         return competidorRepo.findAll().stream().map(comp -> {
@@ -45,6 +49,9 @@ public class SubAdminCompetidorService {
         if (usuarioRepo.existsByCorreoIgnoreCase(dto.getCorreo())) {
             throw new RuntimeException("El correo ya está registrado");
         }
+
+        dniValidator.validar(dto.getDni());
+        telefonoValidator.validar(dto.getTelefono());
 
         // 2️⃣ Buscar el club por el código que viene del DTO
         Club club = clubRepo.findById(dto.getCodigoClub())

@@ -29,6 +29,8 @@ public class AuthService {
     private final CodigoRegistroService codigoService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final com.robotech.robotech_backend.service.validadores.DniValidator dniValidator;
+    private final com.robotech.robotech_backend.service.validadores.TelefonoValidator telefonoValidator;
 
     // -------------------------------------------------------
     // LOGIN
@@ -56,6 +58,10 @@ public class AuthService {
                 Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                         .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
+                if (club.getEstado() != EstadoClub.ACTIVO) {
+                    throw new RuntimeException("Club inactivo");
+                }
+
                 entidad = new ClubLoginDTO(
                         club.getIdClub(),
                         club.getNombre(),
@@ -64,9 +70,52 @@ public class AuthService {
                 );
             }
 
+            case CLUB_COMPETIDOR -> {
+                Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+                        .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+
+                if (club.getEstado() != EstadoClub.ACTIVO) {
+                    throw new RuntimeException("Club inactivo");
+                }
+
+                Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+                        .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+                if (c.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                    throw new RuntimeException("Competidor no aprobado");
+                }
+                if (c.getClubActual() == null || c.getClubActual().getEstado() != EstadoClub.ACTIVO) {
+                    throw new RuntimeException("Club inactivo");
+                }
+
+                entidad = Map.of(
+                        "club", new ClubLoginDTO(
+                                club.getIdClub(),
+                                club.getNombre(),
+                                club.getCorreoContacto(),
+                                club.getTelefonoContacto()
+                        ),
+                        "competidor", new CompetidorLoginDTO(
+                                c.getIdCompetidor(),
+                                usuario.getNombres(),
+                                usuario.getApellidos(),
+                                usuario.getCorreo(),
+                                c.getClubActual().getIdClub(),
+                                c.getClubActual().getNombre()
+                        )
+                );
+            }
+
             case COMPETIDOR -> {
                 Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                         .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+                if (c.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                    throw new RuntimeException("Competidor no aprobado");
+                }
+                if (c.getClubActual() == null || c.getClubActual().getEstado() != EstadoClub.ACTIVO) {
+                    throw new RuntimeException("Club inactivo");
+                }
 
                 entidad = new CompetidorLoginDTO(
                         c.getIdCompetidor(),
@@ -109,6 +158,9 @@ public class AuthService {
     @Transactional
     public void registrarCompetidor(RegistroCompetidorDTO dto) {
 
+        dniValidator.validar(dto.getDni());
+        telefonoValidator.validar(dto.getTelefono());
+
         if (usuarioRepo.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("Correo ya registrado");
         }
@@ -150,6 +202,10 @@ public class AuthService {
     @Transactional
     public void registrarClub(RegistroClubDTO dto) {
 
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
+
         if (usuarioRepo.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("Correo ya registrado");
         }
@@ -185,6 +241,9 @@ public class AuthService {
     // -------------------------------------------------------
     @Transactional
     public void registrarJuez(RegistroJuezDTO dto) {
+
+        dniValidator.validar(dto.getDni());
+        telefonoValidator.validar(dto.getTelefono());
 
         if (usuarioRepo.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("Correo ya registrado");

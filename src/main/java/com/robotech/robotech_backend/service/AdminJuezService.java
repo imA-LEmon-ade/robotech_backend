@@ -7,6 +7,8 @@ import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +25,8 @@ public class AdminJuezService {
     private final JuezRepository juezRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DniValidator dniValidator;
+    private final TelefonoValidator telefonoValidator;
 
     // ---------------------------------------------------------
     // LISTAR (CORREGIDO PARA TRAER NOMBRES)
@@ -56,6 +60,10 @@ public class AdminJuezService {
     // ---------------------------------------------------------
     @Transactional
     public Juez crear(JuezDTO dto) {
+        dniValidator.validar(dto.getDni());
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
         Usuario u = Usuario.builder()
                 .dni(dto.getDni())
                 .nombres(dto.getNombres())
@@ -89,6 +97,10 @@ public class AdminJuezService {
                 .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
         Usuario u = j.getUsuario();
+        dniValidator.validar(dto.getDni());
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
         u.setDni(dto.getDni());
         u.setNombres(dto.getNombres());
         u.setApellidos(dto.getApellidos());

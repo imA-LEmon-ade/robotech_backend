@@ -17,6 +17,7 @@ public class AdminController {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ClubRepository clubRepository;
     @Autowired private JuezRepository juezRepository;
+    @Autowired private CompetidorRepository competidorRepository;
 
     // ✔ LISTAR USUARIOS PENDIENTES
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
@@ -32,12 +33,60 @@ public class AdminController {
         Club club = clubRepository.findById(id).orElseThrow();
 
         club.setEstado(EstadoClub.ACTIVO);
-        club.getUsuario().setEstado(EstadoUsuario.ACTIVO);
+        Usuario usuario = club.getUsuario();
+        usuario.setEstado(EstadoUsuario.ACTIVO);
 
-        usuarioRepository.save(club.getUsuario());
+        // Crear perfil de competidor para el propietario si no existe
+        Competidor existente = competidorRepository.findByUsuario_IdUsuario(usuario.getIdUsuario()).orElse(null);
+        if (existente == null) {
+            Competidor competidor = Competidor.builder()
+                    .usuario(usuario)
+                    .clubActual(club)
+                    .estadoValidacion(EstadoValidacion.APROBADO)
+                    .build();
+            competidorRepository.save(competidor);
+        }
+
+        usuario.setRol(RolUsuario.CLUB_COMPETIDOR);
+
+        usuarioRepository.save(usuario);
         clubRepository.save(club);
 
         return ResponseEntity.ok("Club aprobado.");
+    }
+
+    // ✔ HABILITAR PROPIETARIO COMO COMPETIDOR (CLUB_COMPETIDOR)
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
+    @PutMapping("/club/{id}/habilitar-competidor")
+    public ResponseEntity<?> habilitarPropietarioCompetidor(@PathVariable String id) {
+        Club club = clubRepository.findById(id).orElseThrow();
+        Usuario usuario = club.getUsuario();
+
+        Competidor existente = competidorRepository.findByUsuario_IdUsuario(usuario.getIdUsuario()).orElse(null);
+        if (existente == null) {
+            Competidor competidor = Competidor.builder()
+                    .usuario(usuario)
+                    .clubActual(club)
+                    .estadoValidacion(EstadoValidacion.APROBADO)
+                    .build();
+            competidorRepository.save(competidor);
+        }
+
+        if (usuario.getRol() != RolUsuario.CLUB_COMPETIDOR) {
+            usuario.setRol(RolUsuario.CLUB_COMPETIDOR);
+            usuarioRepository.save(usuario);
+        }
+
+        return ResponseEntity.ok("Propietario habilitado como competidor.");
+    }
+
+    // ✔ HABILITAR PROPIETARIO COMO COMPETIDOR POR ID USUARIO
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
+    @PutMapping("/club/usuario/{idUsuario}/habilitar-competidor")
+    public ResponseEntity<?> habilitarPropietarioCompetidorPorUsuario(@PathVariable String idUsuario) {
+        Club club = clubRepository.findByUsuario_IdUsuario(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Club no encontrado para el usuario"));
+        return habilitarPropietarioCompetidor(club.getIdClub());
     }
 
     // ✔ APROBAR JUEZ

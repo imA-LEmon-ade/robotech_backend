@@ -99,6 +99,16 @@ public class GlobalExceptionHandler {
     // =========================
     // FALLBACK GENERAL (Tu código existente)
     // =========================
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiErrorDTO> handleRuntime(RuntimeException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("BUSINESS_ERROR");
+        error.setMessage(ex.getMessage());
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of());
+        return ResponseEntity.badRequest().body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorDTO> handleGeneral(Exception ex) {
         ApiErrorDTO error = new ApiErrorDTO();

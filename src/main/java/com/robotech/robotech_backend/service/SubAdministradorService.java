@@ -6,6 +6,8 @@ import com.robotech.robotech_backend.dto.SubAdminResponseDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.SubAdministradorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,11 +23,18 @@ public class SubAdministradorService {
     private final SubAdministradorRepository subAdminRepo;
     private final UsuarioRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
+    private final DniValidator dniValidator;
+    private final TelefonoValidator telefonoValidator;
 
     // =========================
     // CREAR SUBADMIN
     // =========================
     public SubAdminResponseDTO crear(CrearSubAdminDTO dto) {
+
+        dniValidator.validar(dto.getDni());
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
 
         if (usuarioRepo.existsByCorreoIgnoreCase(dto.getCorreo())) {
             throw new RuntimeException("El correo ya está registrado");
@@ -126,6 +135,9 @@ public class SubAdministradorService {
             throw new IllegalStateException("Subadmin sin usuario asociado");
         }
 
+        if (dto.getTelefono() != null && !dto.getTelefono().isBlank()) {
+            telefonoValidator.validar(dto.getTelefono());
+        }
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setTelefono(dto.getTelefono());

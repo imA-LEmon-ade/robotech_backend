@@ -6,6 +6,8 @@ import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ public class AdminUsuarioService {
 
     private final UsuarioRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
+    private final DniValidator dniValidator;
+    private final TelefonoValidator telefonoValidator;
 
     // =========================
     // LISTAR
@@ -43,6 +47,11 @@ public class AdminUsuarioService {
     // CREAR
     // =========================
     public Usuario crear(CrearUsuarioDTO dto) {
+
+        dniValidator.validar(dto.dni());
+        if (dto.telefono() != null && !dto.telefono().isBlank()) {
+            telefonoValidator.validar(dto.telefono());
+        }
 
         if (usuarioRepo.existsByCorreo(dto.correo())) {
             throw new RuntimeException("El correo ya está registrado");
@@ -76,6 +85,11 @@ public class AdminUsuarioService {
 
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        dniValidator.validar(dto.dni());
+        if (dto.telefono() != null && !dto.telefono().isBlank()) {
+            telefonoValidator.validar(dto.telefono());
+        }
 
         u.setCorreo(dto.correo());
         u.setTelefono(dto.telefono());

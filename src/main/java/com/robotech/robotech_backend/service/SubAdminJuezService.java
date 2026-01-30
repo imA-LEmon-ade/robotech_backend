@@ -5,6 +5,7 @@ import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class SubAdminJuezService {
 
     private final EmailValidator emailValidator;
     private final TelefonoValidator telefonoValidator;
+    private final DniValidator dniValidator;
 
     public void crearJuez(CrearJuezDTO dto) {
 
@@ -29,6 +31,7 @@ public class SubAdminJuezService {
 
         emailValidator.validar(correo);
         telefonoValidator.validar(dto.getTelefono());
+        dniValidator.validar(dto.getDni());
 
         if (usuarioRepo.existsByCorreoIgnoreCase(correo)) {
             throw new RuntimeException("Correo del juez ya registrado");

@@ -27,6 +27,8 @@ public class UsuarioService {
     private final CodigoRegistroCompetidorRepository codigoRepo;
     private final PasswordEncoder passwordEncoder;
     private final com.robotech.robotech_backend.service.validadores.NicknameValidator nicknameValidator;
+    private final com.robotech.robotech_backend.service.validadores.DniValidator dniValidator;
+    private final com.robotech.robotech_backend.service.validadores.TelefonoValidator telefonoValidator;
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
@@ -42,6 +44,10 @@ public class UsuarioService {
         // --- 1. VALIDACIONES BÁSICAS ---
         nicknameValidator.validar(dto.nombres());
         nicknameValidator.validar(dto.apellidos());
+        dniValidator.validar(dto.dni());
+        if (dto.telefono() != null && !dto.telefono().isBlank()) {
+            telefonoValidator.validar(dto.telefono());
+        }
 
         if (usuarioRepository.existsByCorreo(dto.correo())) throw new RuntimeException("Correo registrado");
         if (usuarioRepository.existsByTelefono(dto.telefono())) throw new RuntimeException("Teléfono registrado");
@@ -101,6 +107,10 @@ public class UsuarioService {
     @Transactional
     public Usuario actualizarUsuario(String id, CrearUsuarioDTO dto) {
         Usuario usuario = obtenerPorId(id);
+        dniValidator.validar(dto.dni());
+        if (dto.telefono() != null && !dto.telefono().isBlank()) {
+            telefonoValidator.validar(dto.telefono());
+        }
         usuario.setNombres(dto.nombres());
         usuario.setApellidos(dto.apellidos());
         usuario.setCorreo(dto.correo());
