@@ -8,7 +8,7 @@ import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.EmailSuggestionService;
-import com.robotech.robotech_backend.service.validadores.EmailTakenException;
+import com.robotech.robotech_backend.service.validadores.FieldValidationException;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
@@ -67,7 +67,7 @@ public class AdminClubService {
                             6
                     );
 
-            throw new EmailTakenException(
+            throw new FieldValidationException(
                     "correoContacto",
                     "El correo de contacto del club ya está registrado",
                     suggestions
@@ -88,7 +88,7 @@ public class AdminClubService {
                             6
                     );
 
-            throw new EmailTakenException(
+            throw new FieldValidationException(
                     "correoPropietario",
                     "El correo del propietario ya está registrado",
                     suggestions

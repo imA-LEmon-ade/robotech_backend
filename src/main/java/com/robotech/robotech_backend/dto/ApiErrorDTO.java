@@ -13,7 +13,7 @@ import java.util.Map;
 public class ApiErrorDTO {
     private String code;
     private String message;
-    private Map<String, Object> fieldErrors;
+    private Map<String, String> fieldErrors;
     private List<String> suggestions;
 }
 
