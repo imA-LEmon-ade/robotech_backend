@@ -6,7 +6,6 @@ import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.EmailSuggestionService;
-import com.robotech.robotech_backend.service.validadores.EmailTakenException;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
