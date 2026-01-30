@@ -1,6 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
+import com.robotech.robotech_backend.dto.CambiarContrasenaDTO;
+import com.robotech.robotech_backend.dto.EditarUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.RolUsuario;
@@ -81,12 +83,11 @@ public class AdminUsuarioService {
     // =========================
     // EDITAR (SIN PASSWORD)
     // =========================
-    public Usuario editar(String id, UsuarioDTO dto) {
+    public Usuario editar(String id, EditarUsuarioDTO dto) {
 
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        dniValidator.validar(dto.dni());
         if (dto.telefono() != null && !dto.telefono().isBlank()) {
             telefonoValidator.validar(dto.telefono());
         }
@@ -128,6 +129,21 @@ public class AdminUsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         u.setContrasenaHash(passwordEncoder.encode(nuevaPass));
+        return usuarioRepo.save(u);
+    }
+
+    // =========================
+    // CAMBIAR CONTRASEÃ‘A (ADMIN)
+    // =========================
+    public Usuario cambiarContrasena(String id, CambiarContrasenaDTO dto) {
+        Usuario u = usuarioRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(dto.contrasenaActual(), u.getContrasenaHash())) {
+            throw new RuntimeException("Contrasena actual incorrecta");
+        }
+
+        u.setContrasenaHash(passwordEncoder.encode(dto.nuevaContrasena()));
         return usuarioRepo.save(u);
     }
 

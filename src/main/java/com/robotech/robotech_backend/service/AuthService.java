@@ -37,11 +37,17 @@ public class AuthService {
     // -------------------------------------------------------
     public LoginResponseDTO login(String correo, String contrasena) {
 
-        Usuario usuario = usuarioRepo.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+        if (correo == null || correo.isBlank() || contrasena == null || contrasena.isBlank()) {
+            throw new RuntimeException("Por favor rellena los campos");
+        }
+
+        Usuario usuario = usuarioRepo.findByCorreo(correo).orElse(null);
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
 
         if (!passwordEncoder.matches(contrasena, usuario.getContrasenaHash())) {
-            throw new RuntimeException("Credenciales incorrectas");
+            throw new RuntimeException("Contrasena incorrecta");
         }
 
         if (usuario.getEstado() != EstadoUsuario.ACTIVO) {

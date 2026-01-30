@@ -1,6 +1,7 @@
-package com.robotech.robotech_backend.service.validadores; // O el paquete correcto donde lo tengas
+package com.robotech.robotech_backend.exception;
 
 import com.robotech.robotech_backend.dto.ApiErrorDTO;
+import com.robotech.robotech_backend.service.validadores.FieldValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,10 +39,10 @@ public class GlobalExceptionHandler {
     // =========================
     // EMAIL DUPLICADO (Tu código existente)
     // =========================
-    @ExceptionHandler(EmailTakenException.class)
-    public ResponseEntity<ApiErrorDTO> handleEmailTaken(EmailTakenException ex) {
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<ApiErrorDTO> handleFieldValidation(FieldValidationException ex) {
         ApiErrorDTO error = new ApiErrorDTO();
-        error.setCode("EMAIL_TAKEN");
+        error.setCode("FIELD_VALIDATION");
         error.setMessage(ex.getMessage());
         error.setFieldErrors(Map.of("field", ex.getField()));
         error.setSuggestions(ex.getSuggestions());
@@ -53,9 +54,9 @@ public class GlobalExceptionHandler {
     // =========================
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorDTO> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, Object> errors = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
-                .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
+                .forEach(err -> errors.put(err.getField(), String.valueOf(err.getDefaultMessage())));
 
         ApiErrorDTO error = new ApiErrorDTO();
         error.setCode("VALIDATION_ERROR");

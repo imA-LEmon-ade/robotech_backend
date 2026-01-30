@@ -25,12 +25,18 @@ public class AdminAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginAdmin(@RequestBody LoginAdminRequest req) {
+        if (req.getCorreo() == null || req.getCorreo().isBlank()
+                || req.getContrasena() == null || req.getContrasena().isBlank()) {
+            return ResponseEntity.badRequest().body("Por favor rellena los campos");
+        }
 
-        Usuario usuario = usuarioRepo.findByCorreo(req.getCorreo())
-                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+        Usuario usuario = usuarioRepo.findByCorreo(req.getCorreo()).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
 
         if (!passwordEncoder.matches(req.getContrasena(), usuario.getContrasenaHash())) {
-            return ResponseEntity.status(401).body("Credenciales incorrectas");
+            return ResponseEntity.status(401).body("Contrasena incorrecta");
         }
 
         // ✅ VALIDACIÓN CORRECTA CON ENUM
