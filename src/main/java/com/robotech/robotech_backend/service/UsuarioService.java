@@ -43,6 +43,7 @@ public class UsuarioService {
         nicknameValidator.validar(dto.nombres());
         nicknameValidator.validar(dto.apellidos());
 
+
         if (usuarioRepository.existsByCorreo(dto.correo())) throw new RuntimeException("Correo registrado");
         if (usuarioRepository.existsByTelefono(dto.telefono())) throw new RuntimeException("Teléfono registrado");
         if (usuarioRepository.existsByDni(dto.dni())) {

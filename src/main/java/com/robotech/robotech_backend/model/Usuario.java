@@ -19,7 +19,7 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String correo;
 
-    @Column(nullable = false, unique = true, length = 12)
+    @Column(nullable = false, unique = true, length = 8)
     private String dni;
 
     @Column

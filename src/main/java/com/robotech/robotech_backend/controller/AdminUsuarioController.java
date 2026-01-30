@@ -1,11 +1,14 @@
 package com.robotech.robotech_backend.controller;
 
+import com.robotech.robotech_backend.dto.CambiarContrasenaDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
-import com.robotech.robotech_backend.dto.UsuarioDTO;
+import com.robotech.robotech_backend.dto.EditarUsuarioDTO;
 import com.robotech.robotech_backend.service.AdminUsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.robotech.robotech_backend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/api/admin/usuarios")
@@ -20,24 +23,25 @@ public class AdminUsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crearUsuario(@RequestBody CrearUsuarioDTO dto) {
+    public ResponseEntity<?> crearUsuario(
+            @Valid @RequestBody CrearUsuarioDTO dto) {
         return ResponseEntity.ok(usuarioService.crear(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> editarUsuario(
             @PathVariable String id,
-            @RequestBody UsuarioDTO dto
+            @Valid @RequestBody EditarUsuarioDTO dto
     ) {
         return ResponseEntity.ok(usuarioService.editar(id, dto));
     }
 
-    @PutMapping("/{id}/password")
-    public ResponseEntity<?> cambiarPassword(
+    @PutMapping("/usuarios/{id}/cambiar-contrasena")
+    public ResponseEntity<?> cambiarContrasena(
             @PathVariable String id,
-            @RequestBody String nuevaPass
+            @Valid @RequestBody CambiarContrasenaDTO dto
     ) {
-        usuarioService.cambiarPassword(id, nuevaPass);
+        usuarioService.cambiarContrasena(id, dto);
         return ResponseEntity.ok().build();
     }
 

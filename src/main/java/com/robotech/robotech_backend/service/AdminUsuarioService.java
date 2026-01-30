@@ -1,14 +1,18 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.CambiarContrasenaDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
+import com.robotech.robotech_backend.dto.EditarUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.model.RolUsuario;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.service.validadores.FieldValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -45,11 +49,27 @@ public class AdminUsuarioService {
     public Usuario crear(CrearUsuarioDTO dto) {
 
         if (usuarioRepo.existsByCorreo(dto.correo())) {
-            throw new RuntimeException("El correo ya está registrado");
+            throw new FieldValidationException(
+                    "correo",
+                    "El correo ya está registrado",
+                    List.of("Prueba con otro correo")
+            );
         }
 
         if (usuarioRepo.existsByTelefono(dto.telefono())) {
-            throw new RuntimeException("El teléfono ya está registrado");
+            throw new FieldValidationException(
+                    "telefono",
+                    "El teléfono ya está registrado",
+                    List.of()
+            );
+        }
+
+        if (usuarioRepo.existsByDni(dto.dni())) {
+            throw new FieldValidationException(
+                    "dni",
+                    "El DNI ya está registrado",
+                    List.of()
+            );
         }
 
 
@@ -70,12 +90,30 @@ public class AdminUsuarioService {
 
 
     // =========================
-    // EDITAR (SIN PASSWORD)
+    // EDITAR
     // =========================
-    public Usuario editar(String id, UsuarioDTO dto) {
+    public Usuario editar(String id, EditarUsuarioDTO dto) {
 
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!u.getCorreo().equals(dto.correo())
+                && usuarioRepo.existsByCorreo(dto.correo())) {
+            throw new FieldValidationException(
+                    "correo",
+                    "El correo ya existe",
+                    List.of()
+            );
+        }
+
+        if (!u.getTelefono().equals(dto.telefono())
+                && usuarioRepo.existsByTelefono(dto.telefono())) {
+            throw new FieldValidationException(
+                    "telefono",
+                    "El teléfono ya existe",
+                    List.of()
+            );
+        }
 
         u.setCorreo(dto.correo());
         u.setTelefono(dto.telefono());
@@ -104,17 +142,24 @@ public class AdminUsuarioService {
     // =========================
     // CAMBIAR CONTRASEÑA
     // =========================
-    public Usuario cambiarPassword(String id, String nuevaPass) {
+    @Transactional
+    public void cambiarContrasena(String id, CambiarContrasenaDTO dto) {
 
-        if (nuevaPass == null || nuevaPass.length() < 8) {
-            throw new RuntimeException("La contraseña debe tener al menos 8 caracteres");
-        }
-
-        Usuario u = usuarioRepo.findById(id)
+        Usuario usuario = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        u.setContrasenaHash(passwordEncoder.encode(nuevaPass));
-        return usuarioRepo.save(u);
+        if (!passwordEncoder.matches(dto.contrasenaActual(), usuario.getContrasenaHash())) {
+            throw new FieldValidationException(
+                    "contrasenaActual",
+                    "La contraseña actual es incorrecta"
+            );
+        }
+
+        usuario.setContrasenaHash(
+                passwordEncoder.encode(dto.nuevaContrasena())
+        );
+
+        usuarioRepo.save(usuario);
     }
 
     // =========================
