@@ -6,6 +6,7 @@ import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.Competidor;
 import com.robotech.robotech_backend.model.Usuario;
 import com.robotech.robotech_backend.model.EstadoValidacion; // Importante
+import com.robotech.robotech_backend.model.EstadoUsuario;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -198,6 +199,12 @@ public class CompetidorService {
 
         competidor.setEstadoValidacion(EstadoValidacion.APROBADO);
         competidorRepo.save(competidor);
+
+        Usuario usuario = competidor.getUsuario();
+        if (usuario != null && usuario.getEstado() != EstadoUsuario.ACTIVO) {
+            usuario.setEstado(EstadoUsuario.ACTIVO);
+            usuarioRepo.save(usuario);
+        }
     }
 
     // 3. RECHAZAR COMPETIDOR (INTACTO)
