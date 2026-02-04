@@ -23,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -50,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 🔥 EXCLUIR ENDPOINTS DE LOGIN
+        // ?? EXCLUIR ENDPOINTS DE LOGIN
         if (
                 path.equals("/api/admin/login") ||
                         path.equals("/api/usuarios/login") ||
@@ -84,7 +85,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (usuario.getRol() == RolUsuario.CLUB || usuario.getRol() == RolUsuario.CLUB_COMPETIDOR) {
+            Set<RolUsuario> roles = usuario.getRoles() != null ? usuario.getRoles() : java.util.Set.of();
+
+            if (roles.contains(RolUsuario.CLUB)) {
                 Club club = clubRepository.findByUsuarioIdUsuarioFetch(usuario.getIdUsuario()).orElse(null);
                 if (club == null || club.getEstado() != EstadoClub.ACTIVO) {
                     filterChain.doFilter(request, response);
@@ -93,32 +96,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             boolean competidorOk = false;
-            if (usuario.getRol() == RolUsuario.COMPETIDOR || usuario.getRol() == RolUsuario.CLUB_COMPETIDOR) {
+            if (roles.contains(RolUsuario.COMPETIDOR)) {
                 Competidor comp = competidorRepository.findByUsuarioIdUsuarioFetch(usuario.getIdUsuario()).orElse(null);
-                competidorOk = comp != null
-                        && comp.getEstadoValidacion() == EstadoValidacion.APROBADO
+                boolean clubValido = comp != null
                         && comp.getClubActual() != null
                         && comp.getClubActual().getEstado() == EstadoClub.ACTIVO;
-                if (usuario.getRol() == RolUsuario.COMPETIDOR && !competidorOk) {
+                boolean libre = comp != null && comp.getClubActual() == null;
+
+                competidorOk = comp != null
+                        && comp.getEstadoValidacion() == EstadoValidacion.APROBADO
+                        && (clubValido || roles.contains(RolUsuario.JUEZ) || libre);
+
+                if (!competidorOk) {
                     filterChain.doFilter(request, response);
                     return;
                 }
             }
 
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-            if (usuario.getRol() == RolUsuario.CLUB_COMPETIDOR) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_CLUB_COMPETIDOR"));
-                authorities.add(new SimpleGrantedAuthority("CLUB_COMPETIDOR"));
-                authorities.add(new SimpleGrantedAuthority("ROLE_CLUB"));
-                authorities.add(new SimpleGrantedAuthority("CLUB"));
-                if (competidorOk) {
-                    authorities.add(new SimpleGrantedAuthority("ROLE_COMPETIDOR"));
-                    authorities.add(new SimpleGrantedAuthority("COMPETIDOR"));
-                }
-            } else {
-                String roleName = usuario.getRol().name();
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName));
-                authorities.add(new SimpleGrantedAuthority(roleName));
+            for (RolUsuario rol : roles) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.name()));
+                authorities.add(new SimpleGrantedAuthority(rol.name()));
             }
 
             UsernamePasswordAuthenticationToken auth =

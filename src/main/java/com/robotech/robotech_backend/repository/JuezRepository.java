@@ -18,6 +18,10 @@ public interface JuezRepository extends JpaRepository<Juez, String> {
     boolean existsByUsuario_IdUsuario(String idUsuario);
 
     Optional<Juez> findByUsuario_IdUsuario(String idUsuario);
+    boolean existsByLicencia(String licencia);
+
+    Optional<Juez> findByLicencia(String licencia);
+
 
     // ✅ Lista jueces por estado, cargando también sus datos de usuario
     @Query("SELECT j FROM Juez j LEFT JOIN FETCH j.usuario WHERE j.estadoValidacion = :estado")

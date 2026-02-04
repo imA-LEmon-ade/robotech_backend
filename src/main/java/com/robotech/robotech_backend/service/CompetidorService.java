@@ -3,13 +3,12 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorClubDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.Usuario;
-import com.robotech.robotech_backend.model.EstadoValidacion; // Importante
-import com.robotech.robotech_backend.model.EstadoUsuario;
+import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.repository.JuezRepository;
+import com.robotech.robotech_backend.repository.EncuentroRepository;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
@@ -33,6 +32,8 @@ public class CompetidorService {
     private final CompetidorRepository competidorRepo;
     private final RobotRepository robotRepo;
     private final UsuarioRepository usuarioRepo;
+    private final JuezRepository juezRepo;
+    private final EncuentroRepository encuentroRepo;
     private final DniValidator dniValidator;
     private final TelefonoValidator telefonoValidator;
 
@@ -201,7 +202,24 @@ public class CompetidorService {
         competidorRepo.save(competidor);
 
         Usuario usuario = competidor.getUsuario();
-        if (usuario != null && usuario.getEstado() != EstadoUsuario.ACTIVO) {
+        boolean rolesCambiados = false;
+        if (usuario != null && usuario.getRoles() != null && usuario.getRoles().contains(RolUsuario.JUEZ)) {
+            Juez j = juezRepo.findByUsuario_IdUsuario(usuario.getIdUsuario()).orElse(null);
+            if (j != null) {
+                long pendientes = encuentroRepo.countByJuezIdJuezAndEstadoNot(j.getIdJuez(), EstadoEncuentro.FINALIZADO);
+                if (pendientes > 0) {
+                    throw new RuntimeException("El juez tiene encuentros pendientes por calificar");
+                }
+                j.setEstadoValidacion(EstadoValidacion.RECHAZADO);
+                j.setValidadoPor("CLUB");
+                j.setValidadoEn(new java.util.Date());
+                juezRepo.save(j);
+            }
+            usuario.getRoles().remove(RolUsuario.JUEZ);
+            rolesCambiados = true;
+        }
+
+        if (usuario != null && (usuario.getEstado() != EstadoUsuario.ACTIVO || rolesCambiados)) {
             usuario.setEstado(EstadoUsuario.ACTIVO);
             usuarioRepo.save(usuario);
         }

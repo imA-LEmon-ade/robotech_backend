@@ -48,8 +48,8 @@ public class Competidor {
     /**
      * CLUB ACTUAL
      */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_club_actual", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_club_actual", nullable = true)
     private Club clubActual;
 
     /**

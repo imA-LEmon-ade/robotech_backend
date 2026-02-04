@@ -18,7 +18,7 @@ public interface CompetidorRepository extends JpaRepository<Competidor, String> 
         SELECT c
         FROM Competidor c
         JOIN FETCH c.usuario u
-        JOIN FETCH c.clubActual ca
+        LEFT JOIN FETCH c.clubActual ca
         WHERE u.idUsuario = :idUsuario
     """)
     Optional<Competidor> findByUsuarioIdUsuarioFetch(@Param("idUsuario") String idUsuario);

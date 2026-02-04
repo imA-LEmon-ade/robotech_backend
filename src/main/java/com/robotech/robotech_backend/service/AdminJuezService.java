@@ -6,7 +6,9 @@ import com.robotech.robotech_backend.dto.JuezSelectDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
+import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.repository.EncuentroRepository;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 
@@ -17,13 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class AdminJuezService {
 
     private final JuezRepository juezRepository;
+    private final CompetidorRepository competidorRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EncuentroRepository encuentroRepository;
     private final PasswordEncoder passwordEncoder;
     private final DniValidator dniValidator;
     private final TelefonoValidator telefonoValidator;
@@ -44,7 +49,7 @@ public class AdminJuezService {
                                 j.getUsuario().getNombres(),
                                 j.getUsuario().getApellidos(),
                                 j.getUsuario().getCorreo(),
-                                j.getUsuario().getRol(),
+                                j.getUsuario().getRoles(),
                                 j.getUsuario().getEstado(),
                                 j.getUsuario().getTelefono()
                         )
@@ -71,18 +76,34 @@ public class AdminJuezService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.JUEZ)
+                .roles(Set.of(RolUsuario.JUEZ, RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         usuarioRepository.save(u);
 
+        Competidor comp = competidorRepository.findByUsuario_IdUsuario(u.getIdUsuario()).orElse(null);
+        if (comp == null) {
+            comp = Competidor.builder()
+                    .usuario(u)
+                    .clubActual(null)
+                    .estadoValidacion(EstadoValidacion.APROBADO)
+                    .build();
+            competidorRepository.save(comp);
+        } else {
+            comp.setClubActual(null);
+            comp.setEstadoValidacion(EstadoValidacion.APROBADO);
+            competidorRepository.save(comp);
+        }
+
         Juez j = Juez.builder()
                 .usuario(u)
                 .licencia(dto.getLicencia())
-                .estadoValidacion(EstadoValidacion.PENDIENTE)
+                .estadoValidacion(EstadoValidacion.APROBADO)
                 .creadoPor(dto.getCreadoPor())
                 .creadoEn(new Date())
+                .validadoPor(dto.getCreadoPor())
+                .validadoEn(new Date())
                 .build();
 
         return juezRepository.save(j);
@@ -138,7 +159,11 @@ public class AdminJuezService {
     public void eliminar(String id) {
         Juez juez = juezRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Juez no existe"));
+        Usuario u = juez.getUsuario();
         juezRepository.delete(juez);
+        if (u != null) {
+            usuarioRepository.delete(u);
+        }
     }
 
     public Juez aprobar(String idJuez, String adminId) {
@@ -147,6 +172,61 @@ public class AdminJuezService {
         j.setEstadoValidacion(EstadoValidacion.APROBADO);
         j.setValidadoPor(adminId);
         j.setValidadoEn(new Date());
+
+        Usuario u = j.getUsuario();
+        if (u != null) {
+            u.setEstado(EstadoUsuario.ACTIVO);
+            u.getRoles().add(RolUsuario.JUEZ);
+
+            Competidor comp = competidorRepository.findByUsuario_IdUsuario(u.getIdUsuario()).orElse(null);
+            if (comp == null) {
+                comp = Competidor.builder()
+                        .usuario(u)
+                        .clubActual(null)
+                        .estadoValidacion(EstadoValidacion.APROBADO)
+                        .build();
+                competidorRepository.save(comp);
+            } else {
+                comp.setClubActual(null);
+                comp.setEstadoValidacion(EstadoValidacion.APROBADO);
+                competidorRepository.save(comp);
+            }
+            u.getRoles().add(RolUsuario.COMPETIDOR);
+
+            usuarioRepository.save(u);
+        }
+
+        return juezRepository.save(j);
+    }
+
+    
+    public Juez inactivar(String idJuez, String adminId) {
+        Juez j = juezRepository.findById(idJuez)
+                .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+
+        if (j.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+            throw new RuntimeException("El juez no est? aprobado");
+        }
+
+        long pendientes = encuentroRepository.countByJuezIdJuezAndEstadoNot(
+                j.getIdJuez(),
+                EstadoEncuentro.FINALIZADO
+        );
+
+        if (pendientes > 0) {
+            throw new RuntimeException("El juez tiene encuentros pendientes por calificar");
+        }
+
+        Usuario u = j.getUsuario();
+        if (u != null) {
+            u.getRoles().remove(RolUsuario.JUEZ);
+            usuarioRepository.save(u);
+        }
+
+        j.setEstadoValidacion(EstadoValidacion.RECHAZADO);
+        j.setValidadoPor(adminId);
+        j.setValidadoEn(new Date());
+
         return juezRepository.save(j);
     }
 

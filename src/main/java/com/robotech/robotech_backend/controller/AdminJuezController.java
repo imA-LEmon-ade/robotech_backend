@@ -60,6 +60,15 @@ public class AdminJuezController {
         return ResponseEntity.ok(juezService.aprobar(id, adminId));
     }
 
+
+    @PutMapping("/{id}/inactivar")
+    public ResponseEntity<?> inactivar(
+            @PathVariable String id,
+            @RequestHeader("admin-id") String adminId
+    ) {
+        return ResponseEntity.ok(juezService.inactivar(id, adminId));
+    }
+
     @PutMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(
             @PathVariable String id,

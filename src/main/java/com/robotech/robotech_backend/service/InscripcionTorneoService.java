@@ -17,6 +17,7 @@ public class InscripcionTorneoService {
     private final RobotRepository robotRepo;
     private final InscripcionTorneoRepository inscripcionRepo;
     private final ClubRepository clubRepo;
+    private final CompetidorRepository competidorRepo;
 
     @Transactional
     public InscripcionTorneo inscribirIndividualComoClub(
@@ -97,6 +98,83 @@ public class InscripcionTorneoService {
     }
 
     @Transactional
+    public InscripcionTorneo inscribirIndividualComoCompetidor(
+            String idUsuario,
+            InscripcionIndividualDTO dto
+    ) {
+        Competidor comp = competidorRepo.findByUsuario_IdUsuario(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+        if (comp.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+            throw new RuntimeException("Competidor no aprobado");
+        }
+
+        if (comp.getClubActual() != null) {
+            throw new RuntimeException("Solo agentes libres pueden inscribirse como juez");
+        }
+
+        CategoriaTorneo categoria = categoriaRepo.findById(dto.getIdCategoriaTorneo())
+                .orElseThrow(() -> new RuntimeException("Categor?a no encontrada"));
+
+        Torneo torneo = categoria.getTorneo();
+
+        if (categoria.getModalidad() != ModalidadCategoria.INDIVIDUAL) {
+            throw new RuntimeException("La categor?a no es individual");
+        }
+
+        Robot robot = robotRepo.findById(dto.getIdRobot())
+                .orElseThrow(() -> new RuntimeException("Robot no encontrado"));
+
+        if (robot.getCompetidor() == null || !robot.getCompetidor().getIdCompetidor().equals(comp.getIdCompetidor())) {
+            throw new RuntimeException("El robot no pertenece a tu perfil");
+        }
+
+        Date hoy = new Date();
+        if (hoy.before(torneo.getFechaAperturaInscripcion()) ||
+                hoy.after(torneo.getFechaCierreInscripcion()) ||
+                Boolean.TRUE.equals(categoria.getInscripcionesCerradas())) {
+            if (hoy.after(torneo.getFechaCierreInscripcion())) {
+                categoria.setInscripcionesCerradas(true);
+                categoriaRepo.save(categoria);
+            }
+            throw new RuntimeException("Inscripciones cerradas");
+        }
+
+        boolean yaInscrito = inscripcionRepo.existsByRobot_IdRobotAndCategoriaTorneo_Torneo_IdTorneoAndEstado(
+                robot.getIdRobot(),
+                categoria.getTorneo().getIdTorneo(),
+                EstadoInscripcion.ACTIVADA
+        );
+
+        if (yaInscrito) {
+            throw new RuntimeException("El robot ya est? inscrito en este torneo");
+        }
+
+        long inscritos = inscripcionRepo.countByCategoriaTorneoIdCategoriaTorneoAndEstado(
+                categoria.getIdCategoriaTorneo(),
+                EstadoInscripcion.ACTIVADA
+        );
+
+        if (inscritos >= categoria.getMaxParticipantes()) {
+            throw new RuntimeException("No hay cupos disponibles");
+        }
+
+        InscripcionTorneo inscripcion = new InscripcionTorneo();
+        inscripcion.setCategoriaTorneo(categoria);
+        inscripcion.setRobot(robot);
+        inscripcion.setEstado(EstadoInscripcion.ACTIVADA);
+        inscripcion.setFechaInscripcion(new Date());
+
+        InscripcionTorneo guardada = inscripcionRepo.save(inscripcion);
+
+        if (inscritos + 1 >= categoria.getMaxParticipantes()) {
+            categoria.setInscripcionesCerradas(true);
+            categoriaRepo.save(categoria);
+        }
+
+        return guardada;
+    }
+
     public InscripcionTorneo anularInscripcion(String idInscripcion, String motivo) {
         InscripcionTorneo inscripcion = inscripcionRepo.findById(idInscripcion)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));

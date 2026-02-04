@@ -47,7 +47,8 @@ public class AdminController {
             competidorRepository.save(competidor);
         }
 
-        usuario.setRol(RolUsuario.CLUB_COMPETIDOR);
+        usuario.getRoles().add(RolUsuario.CLUB);
+        usuario.getRoles().add(RolUsuario.COMPETIDOR);
 
         usuarioRepository.save(usuario);
         clubRepository.save(club);
@@ -55,7 +56,7 @@ public class AdminController {
         return ResponseEntity.ok("Club aprobado.");
     }
 
-    // ✔ HABILITAR PROPIETARIO COMO COMPETIDOR (CLUB_COMPETIDOR)
+    // ✔ HABILITAR PROPIETARIO COMO COMPETIDOR 
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
     @PutMapping("/club/{id}/habilitar-competidor")
     public ResponseEntity<?> habilitarPropietarioCompetidor(@PathVariable String id) {
@@ -72,8 +73,9 @@ public class AdminController {
             competidorRepository.save(competidor);
         }
 
-        if (usuario.getRol() != RolUsuario.CLUB_COMPETIDOR) {
-            usuario.setRol(RolUsuario.CLUB_COMPETIDOR);
+        if (!usuario.getRoles().contains(RolUsuario.COMPETIDOR)) {
+            usuario.getRoles().add(RolUsuario.CLUB);
+            usuario.getRoles().add(RolUsuario.COMPETIDOR);
             usuarioRepository.save(usuario);
         }
 
@@ -100,6 +102,14 @@ public class AdminController {
 
         Usuario u = juez.getUsuario();
         u.setEstado(EstadoUsuario.ACTIVO);
+        u.getRoles().add(RolUsuario.JUEZ);
+
+        Competidor comp = competidorRepository.findByUsuario_IdUsuario(u.getIdUsuario()).orElse(null);
+        if (comp != null) {
+            comp.setClubActual(null); // Agente libre
+            competidorRepository.save(comp);
+            u.getRoles().add(RolUsuario.COMPETIDOR);
+        }
 
         usuarioRepository.save(u);
         juezRepository.save(juez);

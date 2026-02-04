@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +31,14 @@ public class SubAdminCompetidorService {
     public List<CompetidorResponseDTO> listarTodos() {
         return competidorRepo.findAll().stream().map(comp -> {
             Usuario u = comp.getUsuario();
+            String clubNombre = comp.getClubActual() != null ? comp.getClubActual().getNombre() : "Agente libre";
             return new CompetidorResponseDTO(
                     u.getIdUsuario(),
                     u.getNombres(),
                     u.getApellidos(),
                     u.getDni(),
                     u.getCorreo(),
-                    comp.getClubActual().getNombre(),
+                    clubNombre,
                     comp.getEstadoValidacion().name(),
                     u.getTelefono()
             );
@@ -65,7 +67,7 @@ public class SubAdminCompetidorService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.COMPETIDOR)
+                .roles(Set.of(RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 

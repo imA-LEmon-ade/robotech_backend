@@ -35,7 +35,7 @@ public class EncuentroService {
                     .map(this::toAdminDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("❌ ERROR AL GENERAR ENCUENTROS: " + e.getMessage());
+            System.err.println("? ERROR AL GENERAR ENCUENTROS: " + e.getMessage());
             throw e;
         }
     }
@@ -49,7 +49,7 @@ public class EncuentroService {
                     .map(this::toAdminDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("❌ ERROR AL REGENERAR ENCUENTROS: " + e.getMessage());
+            System.err.println("? ERROR AL REGENERAR ENCUENTROS: " + e.getMessage());
             throw e;
         }
     }
@@ -113,8 +113,10 @@ public class EncuentroService {
                 .orElseThrow(() -> new RuntimeException("Encuentro no encontrado"));
 
         if (!encuentro.getJuez().getIdJuez().equals(idJuez)) {
-            throw new RuntimeException("No tiene autorización para calificar este encuentro.");
+            throw new RuntimeException("No tiene autorizaci?n para calificar este encuentro.");
         }
+
+        validarJuezNoParticipaEnEncuentro(encuentro, idJuez);
 
         if (encuentro.getEstado() == EstadoEncuentro.FINALIZADO) {
             throw new RuntimeException("El encuentro ya fue finalizado previamente.");
@@ -211,7 +213,7 @@ public class EncuentroService {
     }
 
     // =====================================================
-    // 4. VISTA PÚBLICA (BRACKET / LIGA)
+    // 4. VISTA P?BLICA (BRACKET / LIGA)
     // =====================================================
     public List<EncuentroPublicoDTO> listarEncuentrosPublicosPorCategoria(String idCategoriaTorneo) {
         return encuentroRepo.findByCategoriaTorneoIdCategoriaTorneo(idCategoriaTorneo).stream().map(encuentro -> {
@@ -246,7 +248,7 @@ public class EncuentroService {
     }
 
     // =====================================================
-    // MÉTODOS AUXILIARES
+    // M?TODOS AUXILIARES
     // =====================================================
     private String obtenerNombreParticipante(TipoParticipante tipo, String idReferencia) {
         if (tipo == TipoParticipante.ROBOT) {
@@ -266,6 +268,7 @@ public class EncuentroService {
         }
 
         List<String> participantes = obtenerParticipantes(categoria);
+        validarJuezNoParticipa(juez, categoria, participantes);
         if (participantes.isEmpty()) throw new RuntimeException("No hay participantes activos.");
 
         if (dto.getTipoEncuentro() == TipoEncuentro.ELIMINACION_DIRECTA) {
@@ -323,7 +326,7 @@ public class EncuentroService {
                 encuentros.add(e);
             }
 
-            // Rotación tipo "circle method": fija el primero y rota el resto
+            // Rotaci?n tipo "circle method": fija el primero y rota el resto
             String last = lista.remove(n - 1);
             lista.add(1, last);
         }
@@ -404,7 +407,7 @@ public class EncuentroService {
         }
 
         if (ganadores.size() % 2 != 0) {
-            throw new RuntimeException("No se puede generar la siguiente ronda con número impar de ganadores");
+            throw new RuntimeException("No se puede generar la siguiente ronda con n?mero impar de ganadores");
         }
 
         for (int i = 0; i < ganadores.size(); i += 2) {
@@ -416,6 +419,52 @@ public class EncuentroService {
                     siguienteRonda
             );
             crearParticipantes(nuevo, ganadores.get(i), ganadores.get(i + 1), encuentroFinalizado.getCategoriaTorneo().getModalidad());
+        }
+    }
+
+    private void validarJuezNoParticipa(Juez juez, CategoriaTorneo categoria, List<String> participantes) {
+        if (juez == null || juez.getUsuario() == null) {
+            return;
+        }
+        if (categoria == null || categoria.getModalidad() != ModalidadCategoria.INDIVIDUAL) {
+            return;
+        }
+
+        List<Robot> robots = robotRepo.findByCompetidor_IdCompetidor(juez.getUsuario().getIdUsuario());
+        if (robots == null || robots.isEmpty()) {
+            return;
+        }
+
+        for (Robot robot : robots) {
+            if (participantes.contains(robot.getIdRobot())) {
+                throw new RuntimeException("El juez asignado participa en este torneo. Selecciona otro juez.");
+            }
+        }
+    }
+
+    private void validarJuezNoParticipaEnEncuentro(Encuentro encuentro, String idJuez) {
+        if (encuentro == null || encuentro.getJuez() == null) {
+            return;
+        }
+        if (!encuentro.getJuez().getIdJuez().equals(idJuez)) {
+            return;
+        }
+
+        if (encuentro.getCategoriaTorneo() == null || encuentro.getCategoriaTorneo().getModalidad() != ModalidadCategoria.INDIVIDUAL) {
+            return;
+        }
+
+        List<Robot> robots = robotRepo.findByCompetidor_IdCompetidor(encuentro.getJuez().getUsuario().getIdUsuario());
+        if (robots == null || robots.isEmpty()) {
+            return;
+        }
+
+        Set<String> robotsPropios = robots.stream().map(Robot::getIdRobot).collect(Collectors.toSet());
+        List<EncuentroParticipante> participantes = encuentroParticipanteRepo.findByEncuentroIdEncuentro(encuentro.getIdEncuentro());
+        for (EncuentroParticipante p : participantes) {
+            if (robotsPropios.contains(p.getIdReferencia())) {
+                throw new RuntimeException("No puede calificar un encuentro donde participa su robot.");
+            }
         }
     }
 }

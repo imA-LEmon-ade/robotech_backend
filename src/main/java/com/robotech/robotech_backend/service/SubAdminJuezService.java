@@ -4,6 +4,7 @@ import com.robotech.robotech_backend.dto.CrearJuezDTO;
 import com.robotech.robotech_backend.model.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
+import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.service.validadores.EmailValidator;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -19,6 +22,7 @@ public class SubAdminJuezService {
 
     private final JuezRepository juezRepo;
     private final UsuarioRepository usuarioRepo;
+    private final CompetidorRepository competidorRepo;
     private final PasswordEncoder passwordEncoder;
 
     private final EmailValidator emailValidator;
@@ -56,16 +60,23 @@ public class SubAdminJuezService {
                 .correo(correo)
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.JUEZ)
+                .roles(Set.of(RolUsuario.JUEZ, RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
         usuarioRepo.save(usuario);
 
+        Competidor comp = Competidor.builder()
+                .usuario(usuario)
+                .clubActual(null)
+                .estadoValidacion(EstadoValidacion.APROBADO)
+                .build();
+        competidorRepo.save(comp);
+
         Juez juez = Juez.builder()
                 .usuario(usuario)
                 .licencia(dto.getLicencia())
-                .estadoValidacion(EstadoValidacion.PENDIENTE)
+                .estadoValidacion(EstadoValidacion.APROBADO)
                 .build();
 
         juezRepo.save(juez);

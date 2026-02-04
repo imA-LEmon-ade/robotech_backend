@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 
 
 @RestController
@@ -39,10 +40,8 @@ public class AdminAuthController {
             return ResponseEntity.status(401).body("Contrasena incorrecta");
         }
 
-        // ✅ VALIDACIÓN CORRECTA CON ENUM
-        if (usuario.getRol() != RolUsuario.ADMINISTRADOR &&
-                usuario.getRol() != RolUsuario.SUBADMINISTRADOR) {
-
+        Set<RolUsuario> roles = usuario.getRoles();
+        if (!roles.contains(RolUsuario.ADMINISTRADOR) && !roles.contains(RolUsuario.SUBADMINISTRADOR)) {
             return ResponseEntity.status(403)
                     .body("No tienes permisos de administrador");
         }
@@ -51,7 +50,7 @@ public class AdminAuthController {
 
         return ResponseEntity.ok(Map.of(
                 "usuario", usuario,
-                "rol", usuario.getRol(),
+                "roles", usuario.getRoles(),
                 "token", token
         ));
     }

@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class SubAdministradorService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.SUBADMINISTRADOR)
+                .roles(Set.of(RolUsuario.SUBADMINISTRADOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 

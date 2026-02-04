@@ -178,7 +178,7 @@ public class TorneoService {
         if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
             return torneoRepo.findAll();
         }
-        if ("ADMIN".equals(usuario.getRol())) {
+        if (usuario.getRoles().contains(com.robotech.robotech_backend.model.RolUsuario.ADMINISTRADOR)) {
             return torneoRepo.findAll();
         }
         return torneoRepo.findByCreadoPor(usuario.getIdUsuario());

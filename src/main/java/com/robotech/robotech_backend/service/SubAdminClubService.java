@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -84,7 +85,7 @@ public class SubAdminClubService {
                 .correo(correoPropietario)
                 .telefono(dto.getTelefonoPropietario())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
-                .rol(RolUsuario.CLUB_COMPETIDOR)
+                .roles(Set.of(RolUsuario.CLUB, RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 

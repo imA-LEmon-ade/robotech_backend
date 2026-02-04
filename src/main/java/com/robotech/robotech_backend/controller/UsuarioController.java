@@ -76,7 +76,7 @@ public class UsuarioController {
                 u.getNombres(),
                 u.getApellidos(),
                 u.getCorreo(),
-                u.getRol(),
+                u.getRoles(),
                 // CORRECCIÓN: Pasamos el Enum 'EstadoUsuario' directamente.
                 // Ya no usamos .name() ni Strings como "DESCONOCIDO".
                 u.getEstado(),

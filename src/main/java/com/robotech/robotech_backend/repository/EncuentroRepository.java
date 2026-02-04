@@ -24,4 +24,6 @@ public interface EncuentroRepository extends JpaRepository<Encuentro, String> {
     // ✅ NUEVO: Cuenta cuántos encuentros de UN TORNEO no han terminado aún
     // Esta consulta viaja: Encuentro -> CategoriaTorneo -> Torneo
     long countByCategoriaTorneo_Torneo_IdTorneoAndEstadoNot(String idTorneo, EstadoEncuentro estado);
+
+    long countByJuezIdJuezAndEstadoNot(String idJuez, EstadoEncuentro estado);
 }

@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -56,103 +57,70 @@ public class AuthService {
 
         String token = jwtService.generarToken(usuario);
 
-        Object entidad;
+        Set<RolUsuario> roles = usuario.getRoles() != null ? usuario.getRoles() : java.util.Set.of();
+        Map<String, Object> entidad = new HashMap<>();
 
-        switch (usuario.getRol()) {
+        if (roles.contains(RolUsuario.CLUB)) {
+            Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Club no encontrado"));
 
-            case CLUB -> {
-                Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Club no encontrado"));
-
-                if (club.getEstado() != EstadoClub.ACTIVO) {
-                    throw new RuntimeException("Club inactivo");
-                }
-
-                entidad = new ClubLoginDTO(
-                        club.getIdClub(),
-                        club.getNombre(),
-                        club.getCorreoContacto(),
-                        club.getTelefonoContacto()
-                );
+            if (club.getEstado() != EstadoClub.ACTIVO) {
+                throw new RuntimeException("Club inactivo");
             }
 
-            case CLUB_COMPETIDOR -> {
-                Club club = clubRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+            entidad.put("club", new ClubLoginDTO(
+                    club.getIdClub(),
+                    club.getNombre(),
+                    club.getCorreoContacto(),
+                    club.getTelefonoContacto()
+            ));
+        }
 
-                if (club.getEstado() != EstadoClub.ACTIVO) {
-                    throw new RuntimeException("Club inactivo");
-                }
+        if (roles.contains(RolUsuario.COMPETIDOR)) {
+            Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-                Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
-
-                if (c.getEstadoValidacion() != EstadoValidacion.APROBADO) {
-                    throw new RuntimeException("Competidor no aprobado");
-                }
-                if (c.getClubActual() == null || c.getClubActual().getEstado() != EstadoClub.ACTIVO) {
-                    throw new RuntimeException("Club inactivo");
-                }
-
-                entidad = Map.of(
-                        "club", new ClubLoginDTO(
-                                club.getIdClub(),
-                                club.getNombre(),
-                                club.getCorreoContacto(),
-                                club.getTelefonoContacto()
-                        ),
-                        "competidor", new CompetidorLoginDTO(
-                                c.getIdCompetidor(),
-                                usuario.getNombres(),
-                                usuario.getApellidos(),
-                                usuario.getCorreo(),
-                                c.getClubActual().getIdClub(),
-                                c.getClubActual().getNombre()
-                        )
-                );
+            if (c.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                throw new RuntimeException("Competidor no aprobado");
             }
 
-            case COMPETIDOR -> {
-                Competidor c = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
-
-                if (c.getEstadoValidacion() != EstadoValidacion.APROBADO) {
-                    throw new RuntimeException("Competidor no aprobado");
-                }
-                if (c.getClubActual() == null || c.getClubActual().getEstado() != EstadoClub.ACTIVO) {
-                    throw new RuntimeException("Club inactivo");
-                }
-
-                entidad = new CompetidorLoginDTO(
-                        c.getIdCompetidor(),
-                        usuario.getNombres(),
-                        usuario.getApellidos(),
-                        usuario.getCorreo(),
-                        c.getClubActual().getIdClub(),
-                        c.getClubActual().getNombre()
-                );
+            boolean clubValido = c.getClubActual() != null && c.getClubActual().getEstado() == EstadoClub.ACTIVO;
+            boolean libre = c.getClubActual() == null;
+            if (!clubValido && !roles.contains(RolUsuario.JUEZ) && !libre) {
+                throw new RuntimeException("Club inactivo");
             }
 
-            case JUEZ -> {
-                Juez j = juezRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
+            entidad.put("competidor", new CompetidorLoginDTO(
+                    c.getIdCompetidor(),
+                    usuario.getNombres(),
+                    usuario.getApellidos(),
+                    usuario.getCorreo(),
+                    c.getClubActual() != null ? c.getClubActual().getIdClub() : null,
+                    c.getClubActual() != null ? c.getClubActual().getNombre() : "Agente libre"
+            ));
+        }
 
-                entidad = Map.of(
-                        "idJuez", j.getIdJuez(),
-                        "correo", usuario.getCorreo()
-                );
-            }
+        if (roles.contains(RolUsuario.JUEZ)) {
+            Juez j = juezRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Juez no encontrado"));
 
-            case ADMINISTRADOR, SUBADMINISTRADOR -> {
-                entidad = usuario;
-            }
+            entidad.put("juez", Map.of(
+                    "idJuez", j.getIdJuez(),
+                    "correo", usuario.getCorreo()
+            ));
+        }
 
-            default -> throw new RuntimeException("Rol no soportado");
+        if (roles.contains(RolUsuario.ADMINISTRADOR) || roles.contains(RolUsuario.SUBADMINISTRADOR)) {
+            entidad.put("usuario", usuario);
+        }
+
+        if (entidad.isEmpty()) {
+            entidad.put("usuario", usuario);
         }
 
         return new LoginResponseDTO(
                 token,
-                usuario.getRol(),
+                roles,
                 entidad
         );
     }
@@ -172,7 +140,7 @@ public class AuthService {
         }
 
         if (usuarioRepo.existsByTelefono(dto.getTelefono())) {
-            throw new RuntimeException("Teléfono ya registrado");
+            throw new RuntimeException("Tel?fono ya registrado");
         }
 
         CodigoRegistroCompetidor codigo =
@@ -185,7 +153,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.COMPETIDOR)
+                .roles(Set.of(RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 
@@ -220,7 +188,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.CLUB)
+                .roles(Set.of(RolUsuario.CLUB))
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 
@@ -259,7 +227,7 @@ public class AuthService {
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))
-                .rol(RolUsuario.JUEZ)
+                .roles(Set.of(RolUsuario.JUEZ))
                 .estado(EstadoUsuario.PENDIENTE)
                 .build();
 

@@ -56,6 +56,24 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idTorneo") String idTorneo
     );
 
+    @Query("""
+    SELECT r
+    FROM Robot r
+    WHERE r.competidor.idCompetidor = :idCompetidor
+      AND r.categoria = :categoria
+      AND r.estado = 'ACTIVO'
+      AND r.idRobot NOT IN (
+          SELECT i.robot.idRobot
+          FROM InscripcionTorneo i
+          WHERE i.categoriaTorneo.torneo.idTorneo = :idTorneo
+      )
+    """)
+    List<Robot> findRobotsDisponiblesCompetidor(
+            @Param("idCompetidor") String idCompetidor,
+            @Param("categoria") CategoriaCompetencia categoria,
+            @Param("idTorneo") String idTorneo
+    );
+
     List<Robot> findByCompetidorClubActualIdClubAndEstado(String idClub, EstadoRobot estado);
 
     @Query("SELECT COUNT(r) FROM Robot r WHERE r.competidor.clubActual.idClub = :idClub")

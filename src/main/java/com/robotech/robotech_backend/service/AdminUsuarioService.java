@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class AdminUsuarioService {
                         u.getNombres(),
                         u.getApellidos(),
                         u.getCorreo(),
-                        u.getRol(),
+                        u.getRoles(),
                         u.getEstado(),
                         u.getTelefono()
                 ))
@@ -71,7 +72,7 @@ public class AdminUsuarioService {
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .rol(RolUsuario.COMPETIDOR) // o el que corresponda
+                .roles(Set.of(RolUsuario.COMPETIDOR)) // o el que corresponda
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -96,7 +97,9 @@ public class AdminUsuarioService {
         u.setTelefono(dto.telefono());
         u.setNombres(dto.nombres().trim());
         u.setApellidos(dto.apellidos().trim());
-        u.setRol(dto.rol());
+        if (dto.roles() != null) {
+        u.setRoles(dto.roles());
+        }
         u.setEstado(dto.estado());
 
         return usuarioRepo.save(u);

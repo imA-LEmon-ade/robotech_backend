@@ -3,6 +3,8 @@ package com.robotech.robotech_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.security.SecureRandom;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -28,7 +30,7 @@ public class Usuario {
     @Column
     private String apellidos;
 
-    // ✅ CORRECCIÓN: Cambiado a nullable = true.
+    // ? CORRECCI?N: Cambiado a nullable = true.
     // Si es obligatorio, el DTO debe validarlo, pero en BD es mejor permitir null si no hay dato.
     @Column(nullable = true, unique = true, length = 15)
     private String telefono;
@@ -36,9 +38,12 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasenaHash;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "id_usuario"))
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RolUsuario rol;
+    @Column(name = "rol", nullable = false)
+    @Builder.Default
+    private Set<RolUsuario> roles = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -55,6 +60,10 @@ public class Usuario {
         return sb.toString();
     }
 
+    public boolean tieneRol(RolUsuario rol) {
+        return roles != null && roles.contains(rol);
+    }
+
     @PrePersist
     public void prePersist() {
         if (this.idUsuario == null) {
@@ -64,7 +73,7 @@ public class Usuario {
         if (this.estado == null) {
             this.estado = EstadoUsuario.PENDIENTE;
         }
-        // Limpieza de campos para evitar errores de unicidad con strings vacíos
+        // Limpieza de campos para evitar errores de unicidad con strings vac?os
         if (this.telefono != null && this.telefono.isBlank()) {
             this.telefono = null;
         }

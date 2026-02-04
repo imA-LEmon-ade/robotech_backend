@@ -5,6 +5,6 @@ public enum RolUsuario {
     SUBADMINISTRADOR,
     COMPETIDOR,
     JUEZ,
-    CLUB,
-    CLUB_COMPETIDOR
+    CLUB
 }
+

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Set;
 import java.util.Locale;
 
 @Service
@@ -111,7 +112,7 @@ public class AdminClubService {
                 .correo(correoPropietario)
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasenaPropietario()))
                 .telefono(dto.getTelefonoPropietario())
-                .rol(RolUsuario.CLUB_COMPETIDOR)
+                .roles(Set.of(RolUsuario.CLUB, RolUsuario.COMPETIDOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 

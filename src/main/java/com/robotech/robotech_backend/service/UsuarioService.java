@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -87,7 +88,7 @@ public class UsuarioService {
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
                 // ⚠️ CORRECCIÓN: Usar el Enum RolUsuario.COMPETIDOR, no un String ni ADMINISTRADOR
-                .rol(RolUsuario.COMPETIDOR)
+                .roles(Set.of(RolUsuario.COMPETIDOR))
                 // ⚠️ CORRECCIÓN: Dejar solo un estado (ACTIVO para que pueda loguearse)
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
@@ -154,7 +155,7 @@ public class UsuarioService {
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .rol(RolUsuario.ADMINISTRADOR)          // 👈 FIJO
+                .roles(Set.of(RolUsuario.ADMINISTRADOR))          // 👈 FIJO
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
