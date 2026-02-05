@@ -6,6 +6,7 @@ import com.robotech.robotech_backend.repository.*;
 import com.robotech.robotech_backend.service.AuthService;
 import com.robotech.robotech_backend.service.CodigoRegistroService;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,24 @@ public class AuthController {
         return ResponseEntity.ok(
                 authService.login(request.getCorreo(), request.getContrasena())
         );
+    }
+
+    // -------------------------------------------------------
+    // SOLICITAR RESTABLECIMIENTO DE CONTRASEÑA
+    // -------------------------------------------------------
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<?> requestPasswordReset(@Valid @RequestBody PasswordResetRequestDTO request) {
+        authService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok("Si el correo electrónico está registrado, se ha enviado un enlace de restablecimiento de contraseña.");
+    }
+
+    // -------------------------------------------------------
+    // RESTABLECER CONTRASEÑA
+    // -------------------------------------------------------
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetConfirmDTO request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Contraseña restablecida exitosamente.");
     }
 
 
