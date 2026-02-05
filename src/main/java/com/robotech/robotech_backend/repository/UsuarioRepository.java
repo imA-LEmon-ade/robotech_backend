@@ -19,6 +19,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     List<Usuario> findByEstado(EstadoUsuario estado);
     boolean existsByCorreoIgnoreCase(String correo);
 
+    Optional<Usuario> findByPasswordResetToken(String token);
+
     // En UsuarioRepository.java
 
     @Query("SELECT COUNT(u) FROM Usuario u JOIN Competidor c ON c.usuario.idUsuario = u.idUsuario WHERE c.clubActual.idClub = :idClub")

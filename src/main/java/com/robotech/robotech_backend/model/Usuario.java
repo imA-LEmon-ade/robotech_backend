@@ -38,6 +38,12 @@ public class Usuario {
     @Column(nullable = false)
     private String contrasenaHash;
 
+    @Column(unique = true)
+    private String passwordResetToken;
+
+    @Column
+    private java.time.LocalDateTime passwordResetTokenExpiryDate;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "id_usuario"))
     @Enumerated(EnumType.STRING)

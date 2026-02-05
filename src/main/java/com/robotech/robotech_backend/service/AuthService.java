@@ -1,6 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.*;
+import com.robotech.robotech_backend.exception.InvalidPasswordResetTokenException;
+import com.robotech.robotech_backend.exception.UserNotFoundException;
 import com.robotech.robotech_backend.model.*;
 
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +33,8 @@ public class AuthService {
     private final CodigoRegistroService codigoService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TokenGeneratorService tokenGeneratorService; // Inyectar el nuevo servicio
+    private final EmailService emailService; // Inyectar EmailService
     private final com.robotech.robotech_backend.service.validadores.DniValidator dniValidator;
     private final com.robotech.robotech_backend.service.validadores.TelefonoValidator telefonoValidator;
 
@@ -123,6 +128,40 @@ public class AuthService {
                 roles,
                 entidad
         );
+    }
+
+    // -------------------------------------------------------
+    // SOLICITAR RESTABLECIMIENTO DE CONTRASEÑA
+    // -------------------------------------------------------
+    @Transactional
+    public void requestPasswordReset(String email) {
+        Usuario usuario = usuarioRepo.findByCorreo(email)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ese correo electrónico."));
+
+        String token = tokenGeneratorService.generateSecureToken();
+        usuario.setPasswordResetToken(token);
+        usuario.setPasswordResetTokenExpiryDate(LocalDateTime.now().plusHours(1)); // Token válido por 1 hora
+        usuarioRepo.save(usuario);
+
+        emailService.sendPasswordResetEmail(email, token);
+    }
+
+    // -------------------------------------------------------
+    // RESTABLECER CONTRASEÑA
+    // -------------------------------------------------------
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        Usuario usuario = usuarioRepo.findByPasswordResetToken(token)
+                .orElseThrow(() -> new InvalidPasswordResetTokenException("Token de restablecimiento inválido."));
+
+        if (usuario.getPasswordResetTokenExpiryDate() == null || usuario.getPasswordResetTokenExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new InvalidPasswordResetTokenException("Token de restablecimiento caducado.");
+        }
+
+        usuario.setContrasenaHash(passwordEncoder.encode(newPassword));
+        usuario.setPasswordResetToken(null); // Invalida el token
+        usuario.setPasswordResetTokenExpiryDate(null); // Elimina la fecha de caducidad
+        usuarioRepo.save(usuario);
     }
 
 

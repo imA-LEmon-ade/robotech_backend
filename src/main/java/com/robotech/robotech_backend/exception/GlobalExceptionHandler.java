@@ -37,6 +37,32 @@ public class GlobalExceptionHandler {
     }
 
     // =========================
+    // Manejo de UserNotFoundException
+    // =========================
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleUserNotFoundException(UserNotFoundException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("USER_NOT_FOUND");
+        error.setMessage(ex.getMessage());
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of("Verifica el correo electrónico ingresado."));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    // =========================
+    // Manejo de InvalidPasswordResetTokenException
+    // =========================
+    @ExceptionHandler(InvalidPasswordResetTokenException.class)
+    public ResponseEntity<ApiErrorDTO> handleInvalidPasswordResetTokenException(InvalidPasswordResetTokenException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("INVALID_RESET_TOKEN");
+        error.setMessage(ex.getMessage());
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of("El enlace de restablecimiento es inválido o ha caducado. Solicita uno nuevo."));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    // =========================
     // EMAIL DUPLICADO (Tu código existente)
     // =========================
     @ExceptionHandler(FieldValidationException.class)
