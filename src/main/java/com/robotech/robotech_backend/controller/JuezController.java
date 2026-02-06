@@ -9,7 +9,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/jueces")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class JuezController {
 
     private final JuezService juezService;

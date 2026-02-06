@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/club/robots")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('CLUB')")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class RobotClubController {
 
     private final RobotService robotService;

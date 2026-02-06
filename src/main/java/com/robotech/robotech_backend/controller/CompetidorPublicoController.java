@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/competidores")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class CompetidorPublicoController {
 
     private final CompetidorPublicoService competidorService;

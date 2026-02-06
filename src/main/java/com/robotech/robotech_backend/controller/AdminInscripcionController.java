@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/inscripciones")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class AdminInscripcionController {
 
     private final InscripcionTorneoService inscripcionService;

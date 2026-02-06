@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/clubes")
 @RequiredArgsConstructor
-@CrossOrigin("*") // Importante para que React pueda conectarse
+@CrossOrigin(origins = "${app.frontend.url}") // Importante para que React pueda conectarse
 public class ClubPublicoController {
 
     private final ClubPublicoService clubPublicoService;

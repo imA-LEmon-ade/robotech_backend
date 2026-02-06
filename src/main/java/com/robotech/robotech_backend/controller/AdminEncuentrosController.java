@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/encuentros")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAuthority('ADMINISTRADOR')")
 public class AdminEncuentrosController {
 

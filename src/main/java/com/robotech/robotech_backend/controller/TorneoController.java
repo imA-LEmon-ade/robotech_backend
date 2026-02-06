@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin/torneos")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class TorneoController {
 
     private final TorneoService torneoService;

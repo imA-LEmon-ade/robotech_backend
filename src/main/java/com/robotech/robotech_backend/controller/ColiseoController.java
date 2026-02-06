@@ -21,7 +21,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/admin/coliseos")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequiredArgsConstructor
 public class ColiseoController {
 

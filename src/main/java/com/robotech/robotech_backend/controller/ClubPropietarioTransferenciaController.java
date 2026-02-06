@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/club/propietario-transferencias")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAuthority('CLUB')")
 public class ClubPropietarioTransferenciaController {
 

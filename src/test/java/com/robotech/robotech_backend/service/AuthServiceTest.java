@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.exception.InvalidPasswordResetTokenException;
 import com.robotech.robotech_backend.exception.UserNotFoundException;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.security.JwtService; // Added missing import
 import org.junit.jupiter.api.BeforeEach;
