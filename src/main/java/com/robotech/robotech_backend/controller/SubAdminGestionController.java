@@ -37,3 +37,4 @@ public class SubAdminGestionController {
         return ResponseEntity.ok(competidorService.listarTodos());
     }
 }
+

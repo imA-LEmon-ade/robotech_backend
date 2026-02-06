@@ -11,3 +11,4 @@ public class ResultadoTorneoDTO {
     private String nombre; // Aquí llegará "Paquito"
     private Long puntaje;  // Aquí llegará 84
 }
+

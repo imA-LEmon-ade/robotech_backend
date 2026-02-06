@@ -37,3 +37,5 @@ public class TorneoPublicoController {
         return ResponseEntity.ok(categoriaTorneoService.listarPublicoPorTorneo(id));
     }
 }
+
+

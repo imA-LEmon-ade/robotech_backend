@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.TransferenciaCrearDTO;
 import com.robotech.robotech_backend.dto.TransferenciaDTO;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.TransferenciaCompetidorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -69,3 +69,5 @@ public class ClubTransferenciaController {
         return ResponseEntity.ok(transferenciaService.misSolicitudes(usuario.getIdUsuario()));
     }
 }
+
+

@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.InscripcionResumenDTO;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.InscripcionesConsultaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -63,3 +63,4 @@ public class InscripcionesConsultaController {
         return ResponseEntity.ok(service.listarTodas());
     }
 }
+

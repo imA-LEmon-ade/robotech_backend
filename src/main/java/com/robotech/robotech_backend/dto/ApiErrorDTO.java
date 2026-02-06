@@ -17,3 +17,5 @@ public class ApiErrorDTO {
     private List<String> suggestions;
 }
 
+
+

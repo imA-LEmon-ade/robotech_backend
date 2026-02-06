@@ -9,3 +9,4 @@ public class RegistrarResultadoEncuentroDTO {
     private String idEncuentro;
     private List<CalificacionParticipanteDTO> calificaciones;
 }
+

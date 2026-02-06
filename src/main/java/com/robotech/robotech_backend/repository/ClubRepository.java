@@ -1,7 +1,9 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.entity.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -40,4 +42,22 @@ public interface ClubRepository extends JpaRepository<Club, String> {
         JOIN FETCH c.usuario
     """)
     List<Club> findAllWithUsuario();
+
+    @Query(
+        value = """
+        SELECT c
+        FROM Club c
+        JOIN FETCH c.usuario u
+        WHERE (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+        """,
+        countQuery = """
+        SELECT COUNT(c)
+        FROM Club c
+        JOIN c.usuario u
+        WHERE (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+        """
+    )
+    Page<Club> buscarPorNombre(@Param("nombre") String nombre, Pageable pageable);
 }
+
+

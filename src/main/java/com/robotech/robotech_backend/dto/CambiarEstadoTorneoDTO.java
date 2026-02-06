@@ -7,3 +7,4 @@ import lombok.Data;
 public class CambiarEstadoTorneoDTO {
     private String estado;
 }
+

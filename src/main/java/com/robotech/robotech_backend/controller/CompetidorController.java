@@ -88,3 +88,4 @@ public class CompetidorController {
         return ResponseEntity.ok().build();
     }
 }
+

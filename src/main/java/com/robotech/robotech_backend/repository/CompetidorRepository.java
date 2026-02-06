@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Competidor;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.entity.Competidor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,3 +26,5 @@ public interface CompetidorRepository extends JpaRepository<Competidor, String> 
     long countByClubActual_IdClub(String idClub);
 
 }
+
+

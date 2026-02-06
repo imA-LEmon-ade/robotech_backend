@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.RolUsuario;
+import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -30,3 +30,5 @@ public record EditarUsuarioDTO(
         Set<RolUsuario> roles,
         EstadoUsuario estado
 ) {}
+
+

@@ -9,3 +9,5 @@ public class FiltroRobotsAdminDTO {
     private String idClub;        // opcional
     private String idCategoria;   // opcional
 }
+
+

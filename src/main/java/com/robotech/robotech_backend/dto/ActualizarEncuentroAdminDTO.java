@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoEncuentro;
+import com.robotech.robotech_backend.model.enums.EstadoEncuentro;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,3 +13,5 @@ public class ActualizarEncuentroAdminDTO {
     private Date fecha;
     private EstadoEncuentro estado;
 }
+
+

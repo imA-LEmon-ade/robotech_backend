@@ -1,7 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.*;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -468,3 +469,5 @@ public class EncuentroService {
         }
     }
 }
+
+

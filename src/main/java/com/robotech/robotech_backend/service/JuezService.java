@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.JuezSelectDTO;
-import com.robotech.robotech_backend.model.Juez;
+import com.robotech.robotech_backend.model.entity.Juez;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -31,3 +31,5 @@ public class JuezService {
         juezRepository.deleteById(id);
     }
 }
+
+

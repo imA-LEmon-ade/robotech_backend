@@ -3,16 +3,18 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.CambiarEstadoSubAdminDTO;
 import com.robotech.robotech_backend.dto.CrearSubAdminDTO;
 import com.robotech.robotech_backend.dto.EditarSubAdminDTO;
+import com.robotech.robotech_backend.dto.PageResponse;
 import com.robotech.robotech_backend.dto.SubAdminResponseDTO;
-import com.robotech.robotech_backend.model.EstadoSubAdmin;
+import com.robotech.robotech_backend.model.enums.EstadoSubAdmin;
 import com.robotech.robotech_backend.service.SubAdministradorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/subadmins")
@@ -33,8 +35,25 @@ public class SubAdministradorController {
 
     // LISTAR
     @GetMapping
-    public ResponseEntity<List<SubAdminResponseDTO>> listarTodos() {
-        return ResponseEntity.ok(subAdminService.listarTodos());
+    public ResponseEntity<PageResponse<SubAdminResponseDTO>> listarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q
+    ) {
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by("idUsuario").ascending()
+        );
+
+        Page<SubAdminResponseDTO> result = subAdminService.listarTodos(pageable, q);
+        return ResponseEntity.ok(new PageResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        ));
     }
 
     // CAMBIAR ESTADO ✅
@@ -55,3 +74,5 @@ public class SubAdministradorController {
         return subAdminService.editar(id, dto);
     }
 }
+
+

@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.service;
 
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("Usuario no encontrado"));
 
-        java.util.Set<com.robotech.robotech_backend.model.RolUsuario> roles =
+        java.util.Set<com.robotech.robotech_backend.model.enums.RolUsuario> roles =
                 (usuario.getRoles() != null ? usuario.getRoles() : java.util.Collections.emptySet());
 
         List<SimpleGrantedAuthority> authorities = roles.stream()
@@ -43,3 +43,5 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 }
+
+

@@ -22,3 +22,5 @@ public class EncuentroPublicoController {
         return ResponseEntity.ok(encuentroService.listarEncuentrosPublicosPorCategoria(idCategoriaTorneo));
     }
 }
+
+

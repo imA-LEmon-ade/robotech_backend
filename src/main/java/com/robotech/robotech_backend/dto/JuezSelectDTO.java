@@ -4,3 +4,5 @@ public record JuezSelectDTO(
         String idJuez,
         String nombreCompleto
 ) {}
+
+

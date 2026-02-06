@@ -17,3 +17,4 @@ public class CrearTorneoDTO {
     // ⚠️ IMPORTANTE: Agregamos este campo para recibir el estado
     private String estado;
 }
+

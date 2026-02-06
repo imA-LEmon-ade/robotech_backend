@@ -7,3 +7,4 @@ public class CalificacionParticipanteDTO {
     private String idReferencia;
     private Integer calificacion;
 }
+

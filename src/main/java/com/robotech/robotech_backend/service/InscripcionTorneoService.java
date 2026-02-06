@@ -1,7 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.InscripcionIndividualDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -191,3 +192,5 @@ public class InscripcionTorneoService {
         return inscripcionRepo.save(inscripcion);
     }
 }
+
+

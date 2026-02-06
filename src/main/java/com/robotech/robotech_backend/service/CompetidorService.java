@@ -3,7 +3,8 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorClubDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -235,3 +236,5 @@ public class CompetidorService {
         competidorRepo.save(competidor);
     }
 }
+
+

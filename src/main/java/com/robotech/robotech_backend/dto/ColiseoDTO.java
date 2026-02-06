@@ -10,3 +10,5 @@ public class ColiseoDTO {
     private String ubicacion;
     private String imagenUrl;
 }
+
+

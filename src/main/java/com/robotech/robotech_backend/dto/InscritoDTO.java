@@ -10,3 +10,5 @@ public class InscritoDTO {
     private String categoria;
     private String estado;
 }
+
+

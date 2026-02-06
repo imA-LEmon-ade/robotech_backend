@@ -8,3 +8,5 @@ public record CompetidorLoginDTO(
         String idClub,
         String nombreClub
 ) {}
+
+

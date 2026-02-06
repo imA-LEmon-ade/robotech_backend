@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.repository;
 
 import com.robotech.robotech_backend.dto.RankingDTO;
 import com.robotech.robotech_backend.dto.ResultadoTorneoDTO;
-import com.robotech.robotech_backend.model.HistorialCalificacion;
+import com.robotech.robotech_backend.model.entity.HistorialCalificacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -85,3 +85,4 @@ public interface HistorialCalificacionRepository extends JpaRepository<Historial
 
     List<HistorialCalificacion> findByEncuentro_CategoriaTorneo_IdCategoriaTorneo(String idCategoriaTorneo);
 }
+

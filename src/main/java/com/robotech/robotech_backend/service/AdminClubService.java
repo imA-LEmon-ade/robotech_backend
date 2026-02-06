@@ -3,7 +3,8 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.ClubResponseDTO;
 import com.robotech.robotech_backend.dto.CrearClubDTO;
 import com.robotech.robotech_backend.dto.EditarClubDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -13,6 +14,8 @@ import com.robotech.robotech_backend.service.validadores.EmailValidator;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,19 +148,10 @@ public class AdminClubService {
     // =========================
     // LISTAR CLUBES
     // =========================
-    public List<ClubResponseDTO> listar(String nombre) {
-
-        if (nombre == null || nombre.isBlank()) {
-            return clubRepo.findAllWithUsuario()
-                    .stream()
-                    .map(this::mapClub)
-                    .toList();
-        }
-
-        return clubRepo.findByNombreContainingIgnoreCase(nombre)
-                .stream()
-                .map(this::mapClub)
-                .toList();
+    public Page<ClubResponseDTO> listar(String nombre, Pageable pageable) {
+        String q = (nombre == null || nombre.isBlank()) ? null : nombre.trim();
+        return clubRepo.buscarPorNombre(q, pageable)
+                .map(this::mapClub);
     }
 
     // =========================
@@ -273,3 +267,5 @@ public class AdminClubService {
         return correo.trim().toLowerCase(Locale.ROOT);
     }
 }
+
+

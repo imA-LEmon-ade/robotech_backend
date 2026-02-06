@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.SolicitudIngresoCrearDTO;
 import com.robotech.robotech_backend.dto.SolicitudIngresoDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -183,3 +184,5 @@ public class SolicitudIngresoClubService {
                 .build();
     }
 }
+
+

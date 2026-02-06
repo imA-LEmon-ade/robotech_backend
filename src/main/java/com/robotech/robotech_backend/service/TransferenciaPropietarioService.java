@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.TransferenciaPropietarioCrearDTO;
 import com.robotech.robotech_backend.dto.TransferenciaPropietarioDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.TransferenciaPropietarioRepository;
@@ -208,3 +209,5 @@ public class TransferenciaPropietarioService {
                 .build();
     }
 }
+
+

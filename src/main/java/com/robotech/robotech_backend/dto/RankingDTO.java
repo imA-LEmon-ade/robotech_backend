@@ -14,3 +14,5 @@ public class RankingDTO {
     private Double promedioPuntaje;
     private Integer puntosRanking;
 }
+
+

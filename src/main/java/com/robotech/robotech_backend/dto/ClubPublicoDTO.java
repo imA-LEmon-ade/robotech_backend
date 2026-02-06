@@ -14,3 +14,4 @@ public class ClubPublicoDTO {
     private String correoContacto;
     private long cantidadCompetidores;
 }
+

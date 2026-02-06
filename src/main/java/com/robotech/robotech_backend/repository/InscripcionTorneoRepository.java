@@ -1,7 +1,8 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.*;
-import com.robotech.robotech_backend.model.EstadoInscripcion;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
+import com.robotech.robotech_backend.model.enums.EstadoInscripcion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -95,3 +96,5 @@ public interface InscripcionTorneoRepository
     List<InscripcionTorneo>
     findByCategoriaTorneoTorneoIdTorneo(String idTorneo);
 }
+
+

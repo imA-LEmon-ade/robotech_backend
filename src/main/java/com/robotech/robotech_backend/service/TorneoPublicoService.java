@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.TorneoPublicoDTO;
 import com.robotech.robotech_backend.dto.ResultadoTorneoDTO;
-import com.robotech.robotech_backend.model.Torneo;
+import com.robotech.robotech_backend.model.entity.Torneo;
 import com.robotech.robotech_backend.repository.TorneoRepository;
 import com.robotech.robotech_backend.repository.HistorialCalificacionRepository;
 import lombok.RequiredArgsConstructor;
@@ -104,3 +104,4 @@ public class TorneoPublicoService {
         );
     }
 }
+

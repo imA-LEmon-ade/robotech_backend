@@ -4,7 +4,8 @@ import com.robotech.robotech_backend.dto.ActualizarEncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.CategoriaEncuentroAdminDTO;
 import com.robotech.robotech_backend.dto.CrearEncuentrosDTO;
 import com.robotech.robotech_backend.dto.EncuentroAdminDTO;
-import com.robotech.robotech_backend.model.Encuentro;
+import com.robotech.robotech_backend.dto.PageResponse;
+import com.robotech.robotech_backend.model.entity.Encuentro;
 import com.robotech.robotech_backend.service.AdminEncuentrosService;
 import com.robotech.robotech_backend.service.EncuentroService;
 import jakarta.validation.Valid;
@@ -29,10 +30,28 @@ public class AdminEncuentrosController {
     // 1️⃣ LISTAR CATEGORÍAS LISTAS PARA GENERAR ENCUENTROS
     // ----------------------------------------------------
     @GetMapping("/categorias")
-    public ResponseEntity<List<CategoriaEncuentroAdminDTO>> listarCategorias() {
-        return ResponseEntity.ok(
-                adminEncuentrosService.listarCategoriasActivas()
-        );
+    public ResponseEntity<PageResponse<CategoriaEncuentroAdminDTO>> listarCategorias(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String estado
+    ) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+
+        List<CategoriaEncuentroAdminDTO> all = adminEncuentrosService.listarCategoriasActivas(q, estado);
+        int total = all.size();
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) safeSize));
+        int from = Math.min(safePage * safeSize, total);
+        int to = Math.min(from + safeSize, total);
+
+        return ResponseEntity.ok(new PageResponse<>(
+                all.subList(from, to),
+                safePage,
+                safeSize,
+                total,
+                totalPages
+        ));
     }
 
     // ----------------------------------------------------
@@ -85,3 +104,5 @@ public class AdminEncuentrosController {
     }
 
 }
+
+

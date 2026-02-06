@@ -3,7 +3,8 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.*;
 import com.robotech.robotech_backend.exception.InvalidPasswordResetTokenException;
 import com.robotech.robotech_backend.exception.UserNotFoundException;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
@@ -43,8 +44,17 @@ public class AuthService {
     // -------------------------------------------------------
     public LoginResponseDTO login(String correo, String contrasena) {
 
-        if (correo == null || correo.isBlank() || contrasena == null || contrasena.isBlank()) {
-            throw new RuntimeException("Por favor rellena los campos");
+        boolean correoVacio = correo == null || correo.isBlank();
+        boolean contrasenaVacia = contrasena == null || contrasena.isBlank();
+
+        if (correoVacio && contrasenaVacia) {
+            throw new RuntimeException("Usuario y contraseña vacíos");
+        }
+        if (correoVacio) {
+            throw new RuntimeException("Usuario vacío");
+        }
+        if (contrasenaVacia) {
+            throw new RuntimeException("Contraseña vacía");
         }
 
         Usuario usuario = usuarioRepo.findByCorreo(correo).orElse(null);
@@ -53,7 +63,7 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(contrasena, usuario.getContrasenaHash())) {
-            throw new RuntimeException("Contrasena incorrecta");
+            throw new RuntimeException("Contraseña incorrecta");
         }
 
         if (usuario.getEstado() != EstadoUsuario.ACTIVO) {
@@ -281,3 +291,5 @@ public class AuthService {
         juezRepo.save(juez);
     }
 }
+
+

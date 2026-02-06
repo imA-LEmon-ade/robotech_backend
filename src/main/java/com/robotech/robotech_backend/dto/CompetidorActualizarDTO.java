@@ -10,3 +10,5 @@ public class CompetidorActualizarDTO {
     private String correo;
     private String dni;
 }
+
+

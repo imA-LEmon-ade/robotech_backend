@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoValidacion;
+import com.robotech.robotech_backend.model.enums.EstadoValidacion;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,3 +11,5 @@ public class JuezEstadoDTO {
     private String licencia;
     private EstadoValidacion estado;
 }
+
+

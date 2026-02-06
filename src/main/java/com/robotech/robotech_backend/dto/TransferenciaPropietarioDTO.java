@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoTransferenciaPropietario;
+import com.robotech.robotech_backend.model.enums.EstadoTransferenciaPropietario;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,3 +26,5 @@ public class TransferenciaPropietarioDTO {
     private Date actualizadoEn;
     private Date aprobadoEn;
 }
+
+

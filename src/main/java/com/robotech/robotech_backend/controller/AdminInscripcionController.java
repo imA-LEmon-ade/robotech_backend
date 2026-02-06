@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.InscripcionResumenDTO;
+import com.robotech.robotech_backend.dto.PageResponse;
 import com.robotech.robotech_backend.service.EquipoInscripcionService;
 import com.robotech.robotech_backend.service.InscripcionTorneoService;
 import com.robotech.robotech_backend.service.InscripcionesConsultaService;
@@ -22,8 +23,29 @@ public class AdminInscripcionController {
 
     // Listar todas (admin)
     @GetMapping
-    public List<InscripcionResumenDTO> listarTodas() {
-        return consultaService.listarTodas();
+    public PageResponse<InscripcionResumenDTO> listarTodas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q
+    ) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(size, 1);
+
+        List<InscripcionResumenDTO> all = consultaService.listarTodas(q);
+        int total = all.size();
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) safeSize));
+        int from = Math.min(safePage * safeSize, total);
+        int to = Math.min(from + safeSize, total);
+
+        List<InscripcionResumenDTO> content = all.subList(from, to);
+
+        return new PageResponse<>(
+                content,
+                safePage,
+                safeSize,
+                total,
+                totalPages
+        );
     }
 
     // Anular inscripcion individual
@@ -52,3 +74,5 @@ public class AdminInscripcionController {
         return ResponseEntity.ok("Inscripcion de equipo anulada");
     }
 }
+
+

@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.service.TorneoService;
 import com.robotech.robotech_backend.service.TorneoCompetidorService;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -49,3 +49,4 @@ public class TorneoCompetidorController {
         );
     }
 }
+

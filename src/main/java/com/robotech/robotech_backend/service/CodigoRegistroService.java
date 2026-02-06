@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.service;
 
-import com.robotech.robotech_backend.model.CodigoRegistroCompetidor;
-import com.robotech.robotech_backend.model.Club;
+import com.robotech.robotech_backend.model.entity.CodigoRegistroCompetidor;
+import com.robotech.robotech_backend.model.entity.Club;
 import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import lombok.RequiredArgsConstructor;
@@ -88,3 +88,5 @@ public class CodigoRegistroService {
 
 
 }
+
+

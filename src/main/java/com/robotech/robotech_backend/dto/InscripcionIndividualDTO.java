@@ -7,3 +7,5 @@ public class InscripcionIndividualDTO {
     private String idCategoriaTorneo;
     private String idRobot;
 }
+
+

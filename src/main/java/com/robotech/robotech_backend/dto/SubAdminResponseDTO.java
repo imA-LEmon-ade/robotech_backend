@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoSubAdmin;
+import com.robotech.robotech_backend.model.enums.EstadoSubAdmin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -16,4 +16,6 @@ public class SubAdminResponseDTO {
     private String dni;
     private EstadoSubAdmin estado;
 }
+
+
 

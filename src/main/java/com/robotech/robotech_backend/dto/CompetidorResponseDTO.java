@@ -15,3 +15,4 @@ public class CompetidorResponseDTO {
     private String estadoValidacion;
     String telefono;
 }
+

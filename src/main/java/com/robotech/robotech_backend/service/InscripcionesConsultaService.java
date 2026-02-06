@@ -1,10 +1,10 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.InscripcionResumenDTO;
-import com.robotech.robotech_backend.model.EstadoInscripcion;
-import com.robotech.robotech_backend.model.InscripcionTorneo;
-import com.robotech.robotech_backend.model.EquipoTorneo;
-import com.robotech.robotech_backend.model.Robot;
+import com.robotech.robotech_backend.model.enums.EstadoInscripcion;
+import com.robotech.robotech_backend.model.entity.InscripcionTorneo;
+import com.robotech.robotech_backend.model.entity.EquipoTorneo;
+import com.robotech.robotech_backend.model.entity.Robot;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +94,17 @@ public class InscripcionesConsultaService {
         return Stream.concat(individuales.stream(), equipos.stream()).toList();
     }
 
+    public List<InscripcionResumenDTO> listarTodas(String busqueda) {
+        List<InscripcionResumenDTO> todas = listarTodas();
+        if (busqueda == null || busqueda.trim().isEmpty()) {
+            return todas;
+        }
+        String term = busqueda.trim();
+        return todas.stream()
+                .filter(dto -> aplicarFiltros(dto, term, null))
+                .toList();
+    }
+
     // =============================================================
     // HELPERS PRIVADOS (Lógica corregida)
     // =============================================================
@@ -150,3 +161,4 @@ public class InscripcionesConsultaService {
                 .build();
     }
 }
+

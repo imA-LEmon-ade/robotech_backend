@@ -6,3 +6,5 @@ import lombok.Data;
 public class SolicitudIngresoCrearDTO {
     private String codigoClub;
 }
+
+

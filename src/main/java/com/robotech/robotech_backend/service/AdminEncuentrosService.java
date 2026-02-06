@@ -1,10 +1,10 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CategoriaEncuentroAdminDTO;
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.EstadoEquipoTorneo;
-import com.robotech.robotech_backend.model.EstadoInscripcion;
-import com.robotech.robotech_backend.model.ModalidadCategoria;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo;
+import com.robotech.robotech_backend.model.enums.EstadoInscripcion;
+import com.robotech.robotech_backend.model.enums.ModalidadCategoria;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.EncuentroRepository;
@@ -33,6 +33,31 @@ public class AdminEncuentrosService {
 
         return categoriaRepo.findAll().stream()
                 .map(categoria -> mapearCategoria(categoria, hoy))
+                .toList();
+    }
+
+    public List<CategoriaEncuentroAdminDTO> listarCategoriasActivas(String q, String estado) {
+        String term = q == null ? "" : q.trim().toLowerCase();
+        String estadoNorm = estado == null ? "TODOS" : estado.trim().toUpperCase();
+
+        return listarCategoriasActivas().stream()
+                .filter(cat -> {
+                    if (!term.isEmpty()) {
+                        String torneo = cat.getTorneo() != null ? cat.getTorneo().toLowerCase() : "";
+                        String categoria = cat.getCategoria() != null ? cat.getCategoria().toLowerCase() : "";
+                        if (!torneo.contains(term) && !categoria.contains(term)) {
+                            return false;
+                        }
+                    }
+
+                    if ("ABIERTAS".equals(estadoNorm)) {
+                        return !cat.isInscripcionesCerradas();
+                    }
+                    if ("CERRADAS".equals(estadoNorm)) {
+                        return cat.isInscripcionesCerradas();
+                    }
+                    return true;
+                })
                 .toList();
     }
 
@@ -89,3 +114,5 @@ public class AdminEncuentrosService {
                 .build();
     }
 }
+
+

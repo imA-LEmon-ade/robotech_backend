@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.TransferenciaCrearDTO;
 import com.robotech.robotech_backend.dto.TransferenciaDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.TransferenciaCompetidorRepository;
@@ -189,3 +190,5 @@ public class TransferenciaCompetidorService {
                 .build();
     }
 }
+
+

@@ -1,8 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CompetidorPublicoDTO;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.Robot;
+import com.robotech.robotech_backend.model.entity.Competidor;
+import com.robotech.robotech_backend.model.entity.Robot;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,3 +64,4 @@ public class CompetidorPublicoService {
         return dtos;
     }
 }
+

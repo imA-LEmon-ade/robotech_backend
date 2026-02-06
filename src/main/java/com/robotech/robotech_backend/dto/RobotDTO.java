@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.CategoriaCompetencia;
+import com.robotech.robotech_backend.model.enums.CategoriaCompetencia;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,3 +14,5 @@ public class RobotDTO {
     private String nickname;
     private String idRobot;
 }
+
+

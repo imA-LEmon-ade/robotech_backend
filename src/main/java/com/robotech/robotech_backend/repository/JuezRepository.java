@@ -1,7 +1,9 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EstadoValidacion;
-import com.robotech.robotech_backend.model.Juez;
+import com.robotech.robotech_backend.model.enums.EstadoValidacion;
+import com.robotech.robotech_backend.model.entity.Juez;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +40,31 @@ public interface JuezRepository extends JpaRepository<Juez, String> {
             @Param("idJuez") String idJuez,
             @Param("estado") EstadoValidacion estado
     );
+
+    @Query(
+        value = """
+        SELECT j FROM Juez j
+        JOIN FETCH j.usuario u
+        WHERE (:q IS NULL OR
+            LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.nombres, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.apellidos, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.correo, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(j.licencia, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+        )
+        """,
+        countQuery = """
+        SELECT COUNT(j) FROM Juez j
+        JOIN j.usuario u
+        WHERE (:q IS NULL OR
+            LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.nombres, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.apellidos, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(u.correo, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+            LOWER(COALESCE(j.licencia, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+        )
+        """
+    )
+    Page<Juez> buscar(@Param("q") String q, Pageable pageable);
 }
+

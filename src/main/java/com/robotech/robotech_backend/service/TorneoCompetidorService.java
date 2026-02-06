@@ -2,10 +2,10 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.ResultadoTorneoDTO;
 import com.robotech.robotech_backend.dto.TorneoCompetidorDTO;
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.EquipoTorneo;
-import com.robotech.robotech_backend.model.InscripcionTorneo;
-import com.robotech.robotech_backend.model.Torneo;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.entity.EquipoTorneo;
+import com.robotech.robotech_backend.model.entity.InscripcionTorneo;
+import com.robotech.robotech_backend.model.entity.Torneo;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.HistorialCalificacionRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
@@ -150,3 +150,5 @@ public class TorneoCompetidorService {
                 .toLocalDate();
     }
 }
+
+

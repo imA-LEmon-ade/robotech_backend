@@ -33,3 +33,5 @@ public class AdminPropietarioTransferenciaController {
         return ResponseEntity.ok(transferenciaService.rechazar(id));
     }
 }
+
+

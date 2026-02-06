@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EstadoTransferencia;
-import com.robotech.robotech_backend.model.TransferenciaCompetidor;
+import com.robotech.robotech_backend.model.enums.EstadoTransferencia;
+import com.robotech.robotech_backend.model.entity.TransferenciaCompetidor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
@@ -17,3 +17,5 @@ public interface TransferenciaCompetidorRepository extends JpaRepository<Transfe
 
     boolean existsByCompetidor_IdCompetidorAndEstadoIn(String idCompetidor, Collection<EstadoTransferencia> estados);
 }
+
+

@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoEncuentro;
-import com.robotech.robotech_backend.model.TipoEncuentro;
+import com.robotech.robotech_backend.model.enums.EstadoEncuentro;
+import com.robotech.robotech_backend.model.enums.TipoEncuentro;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -21,3 +21,5 @@ public class EncuentroAdminDTO {
     private String juez;
     private String coliseo;
 }
+
+

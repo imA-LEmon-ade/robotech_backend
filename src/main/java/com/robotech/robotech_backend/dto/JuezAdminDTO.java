@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoValidacion;
+import com.robotech.robotech_backend.model.enums.EstadoValidacion;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +19,6 @@ public class JuezAdminDTO {
     private UsuarioDTO usuario;
 
 }
+
+
 

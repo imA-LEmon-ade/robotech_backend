@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.CodigoRegistroCompetidor;
+import com.robotech.robotech_backend.model.entity.CodigoRegistroCompetidor;
 import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository;
 import com.robotech.robotech_backend.service.CodigoRegistroService;
 import lombok.RequiredArgsConstructor;
@@ -45,3 +45,5 @@ public class CodigoRegistroController {
     }
 
 }
+
+

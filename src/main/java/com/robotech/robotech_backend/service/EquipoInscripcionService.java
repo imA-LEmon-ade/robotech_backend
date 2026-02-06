@@ -1,7 +1,8 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.EquipoInscripcionDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
@@ -159,3 +160,5 @@ public class EquipoInscripcionService {
         return equipoRepo.save(equipo);
     }
 }
+
+

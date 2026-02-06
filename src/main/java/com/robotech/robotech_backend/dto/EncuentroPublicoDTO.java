@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoEncuentro;
-import com.robotech.robotech_backend.model.TipoEncuentro;
+import com.robotech.robotech_backend.model.enums.EstadoEncuentro;
+import com.robotech.robotech_backend.model.enums.TipoEncuentro;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,3 +25,5 @@ public class EncuentroPublicoDTO {
     private String coliseo;
     private List<ParticipanteEncuentroDTO> participantes;
 }
+
+

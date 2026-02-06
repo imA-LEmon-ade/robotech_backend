@@ -6,3 +6,5 @@ public record ClubLoginDTO(
         String correoContacto,
         String telefonoContacto
 ) {}
+
+

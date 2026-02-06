@@ -1,10 +1,14 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.ColiseoDTO;
-import com.robotech.robotech_backend.model.Coliseo;
+import com.robotech.robotech_backend.dto.PageResponse;
+import com.robotech.robotech_backend.model.entity.Coliseo;
 import com.robotech.robotech_backend.repository.ColiseoRepository;
 import com.robotech.robotech_backend.service.ColiseoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,8 +40,25 @@ public class ColiseoController {
     // LISTAR
     // -------------------------
     @GetMapping
-    public ResponseEntity<?> listar() {
-        return ResponseEntity.ok(coliseoService.listar());
+    public ResponseEntity<PageResponse<ColiseoDTO>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q
+    ) {
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by("idColiseo").ascending()
+        );
+
+        Page<ColiseoDTO> result = coliseoService.listar(pageable, q);
+        return ResponseEntity.ok(new PageResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        ));
     }
 
     // -------------------------
@@ -82,3 +103,5 @@ public class ColiseoController {
     }
 
 }
+
+

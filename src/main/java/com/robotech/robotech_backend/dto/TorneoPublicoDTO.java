@@ -35,3 +35,4 @@ public class TorneoPublicoDTO {
         this.resultados = new java.util.ArrayList<>(); // Inicializado vacío
     }
 }
+

@@ -2,10 +2,14 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.CambiarEstadoTorneoDTO;
 import com.robotech.robotech_backend.dto.CrearTorneoDTO;
-import com.robotech.robotech_backend.model.Torneo;
+import com.robotech.robotech_backend.dto.PageResponse;
+import com.robotech.robotech_backend.model.entity.Torneo;
 import com.robotech.robotech_backend.service.CategoriaTorneoService;
 import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +34,25 @@ public class TorneoController {
 
     // 2. Listar torneos
     @GetMapping
-    public ResponseEntity<?> listar() {
-        return ResponseEntity.ok(torneoService.listar());
+    public ResponseEntity<PageResponse<Torneo>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q
+    ) {
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by("idTorneo").ascending()
+        );
+
+        Page<Torneo> result = torneoService.listar(pageable, q);
+        return ResponseEntity.ok(new PageResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        ));
     }
 
     // 3. Editar torneo
@@ -88,3 +109,4 @@ public class TorneoController {
         return ResponseEntity.ok(torneoService.obtener(id));
     }
 }
+

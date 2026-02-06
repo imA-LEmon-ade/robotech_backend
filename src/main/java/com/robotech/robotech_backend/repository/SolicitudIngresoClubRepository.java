@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EstadoSolicitudIngresoClub;
-import com.robotech.robotech_backend.model.SolicitudIngresoClub;
+import com.robotech.robotech_backend.model.enums.EstadoSolicitudIngresoClub;
+import com.robotech.robotech_backend.model.entity.SolicitudIngresoClub;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,3 +13,5 @@ public interface SolicitudIngresoClubRepository extends JpaRepository<SolicitudI
 
     boolean existsByCompetidor_IdCompetidorAndEstado(String idCompetidor, EstadoSolicitudIngresoClub estado);
 }
+
+

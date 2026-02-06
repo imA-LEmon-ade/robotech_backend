@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.ModalidadCategoria;
+import com.robotech.robotech_backend.model.enums.ModalidadCategoria;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,3 +20,5 @@ public class CategoriaTorneoPublicoDTO {
     private Integer maxIntegrantesEquipo;
     private Boolean inscripcionesCerradas;
 }
+
+

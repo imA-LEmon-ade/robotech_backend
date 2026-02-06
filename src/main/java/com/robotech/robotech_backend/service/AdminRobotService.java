@@ -1,10 +1,12 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.RobotAdminDTO;
-import com.robotech.robotech_backend.model.CategoriaCompetencia;
-import com.robotech.robotech_backend.model.Robot;
+import com.robotech.robotech_backend.model.enums.CategoriaCompetencia;
+import com.robotech.robotech_backend.model.entity.Robot;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +18,11 @@ public class AdminRobotService {
 
     private final RobotRepository robotRepo;
 
-    public List<RobotAdminDTO> listarRobots(
+    public Page<RobotAdminDTO> listarRobots(
             String nombre,
             String categoria,
-            String idClub
+            String idClub,
+            Pageable pageable
     ) {
 
         CategoriaCompetencia categoriaEnum = null;
@@ -28,14 +31,14 @@ public class AdminRobotService {
             categoriaEnum = CategoriaCompetencia.valueOf(categoria);
         }
 
-        List<Robot> robots = robotRepo.filtrarRobots(
+        Page<Robot> robots = robotRepo.filtrarRobotsPage(
                 nombre,
                 categoriaEnum,
-                idClub
+                idClub,
+                pageable
         );
 
-        return robots.stream()
-                .map(r -> RobotAdminDTO.builder()
+        return robots.map(r -> RobotAdminDTO.builder()
                         .idRobot(r.getIdRobot())
                         .nombre(r.getNombre())
                         .nickname(r.getNickname())
@@ -56,7 +59,8 @@ public class AdminRobotService {
                                         .orElse(null)
                         )
                         .build()
-                )
-                .toList();
+                );
     }
 }
+
+

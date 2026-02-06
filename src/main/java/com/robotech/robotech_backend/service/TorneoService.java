@@ -1,18 +1,20 @@
 package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearTorneoDTO;
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.EstadoEquipoTorneo;
-import com.robotech.robotech_backend.model.EstadoInscripcion;
-import com.robotech.robotech_backend.model.Torneo;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo;
+import com.robotech.robotech_backend.model.enums.EstadoInscripcion;
+import com.robotech.robotech_backend.model.entity.Torneo;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.EquipoTorneoRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
 import com.robotech.robotech_backend.repository.TorneoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,8 +69,9 @@ public class TorneoService {
     // --------------------------------------------------
     // LISTAR Y OBTENER
     // --------------------------------------------------
-    public List<Torneo> listar() {
-        return torneoRepo.findAll();
+    public Page<Torneo> listar(Pageable pageable, String q) {
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        return torneoRepo.buscar(term, pageable);
     }
 
     public List<Torneo> listarDisponibles() {
@@ -178,7 +181,7 @@ public class TorneoService {
         if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
             return torneoRepo.findAll();
         }
-        if (usuario.getRoles().contains(com.robotech.robotech_backend.model.RolUsuario.ADMINISTRADOR)) {
+        if (usuario.getRoles().contains(com.robotech.robotech_backend.model.enums.RolUsuario.ADMINISTRADOR)) {
             return torneoRepo.findAll();
         }
         return torneoRepo.findByCreadoPor(usuario.getIdUsuario());
@@ -204,3 +207,5 @@ public class TorneoService {
                 );
     }
 }
+
+

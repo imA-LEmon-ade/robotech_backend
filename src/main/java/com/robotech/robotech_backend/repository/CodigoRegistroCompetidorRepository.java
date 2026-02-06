@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.CodigoRegistroCompetidor;
+import com.robotech.robotech_backend.model.entity.CodigoRegistroCompetidor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,3 +16,5 @@ public interface CodigoRegistroCompetidorRepository extends JpaRepository<Codigo
     // ✅ Método para contar (Este es el que usaremos para el contador de la interfaz)
     long countByClubIdClub(String idClub);
 }
+
+

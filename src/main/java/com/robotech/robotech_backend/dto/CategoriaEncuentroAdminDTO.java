@@ -21,3 +21,5 @@ public class CategoriaEncuentroAdminDTO {
     private boolean inscripcionesCerradas;
     private boolean hasEncuentros;
 }
+
+

@@ -24,3 +24,4 @@ public class CompetidorPublicoController {
         return ResponseEntity.ok(competidorService.obtenerRanking());
     }
 }
+

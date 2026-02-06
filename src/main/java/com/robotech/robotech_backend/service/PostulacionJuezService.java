@@ -2,10 +2,10 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.JuezEstadoDTO;
 import com.robotech.robotech_backend.dto.JuezPostulacionDTO;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.EstadoValidacion;
-import com.robotech.robotech_backend.model.Juez;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Competidor;
+import com.robotech.robotech_backend.model.enums.EstadoValidacion;
+import com.robotech.robotech_backend.model.entity.Juez;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -85,3 +85,5 @@ public class PostulacionJuezService {
         return new JuezEstadoDTO(guardado.getIdJuez(), guardado.getLicencia(), guardado.getEstadoValidacion());
     }
 }
+
+

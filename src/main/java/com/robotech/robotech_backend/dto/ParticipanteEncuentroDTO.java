@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.TipoParticipante;
+import com.robotech.robotech_backend.model.enums.TipoParticipante;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,3 +17,4 @@ public class ParticipanteEncuentroDTO {
     private Integer calificacion;
     private Boolean ganador;
 }
+

@@ -3,13 +3,16 @@ package com.robotech.robotech_backend.service;
 import com.robotech.robotech_backend.dto.CrearSubAdminDTO;
 import com.robotech.robotech_backend.dto.EditarSubAdminDTO;
 import com.robotech.robotech_backend.dto.SubAdminResponseDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.SubAdministradorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -70,11 +73,10 @@ public class SubAdministradorService {
     // =========================
     // LISTAR TODOS
     // =========================
-    public List<SubAdminResponseDTO> listarTodos() {
-        return subAdminRepo.findAll()
-                .stream()
-                .map(this::map)
-                .toList();
+    public Page<SubAdminResponseDTO> listarTodos(Pageable pageable, String q) {
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        return subAdminRepo.buscar(term, pageable)
+                .map(this::map);
     }
 
     // =========================
@@ -151,3 +153,5 @@ public class SubAdministradorService {
     }
 
 }
+
+

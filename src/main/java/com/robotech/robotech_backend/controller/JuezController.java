@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.Juez;
+import com.robotech.robotech_backend.model.entity.Juez;
 import com.robotech.robotech_backend.service.JuezService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,3 +41,5 @@ public class JuezController {
     }
 
 }
+
+

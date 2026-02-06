@@ -1,7 +1,9 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +30,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
 
     boolean existsByDni(String dni);
+
+    @Query("""
+            SELECT u FROM Usuario u
+            WHERE
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.nombres, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.apellidos, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.correo, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+            """)
+    Page<Usuario> buscar(@Param("q") String q, Pageable pageable);
 }
+

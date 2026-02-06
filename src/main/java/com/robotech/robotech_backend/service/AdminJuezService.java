@@ -4,7 +4,8 @@ import com.robotech.robotech_backend.dto.JuezAdminDTO;
 import com.robotech.robotech_backend.dto.JuezDTO;
 import com.robotech.robotech_backend.dto.JuezSelectDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -13,6 +14,8 @@ import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +39,9 @@ public class AdminJuezService {
     // ---------------------------------------------------------
     // LISTAR (CORREGIDO PARA TRAER NOMBRES)
     // ---------------------------------------------------------
-    public List<JuezAdminDTO> listar() {
-        return juezRepository.findAllWithUsuario()
-                .stream()
+    public Page<JuezAdminDTO> listar(Pageable pageable, String q) {
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        return juezRepository.buscar(term, pageable)
                 .map(j -> new JuezAdminDTO(
                         j.getIdJuez(),
                         j.getLicencia(),
@@ -53,8 +56,7 @@ public class AdminJuezService {
                                 j.getUsuario().getEstado(),
                                 j.getUsuario().getTelefono()
                         )
-                ))
-                .toList();
+                ));
     }
 
 
@@ -239,3 +241,5 @@ public class AdminJuezService {
         return juezRepository.save(j);
     }
 }
+
+

@@ -29,3 +29,5 @@ public class TorneoCompetidorDTO {
     private String ganador;
     private List<ResultadoTorneoDTO> resultados;
 }
+
+

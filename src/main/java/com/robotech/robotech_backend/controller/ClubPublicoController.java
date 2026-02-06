@@ -21,3 +21,4 @@ public class ClubPublicoController {
         return ResponseEntity.ok(clubPublicoService.obtenerClubesParaPublico());
     }
 }
+

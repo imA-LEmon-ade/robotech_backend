@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -117,3 +118,5 @@ public class AdminController {
         return ResponseEntity.ok("Juez aprobado.");
     }
 }
+
+

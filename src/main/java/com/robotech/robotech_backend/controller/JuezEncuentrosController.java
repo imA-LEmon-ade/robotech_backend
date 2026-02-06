@@ -3,9 +3,9 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.EncuentroDetalleJuezDTO;
 import com.robotech.robotech_backend.dto.EncuentroJuezDTO;
 import com.robotech.robotech_backend.dto.RegistrarResultadoEncuentroDTO;
-import com.robotech.robotech_backend.model.Encuentro;
-import com.robotech.robotech_backend.model.Juez;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Encuentro;
+import com.robotech.robotech_backend.model.entity.Juez;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.service.EncuentroService;
 import lombok.RequiredArgsConstructor;
@@ -73,3 +73,4 @@ public class JuezEncuentrosController {
         return ResponseEntity.ok(resultado);
     }
 }
+

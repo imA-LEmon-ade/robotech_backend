@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.SolicitudIngresoDTO;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.SolicitudIngresoClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,3 +38,5 @@ public class ClubSolicitudIngresoController {
         return ResponseEntity.ok(solicitudService.rechazar(usuario.getIdUsuario(), id));
     }
 }
+
+

@@ -19,3 +19,5 @@ public class CrearClubDTO {
     private String contrasenaPropietario;
     private String telefonoPropietario;
 }
+
+

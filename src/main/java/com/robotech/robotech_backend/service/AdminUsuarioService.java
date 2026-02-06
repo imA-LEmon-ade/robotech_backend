@@ -4,17 +4,18 @@ import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.dto.CambiarContrasenaDTO;
 import com.robotech.robotech_backend.dto.EditarUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.RolUsuario;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -29,20 +30,21 @@ public class AdminUsuarioService {
     // =========================
     // LISTAR
     // =========================
-    public List<UsuarioDTO> listar() {
-        return usuarioRepo.findAll()
-                .stream()
-                .map(u -> new UsuarioDTO(
-                        u.getIdUsuario(),
-                        u.getDni(),
-                        u.getNombres(),
-                        u.getApellidos(),
-                        u.getCorreo(),
-                        u.getRoles(),
-                        u.getEstado(),
-                        u.getTelefono()
-                ))
-                .toList();
+    public Page<UsuarioDTO> listar(Pageable pageable, String q) {
+        Page<Usuario> page = (q == null || q.isBlank())
+                ? usuarioRepo.findAll(pageable)
+                : usuarioRepo.buscar(q.trim(), pageable);
+
+        return page.map(u -> new UsuarioDTO(
+                u.getIdUsuario(),
+                u.getDni(),
+                u.getNombres(),
+                u.getApellidos(),
+                u.getCorreo(),
+                u.getRoles(),
+                u.getEstado(),
+                u.getTelefono()
+        ));
     }
 
 
@@ -163,3 +165,5 @@ public class AdminUsuarioService {
         usuarioRepo.save(u);
     }
 }
+
+

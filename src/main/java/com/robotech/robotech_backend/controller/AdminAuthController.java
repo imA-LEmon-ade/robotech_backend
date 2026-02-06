@@ -1,8 +1,8 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.LoginAdminRequest;
-import com.robotech.robotech_backend.model.RolUsuario;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.security.JwtService;
 import lombok.*;
@@ -26,9 +26,16 @@ public class AdminAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginAdmin(@RequestBody LoginAdminRequest req) {
-        if (req.getCorreo() == null || req.getCorreo().isBlank()
-                || req.getContrasena() == null || req.getContrasena().isBlank()) {
-            return ResponseEntity.badRequest().body("Por favor rellena los campos");
+        boolean correoVacio = req.getCorreo() == null || req.getCorreo().isBlank();
+        boolean contrasenaVacia = req.getContrasena() == null || req.getContrasena().isBlank();
+        if (correoVacio && contrasenaVacia) {
+            return ResponseEntity.badRequest().body("Usuario y contraseña vacíos");
+        }
+        if (correoVacio) {
+            return ResponseEntity.badRequest().body("Usuario vacío");
+        }
+        if (contrasenaVacia) {
+            return ResponseEntity.badRequest().body("Contraseña vacía");
         }
 
         Usuario usuario = usuarioRepo.findByCorreo(req.getCorreo()).orElse(null);
@@ -37,7 +44,7 @@ public class AdminAuthController {
         }
 
         if (!passwordEncoder.matches(req.getContrasena(), usuario.getContrasenaHash())) {
-            return ResponseEntity.status(401).body("Contrasena incorrecta");
+            return ResponseEntity.status(401).body("Contraseña incorrecta");
         }
 
         Set<RolUsuario> roles = usuario.getRoles();
@@ -55,3 +62,5 @@ public class AdminAuthController {
         ));
     }
 }
+
+

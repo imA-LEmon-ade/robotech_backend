@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.RankingDTO;
-import com.robotech.robotech_backend.model.TipoParticipante;
+import com.robotech.robotech_backend.model.enums.TipoParticipante;
 import com.robotech.robotech_backend.service.RankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,3 +50,4 @@ public class RankingController {
         );
     }
 }
+

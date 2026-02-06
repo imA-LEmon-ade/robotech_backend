@@ -15,3 +15,4 @@ public record CambiarContrasenaDTO(
         )
         String nuevaContrasena
 ) {}
+

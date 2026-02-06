@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoClub;
+import com.robotech.robotech_backend.model.enums.EstadoClub;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -20,3 +20,4 @@ public class ClubResponseDTO {
     private String apellidosPropietario; // 👈 Agregar
     private String telefonoPropietario;  // 👈 Agregar
 }
+

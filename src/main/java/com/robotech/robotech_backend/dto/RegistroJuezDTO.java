@@ -10,3 +10,5 @@ public class RegistroJuezDTO {
     private String contrasena;
     private String licencia;
 }
+
+

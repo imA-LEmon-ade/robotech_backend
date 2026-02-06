@@ -2,9 +2,9 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.InscripcionIndividualDTO;
 import com.robotech.robotech_backend.dto.RobotDTO;
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.Robot;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.entity.Robot;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
@@ -39,7 +39,7 @@ public class CompetidorInscripcionController {
     public ResponseEntity<List<RobotDTO>> robotsDisponibles(@PathVariable String idCategoriaTorneo, Authentication auth) {
         Usuario usuario = (Usuario) auth.getPrincipal();
 
-        com.robotech.robotech_backend.model.Competidor competidor = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
+        com.robotech.robotech_backend.model.entity.Competidor competidor = competidorRepo.findByUsuario_IdUsuario(usuario.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
         CategoriaTorneo categoriaTorneo = categoriaRepo.findById(idCategoriaTorneo)
@@ -63,3 +63,6 @@ public class CompetidorInscripcionController {
         return ResponseEntity.ok(dtos);
     }
 }
+
+
+

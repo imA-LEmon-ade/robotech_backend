@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EquipoTorneo;
+import com.robotech.robotech_backend.model.entity.EquipoTorneo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public interface EquipoTorneoRepository
 
     long countByCategoriaTorneoIdCategoriaTorneoAndEstadoNot(
             String idCategoria,
-            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
+            com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo estado
     );
 
     // Ver si un robot ya está inscrito en este torneo
@@ -25,7 +25,7 @@ public interface EquipoTorneoRepository
     boolean existsByRobotsIdRobotAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
             String idRobot,
             String idTorneo,
-            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
+            com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo estado
     );
 
     boolean existsByNombreIgnoreCaseAndCategoriaTorneoIdCategoriaTorneo(
@@ -43,7 +43,7 @@ public interface EquipoTorneoRepository
     boolean existsByClubIdClubAndCategoriaTorneoTorneoIdTorneoAndEstadoNot(
             String idClub,
             String idTorneo,
-            com.robotech.robotech_backend.model.EstadoEquipoTorneo estado
+            com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo estado
     );
 
     // 🔹 Vista CLUB
@@ -55,3 +55,5 @@ public interface EquipoTorneoRepository
     List<EquipoTorneo> findByCategoriaTorneoIdCategoriaTorneo(String idCategoriaTorneo);
 
 }
+
+

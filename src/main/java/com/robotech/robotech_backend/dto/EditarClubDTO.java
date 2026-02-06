@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoClub;
+import com.robotech.robotech_backend.model.enums.EstadoClub;
 import lombok.Data;
 
 @Data
@@ -11,3 +11,5 @@ public class EditarClubDTO {
     private String direccionFiscal;
     private EstadoClub estado;
 }
+
+

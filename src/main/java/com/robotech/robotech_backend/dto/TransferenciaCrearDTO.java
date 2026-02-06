@@ -7,3 +7,5 @@ public class TransferenciaCrearDTO {
     private String idCompetidor;
     private Integer precio;
 }
+
+

@@ -3,14 +3,16 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.ClubResponseDTO;
 import com.robotech.robotech_backend.dto.CrearClubDTO;
 import com.robotech.robotech_backend.dto.EditarClubDTO;
+import com.robotech.robotech_backend.dto.PageResponse;
 import com.robotech.robotech_backend.service.AdminClubService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/clubes")
@@ -28,10 +30,25 @@ public class AdminClubController {
     }
 
     @GetMapping
-    public List<ClubResponseDTO> listar(
+    public PageResponse<ClubResponseDTO> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String nombre
     ) {
-        return adminClubService.listar(nombre);
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by("idClub").ascending()
+        );
+
+        Page<ClubResponseDTO> result = adminClubService.listar(nombre, pageable);
+        return new PageResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        );
     }
 
     @PutMapping("/{id}")
@@ -47,3 +64,5 @@ public class AdminClubController {
         adminClubService.eliminar(id);
     }
 }
+
+

@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.security;
 
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,3 +65,5 @@ public class JwtService {
                 .getBody();
     }
 }
+
+

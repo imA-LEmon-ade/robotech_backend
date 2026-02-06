@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.ClubResponseDTO;
 import com.robotech.robotech_backend.dto.CrearClubDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
@@ -150,3 +151,5 @@ public class SubAdminClubService {
         );
     }
 }
+
+

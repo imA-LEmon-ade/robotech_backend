@@ -1,9 +1,11 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.CategoriaCompetencia;
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.EstadoRobot;
-import com.robotech.robotech_backend.model.Robot;
+import com.robotech.robotech_backend.model.enums.CategoriaCompetencia;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.enums.EstadoRobot;
+import com.robotech.robotech_backend.model.entity.Robot;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,6 +38,32 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("nombre") String nombre,
             @Param("categoria") CategoriaCompetencia categoria,
             @Param("idClub") String idClub
+    );
+
+    @Query(
+            value = """
+            SELECT r FROM Robot r
+            LEFT JOIN FETCH r.competidor c
+            LEFT JOIN FETCH c.usuario u
+            LEFT JOIN FETCH c.clubActual cl
+            WHERE (:nombre IS NULL OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+              AND (:categoria IS NULL OR r.categoria = :categoria)
+              AND (:idClub IS NULL OR cl.idClub = :idClub)
+            """,
+            countQuery = """
+            SELECT COUNT(r) FROM Robot r
+            LEFT JOIN r.competidor c
+            LEFT JOIN c.clubActual cl
+            WHERE (:nombre IS NULL OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+              AND (:categoria IS NULL OR r.categoria = :categoria)
+              AND (:idClub IS NULL OR cl.idClub = :idClub)
+            """
+    )
+    Page<Robot> filtrarRobotsPage(
+            @Param("nombre") String nombre,
+            @Param("categoria") CategoriaCompetencia categoria,
+            @Param("idClub") String idClub,
+            Pageable pageable
     );
 
     @Query("""
@@ -79,3 +107,4 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     @Query("SELECT COUNT(r) FROM Robot r WHERE r.competidor.clubActual.idClub = :idClub")
     long contarRobotsPorClub(@Param("idClub") String idClub);
 }
+

@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.CategoriaCompetencia;
-import com.robotech.robotech_backend.model.ModalidadCategoria;
+import com.robotech.robotech_backend.model.enums.CategoriaCompetencia;
+import com.robotech.robotech_backend.model.enums.ModalidadCategoria;
 import lombok.Data;
 
 @Data
@@ -19,4 +19,6 @@ public class CategoriaTorneoDTO {
 
     private String descripcion;
 }
+
+
 

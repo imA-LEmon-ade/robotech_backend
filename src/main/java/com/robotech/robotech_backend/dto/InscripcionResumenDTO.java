@@ -25,3 +25,4 @@ public class InscripcionResumenDTO {
     private LocalDate fechaRegistro;
     private String torneoFecha;
 }
+

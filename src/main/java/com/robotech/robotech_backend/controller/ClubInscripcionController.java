@@ -3,10 +3,10 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.EquipoInscripcionDTO;
 import com.robotech.robotech_backend.dto.InscripcionIndividualDTO;
 import com.robotech.robotech_backend.dto.RobotDTO; // 👈 Importante
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Robot;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.entity.Robot;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.CategoriaTorneoRepository;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
@@ -104,3 +104,4 @@ public class ClubInscripcionController {
         return ResponseEntity.ok(dtos);
     }
 }
+

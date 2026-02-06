@@ -2,7 +2,7 @@ package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.JuezEstadoDTO;
 import com.robotech.robotech_backend.dto.JuezPostulacionDTO;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.PostulacionJuezService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,3 +31,5 @@ public class CompetidorJuezController {
         return ResponseEntity.ok(postulacionService.postular(usuario.getIdUsuario(), dto));
     }
 }
+
+

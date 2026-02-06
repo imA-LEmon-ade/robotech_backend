@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EstadoTransferenciaPropietario;
-import com.robotech.robotech_backend.model.TransferenciaPropietario;
+import com.robotech.robotech_backend.model.enums.EstadoTransferenciaPropietario;
+import com.robotech.robotech_backend.model.entity.TransferenciaPropietario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,3 +14,5 @@ public interface TransferenciaPropietarioRepository extends JpaRepository<Transf
 
     boolean existsByClub_IdClubAndEstado(String idClub, EstadoTransferenciaPropietario estado);
 }
+
+

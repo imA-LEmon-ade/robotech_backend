@@ -1,8 +1,8 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.Encuentro;
-import com.robotech.robotech_backend.model.EstadoEncuentro;
-import com.robotech.robotech_backend.model.TipoEncuentro;
+import com.robotech.robotech_backend.model.entity.Encuentro;
+import com.robotech.robotech_backend.model.enums.EstadoEncuentro;
+import com.robotech.robotech_backend.model.enums.TipoEncuentro;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -27,3 +27,5 @@ public interface EncuentroRepository extends JpaRepository<Encuentro, String> {
 
     long countByJuezIdJuezAndEstadoNot(String idJuez, EstadoEncuentro estado);
 }
+
+

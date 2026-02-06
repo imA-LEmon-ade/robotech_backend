@@ -2,13 +2,13 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CategoriaTorneoDTO;
 import com.robotech.robotech_backend.dto.CategoriaTorneoPublicoDTO;
-import com.robotech.robotech_backend.model.ModalidadCategoria;
-import com.robotech.robotech_backend.model.Torneo;
-import com.robotech.robotech_backend.model.CategoriaTorneo;
-import com.robotech.robotech_backend.model.EstadoInscripcion;
-import com.robotech.robotech_backend.model.EquipoTorneo;
-import com.robotech.robotech_backend.model.EstadoEquipoTorneo;
-import com.robotech.robotech_backend.model.InscripcionTorneo;
+import com.robotech.robotech_backend.model.enums.ModalidadCategoria;
+import com.robotech.robotech_backend.model.entity.Torneo;
+import com.robotech.robotech_backend.model.entity.CategoriaTorneo;
+import com.robotech.robotech_backend.model.enums.EstadoInscripcion;
+import com.robotech.robotech_backend.model.entity.EquipoTorneo;
+import com.robotech.robotech_backend.model.enums.EstadoEquipoTorneo;
+import com.robotech.robotech_backend.model.entity.InscripcionTorneo;
 import com.robotech.robotech_backend.repository.TorneoRepository;
 import com.robotech.robotech_backend.repository.HistorialCalificacionRepository;
 import com.robotech.robotech_backend.repository.InscripcionTorneoRepository;
@@ -162,3 +162,5 @@ public class CategoriaTorneoService {
         return "Categoría eliminada correctamente";
     }
 }
+
+

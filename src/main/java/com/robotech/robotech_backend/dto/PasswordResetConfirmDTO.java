@@ -13,3 +13,5 @@ public class PasswordResetConfirmDTO {
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     private String newPassword;
 }
+
+

@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
-import com.robotech.robotech_backend.model.EncuentroParticipante;
-import com.robotech.robotech_backend.model.TipoParticipante;
+import com.robotech.robotech_backend.model.entity.EncuentroParticipante;
+import com.robotech.robotech_backend.model.enums.TipoParticipante;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,3 +13,5 @@ public interface EncuentroParticipanteRepository
     List<EncuentroParticipante> findByEncuentro_CategoriaTorneo_IdCategoriaTorneoAndTipo(String idCategoria, TipoParticipante tipo);
 
 }
+
+

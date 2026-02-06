@@ -36,3 +36,5 @@ public class CompetidorPerfilDTO {
     private String fotoUrl;
 }
 
+
+

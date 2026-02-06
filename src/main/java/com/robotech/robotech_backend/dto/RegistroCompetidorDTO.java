@@ -12,3 +12,5 @@ public class RegistroCompetidorDTO {
     private String contrasena;
     private String codigoClub;
 }
+
+

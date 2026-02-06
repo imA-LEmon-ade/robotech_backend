@@ -3,7 +3,7 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.CrearAdminDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
 import com.robotech.robotech_backend.dto.UsuarioDTO;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -95,3 +95,4 @@ public class UsuarioController {
     }
 
 }
+

@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.service.CategoriaTorneoService;
 import com.robotech.robotech_backend.service.TorneoService;
 import lombok.RequiredArgsConstructor;
@@ -34,3 +34,5 @@ public class ClubTorneoController {
         );
     }
 }
+
+

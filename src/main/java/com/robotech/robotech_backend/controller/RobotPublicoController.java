@@ -24,3 +24,4 @@ public class RobotPublicoController {
         return ResponseEntity.ok(robotPublicoService.obtenerRobotsPublicos());
     }
 }
+

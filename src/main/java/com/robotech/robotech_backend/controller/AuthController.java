@@ -1,7 +1,8 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.*;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.*;
 import com.robotech.robotech_backend.service.AuthService;
 import com.robotech.robotech_backend.service.CodigoRegistroService;
@@ -93,3 +94,5 @@ public class AuthController {
         );
     }
 }
+
+

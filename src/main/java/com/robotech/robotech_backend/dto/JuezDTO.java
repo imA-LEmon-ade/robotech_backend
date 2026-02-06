@@ -36,3 +36,4 @@ public class JuezDTO {
 
     private String creadoPor;
 }
+

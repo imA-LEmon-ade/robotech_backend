@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.RobotDTO;
 import com.robotech.robotech_backend.dto.RobotResponseDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import lombok.RequiredArgsConstructor;
@@ -232,3 +233,4 @@ public class RobotService {
         }
     }
 }
+

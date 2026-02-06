@@ -7,3 +7,5 @@ public class InscripcionDTO {
     private String idCompetidor;
     private String idRobot;
 }
+
+

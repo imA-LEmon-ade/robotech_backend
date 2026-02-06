@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoTransferencia;
+import com.robotech.robotech_backend.model.enums.EstadoTransferencia;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,3 +22,5 @@ public class TransferenciaDTO {
     private Date actualizadoEn;
     private Date aprobadoEn;
 }
+
+

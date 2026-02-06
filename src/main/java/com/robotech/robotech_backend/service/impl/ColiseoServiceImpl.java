@@ -1,13 +1,14 @@
 package com.robotech.robotech_backend.service.impl;
 
 import com.robotech.robotech_backend.dto.ColiseoDTO;
-import com.robotech.robotech_backend.model.Coliseo;
+import com.robotech.robotech_backend.model.entity.Coliseo;
 import com.robotech.robotech_backend.repository.ColiseoRepository;
 import com.robotech.robotech_backend.service.ColiseoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,11 +30,10 @@ public class ColiseoServiceImpl implements ColiseoService {
     }
 
     @Override
-    public List<ColiseoDTO> listar() {
-        return coliseoRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
+    public Page<ColiseoDTO> listar(Pageable pageable, String q) {
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        return coliseoRepository.buscar(term, pageable)
+                .map(this::toDTO);
     }
 
     @Override
@@ -68,3 +68,5 @@ public class ColiseoServiceImpl implements ColiseoService {
 
 
 }
+
+

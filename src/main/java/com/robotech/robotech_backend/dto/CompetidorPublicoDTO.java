@@ -19,3 +19,4 @@ public class CompetidorPublicoDTO {
     private int puntosRanking;
     private int ranking;
 }
+

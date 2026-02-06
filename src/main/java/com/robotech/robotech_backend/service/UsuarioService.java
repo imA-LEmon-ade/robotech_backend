@@ -2,12 +2,13 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CrearAdminDTO;
 import com.robotech.robotech_backend.dto.CrearUsuarioDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.CodigoRegistroCompetidorRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.RolUsuario;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -163,3 +164,5 @@ public class UsuarioService {
     }
 
 }
+
+

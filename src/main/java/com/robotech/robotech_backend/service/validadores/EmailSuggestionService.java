@@ -98,3 +98,5 @@ public class EmailSuggestionService {
                 : local.substring(0, MAX_LOCAL_PART);
     }
 }
+
+

@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
 import com.robotech.robotech_backend.service.ClubService;
@@ -92,3 +93,4 @@ public class ClubController {
         return ResponseEntity.ok(Map.of("message", "Competidor aprobado y usuario activado"));
     }
 }
+

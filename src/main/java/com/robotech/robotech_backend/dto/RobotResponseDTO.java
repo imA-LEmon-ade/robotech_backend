@@ -7,3 +7,4 @@ public record RobotResponseDTO(
         String categoria,
         String estado
 ) {}
+

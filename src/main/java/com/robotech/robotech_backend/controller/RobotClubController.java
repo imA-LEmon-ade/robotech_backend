@@ -1,7 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.RobotDTO; // 👈 FALTABA ESTA IMPORTACIÓN
-import com.robotech.robotech_backend.model.Club;
+import com.robotech.robotech_backend.model.entity.Club;
 import com.robotech.robotech_backend.service.ClubService;
 import com.robotech.robotech_backend.service.RobotService;
 import lombok.RequiredArgsConstructor;
@@ -33,3 +33,4 @@ public class RobotClubController {
         return robotService.listarPorClub(club);
     }
 }
+

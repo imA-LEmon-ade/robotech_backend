@@ -1,6 +1,6 @@
 package com.robotech.robotech_backend.dto;
 
-import com.robotech.robotech_backend.model.EstadoSolicitudIngresoClub;
+import com.robotech.robotech_backend.model.enums.EstadoSolicitudIngresoClub;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,3 +20,5 @@ public class SolicitudIngresoDTO {
     private Date actualizadoEn;
     private Date aprobadoEn;
 }
+
+

@@ -1,12 +1,12 @@
 package com.robotech.robotech_backend.security;
 
-import com.robotech.robotech_backend.model.Club;
-import com.robotech.robotech_backend.model.Competidor;
-import com.robotech.robotech_backend.model.EstadoClub;
-import com.robotech.robotech_backend.model.EstadoUsuario;
-import com.robotech.robotech_backend.model.EstadoValidacion;
-import com.robotech.robotech_backend.model.RolUsuario;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.Club;
+import com.robotech.robotech_backend.model.entity.Competidor;
+import com.robotech.robotech_backend.model.enums.EstadoClub;
+import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.enums.EstadoValidacion;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -133,3 +133,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
+

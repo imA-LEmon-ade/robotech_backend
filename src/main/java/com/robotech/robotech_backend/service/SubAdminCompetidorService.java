@@ -2,7 +2,8 @@ package com.robotech.robotech_backend.service;
 
 import com.robotech.robotech_backend.dto.CompetidorResponseDTO;
 import com.robotech.robotech_backend.dto.RegistroCompetidorDTO;
-import com.robotech.robotech_backend.model.*;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
 import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -83,3 +84,5 @@ public class SubAdminCompetidorService {
         competidorRepo.save(competidor);
     }
 }
+
+
