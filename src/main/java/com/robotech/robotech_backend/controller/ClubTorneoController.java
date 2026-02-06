@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/club/torneos")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class ClubTorneoController {
 
     private final TorneoService torneoService;

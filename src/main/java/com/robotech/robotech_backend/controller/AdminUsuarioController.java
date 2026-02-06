@@ -59,7 +59,7 @@ public class AdminUsuarioController {
         return ResponseEntity.ok(usuarioService.editar(id, dto));
     }
 
-    @PutMapping("/usuarios/{id}/cambiar-contrasena")
+    @PutMapping("/{id}/cambiar-contrasena")
     public ResponseEntity<?> cambiarContrasena(
             @PathVariable String id,
             @Valid @RequestBody CambiarContrasenaDTO dto

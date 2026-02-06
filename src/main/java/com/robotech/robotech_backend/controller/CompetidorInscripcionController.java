@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/competidor/inscripciones")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAuthority('COMPETIDOR')")
 public class CompetidorInscripcionController {
 

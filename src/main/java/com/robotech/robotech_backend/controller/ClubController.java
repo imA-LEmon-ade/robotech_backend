@@ -14,7 +14,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/clubes")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class ClubController {
 
     private final ClubService clubService;

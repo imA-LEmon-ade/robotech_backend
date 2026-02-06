@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/competidor/juez")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAuthority('COMPETIDOR')")
 public class CompetidorJuezController {
 

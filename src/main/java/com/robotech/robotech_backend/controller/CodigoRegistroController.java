@@ -13,7 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/codigos")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class CodigoRegistroController {
 
     private final CodigoRegistroService codigoService;

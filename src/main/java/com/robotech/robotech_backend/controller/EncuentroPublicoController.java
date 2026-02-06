@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/categorias")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class EncuentroPublicoController {
 
     private final EncuentroService encuentroService;

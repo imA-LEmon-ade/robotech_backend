@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequiredArgsConstructor
 public class UsuarioController {
 

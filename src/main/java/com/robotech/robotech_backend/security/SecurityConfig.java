@@ -2,8 +2,10 @@ package com.robotech.robotech_backend.security;
 
 import com.robotech.robotech_backend.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,14 +18,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final String frontendUrl;
+
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            CustomUserDetailsService userDetailsService,
+            @Value("${app.frontend.url:http://localhost:5173}") String frontendUrl
+    ) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+        this.frontendUrl = frontendUrl;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,9 +49,7 @@ public class SecurityConfig {
                         // ✅ SE AGREGÓ "/api/rankings/**" A LA LISTA DE PERMIT ALL
                         .requestMatchers(
                                 "/api/usuarios/login",
-                                "/api/usuarios/admin",
                                 "/api/admin/login",
-                                "/api/usuarios",
                                 "/api/auth/**",
                                 "/api/codigos/validar/**",
                                 "/uploads/**",
@@ -45,7 +57,9 @@ public class SecurityConfig {
                                 "/api/rankings/**",
                                 "/api/util/dni/**"
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMINISTRADOR", "SUBADMINISTRADOR")
+                        .requestMatchers("/api/subadmin/**").hasRole("SUBADMINISTRADOR")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
@@ -57,8 +71,14 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("*"));
+        List<String> allowedOrigins = Arrays.stream(frontendUrl.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        config.setAllowCredentials(false);
+        config.setAllowedOrigins(allowedOrigins.isEmpty()
+                ? List.of("http://localhost:5173")
+                : allowedOrigins);
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
 
