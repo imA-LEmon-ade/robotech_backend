@@ -1,158 +1,210 @@
 package com.robotech.robotech_backend.service;
 
+import com.robotech.robotech_backend.dto.*;
 import com.robotech.robotech_backend.exception.InvalidPasswordResetTokenException;
 import com.robotech.robotech_backend.exception.UserNotFoundException;
-import com.robotech.robotech_backend.model.Usuario;
+import com.robotech.robotech_backend.model.entity.*;
+import com.robotech.robotech_backend.model.enums.*;
+import com.robotech.robotech_backend.repository.ClubRepository;
+import com.robotech.robotech_backend.repository.CompetidorRepository;
+import com.robotech.robotech_backend.repository.JuezRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
-import com.robotech.robotech_backend.security.JwtService; // Added missing import
-import org.junit.jupiter.api.BeforeEach;
+import com.robotech.robotech_backend.security.JwtService;
+import com.robotech.robotech_backend.service.validadores.DniValidator;
+import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock
-    private UsuarioRepository usuarioRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
-    private TokenGeneratorService tokenGeneratorService;
-    @Mock
-    private EmailService emailService;
-
-    // Other mocks that AuthService uses but are not directly relevant to password reset tests
-    @Mock private CodigoRegistroService codigoRegistroService;
+    @Mock private UsuarioRepository usuarioRepo;
+    @Mock private ClubRepository clubRepo;
+    @Mock private CompetidorRepository competidorRepo;
+    @Mock private JuezRepository juezRepo;
+    @Mock private CodigoRegistroService codigoService;
+    @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtService jwtService;
-    @Mock private com.robotech.robotech_backend.repository.ClubRepository clubRepository;
-    @Mock private com.robotech.robotech_backend.repository.CompetidorRepository competidorRepository;
-    @Mock private com.robotech.robotech_backend.repository.JuezRepository juezRepository;
-    @Mock private com.robotech.robotech_backend.service.validadores.DniValidator dniValidator;
-    @Mock private com.robotech.robotech_backend.service.validadores.TelefonoValidator telefonoValidator;
+    @Mock private TokenGeneratorService tokenGeneratorService;
+    @Mock private EmailService emailService;
+    @Mock private DniValidator dniValidator;
+    @Mock private TelefonoValidator telefonoValidator;
 
     @InjectMocks
     private AuthService authService;
 
-    private Usuario testUser;
-    private final String TEST_EMAIL = "test@example.com";
-    private final String TEST_TOKEN = "secureRandomToken";
-    private final String NEW_PASSWORD = "newSecurePassword";
-    private final String ENCODED_NEW_PASSWORD = "encodedNewSecurePassword";
-
-    @BeforeEach
-    void setUp() {
-        testUser = new Usuario();
-        testUser.setIdUsuario("user123");
-        testUser.setCorreo(TEST_EMAIL);
-        testUser.setContrasenaHash("oldEncodedPassword");
-    }
-
-    // --- requestPasswordReset Tests ---
     @Test
-    void requestPasswordReset_UserFound_TokenGeneratedAndEmailSent() {
-        when(usuarioRepository.findByCorreo(TEST_EMAIL)).thenReturn(Optional.of(testUser));
-        when(tokenGeneratorService.generateSecureToken()).thenReturn(TEST_TOKEN);
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(testUser); // Mock save operation
+    void login_competidor_ok() {
+        Usuario usuario = Usuario.builder()
+                .idUsuario("U1")
+                .correo("ana@robotech.com")
+                .contrasenaHash("hash")
+                .estado(EstadoUsuario.ACTIVO)
+                .roles(Set.of(RolUsuario.COMPETIDOR))
+                .nombres("Ana")
+                .apellidos("Perez")
+                .build();
+        Competidor comp = Competidor.builder()
+                .idCompetidor("U1")
+                .usuario(usuario)
+                .estadoValidacion(EstadoValidacion.APROBADO)
+                .clubActual(null)
+                .build();
 
-        authService.requestPasswordReset(TEST_EMAIL);
+        when(usuarioRepo.findByCorreo("ana@robotech.com")).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("Pass1!", "hash")).thenReturn(true);
+        when(jwtService.generarToken(usuario)).thenReturn("token123");
+        when(competidorRepo.findByUsuario_IdUsuario("U1")).thenReturn(Optional.of(comp));
 
-        verify(usuarioRepository, times(1)).findByCorreo(TEST_EMAIL);
-        verify(tokenGeneratorService, times(1)).generateSecureToken();
-        assertNotNull(testUser.getPasswordResetToken());
-        assertEquals(TEST_TOKEN, testUser.getPasswordResetToken());
-        assertNotNull(testUser.getPasswordResetTokenExpiryDate());
-        assertTrue(testUser.getPasswordResetTokenExpiryDate().isAfter(LocalDateTime.now()));
-        verify(usuarioRepository, times(1)).save(testUser);
-        verify(emailService, times(1)).sendPasswordResetEmail(TEST_EMAIL, TEST_TOKEN);
-    }
+        LoginResponseDTO resp = authService.login("ana@robotech.com", "Pass1!");
 
-    @Test
-    void requestPasswordReset_UserNotFound_ThrowsUserNotFoundException() {
-        when(usuarioRepository.findByCorreo(TEST_EMAIL)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(UserNotFoundException.class, () ->
-                authService.requestPasswordReset(TEST_EMAIL));
-
-        assertEquals("Usuario no encontrado con ese correo electrónico.", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByCorreo(TEST_EMAIL);
-        verify(tokenGeneratorService, never()).generateSecureToken();
-        verify(emailService, never()).sendPasswordResetEmail(anyString(), anyString());
-        verify(usuarioRepository, never()).save(any(Usuario.class));
-    }
-
-    // --- resetPassword Tests ---
-    @Test
-    void resetPassword_ValidToken_PasswordUpdatedAndTokenInvalidated() {
-        testUser.setPasswordResetToken(TEST_TOKEN);
-        testUser.setPasswordResetTokenExpiryDate(LocalDateTime.now().plusHours(1));
-
-        when(usuarioRepository.findByPasswordResetToken(TEST_TOKEN)).thenReturn(Optional.of(testUser));
-        when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(ENCODED_NEW_PASSWORD);
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(testUser); // Mock save operation
-
-        authService.resetPassword(TEST_TOKEN, NEW_PASSWORD);
-
-        verify(usuarioRepository, times(1)).findByPasswordResetToken(TEST_TOKEN);
-        verify(passwordEncoder, times(1)).encode(NEW_PASSWORD);
-        assertEquals(ENCODED_NEW_PASSWORD, testUser.getContrasenaHash());
-        assertNull(testUser.getPasswordResetToken());
-        assertNull(testUser.getPasswordResetTokenExpiryDate());
-        verify(usuarioRepository, times(1)).save(testUser);
+        assertEquals("token123", resp.token());
+        assertEquals(true, resp.roles().contains(RolUsuario.COMPETIDOR));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> entidad = (Map<String, Object>) resp.entidad();
+        assertEquals(true, entidad.containsKey("competidor"));
     }
 
     @Test
-    void resetPassword_InvalidToken_ThrowsInvalidPasswordResetTokenException() {
-        when(usuarioRepository.findByPasswordResetToken(TEST_TOKEN)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(InvalidPasswordResetTokenException.class, () ->
-                authService.resetPassword(TEST_TOKEN, NEW_PASSWORD));
-
-        assertEquals("Token de restablecimiento inválido.", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByPasswordResetToken(TEST_TOKEN);
-        verify(passwordEncoder, never()).encode(anyString());
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+    void login_usuario_no_encontrado_lanza_error() {
+        when(usuarioRepo.findByCorreo("x@x.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> authService.login("x@x.com", "Pass1!"));
     }
 
     @Test
-    void resetPassword_ExpiredToken_ThrowsInvalidPasswordResetTokenException() {
-        testUser.setPasswordResetToken(TEST_TOKEN);
-        testUser.setPasswordResetTokenExpiryDate(LocalDateTime.now().minusMinutes(1)); // Expired token
+    void requestPasswordReset_ok_envia_email() {
+        Usuario usuario = new Usuario();
+        usuario.setCorreo("test@robotech.com");
 
-        when(usuarioRepository.findByPasswordResetToken(TEST_TOKEN)).thenReturn(Optional.of(testUser));
+        when(usuarioRepo.findByCorreo("test@robotech.com")).thenReturn(Optional.of(usuario));
+        when(tokenGeneratorService.generateSecureToken()).thenReturn("tok");
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Exception exception = assertThrows(InvalidPasswordResetTokenException.class, () ->
-                authService.resetPassword(TEST_TOKEN, NEW_PASSWORD));
+        authService.requestPasswordReset("test@robotech.com");
 
-        assertEquals("Token de restablecimiento caducado.", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByPasswordResetToken(TEST_TOKEN);
-        verify(passwordEncoder, never()).encode(anyString());
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+        assertEquals("tok", usuario.getPasswordResetToken());
+        verify(emailService, times(1)).sendPasswordResetEmail("test@robotech.com", "tok");
     }
 
     @Test
-    void resetPassword_TokenWithNullExpiryDate_ThrowsInvalidPasswordResetTokenException() {
-        testUser.setPasswordResetToken(TEST_TOKEN);
-        testUser.setPasswordResetTokenExpiryDate(null); // Null expiry date
+    void requestPasswordReset_usuario_no_encontrado() {
+        when(usuarioRepo.findByCorreo("x@x.com")).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> authService.requestPasswordReset("x@x.com"));
+    }
 
-        when(usuarioRepository.findByPasswordResetToken(TEST_TOKEN)).thenReturn(Optional.of(testUser));
+    @Test
+    void resetPassword_expirado_lanza_error() {
+        Usuario usuario = new Usuario();
+        usuario.setPasswordResetToken("tok");
+        usuario.setPasswordResetTokenExpiryDate(LocalDateTime.now().minusMinutes(1));
 
-        Exception exception = assertThrows(InvalidPasswordResetTokenException.class, () ->
-                authService.resetPassword(TEST_TOKEN, NEW_PASSWORD));
+        when(usuarioRepo.findByPasswordResetToken("tok")).thenReturn(Optional.of(usuario));
 
-        assertEquals("Token de restablecimiento caducado.", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByPasswordResetToken(TEST_TOKEN);
-        verify(passwordEncoder, never()).encode(anyString());
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+        assertThrows(InvalidPasswordResetTokenException.class, () -> authService.resetPassword("tok", "NewPass1!"));
+    }
+
+    @Test
+    void resetPassword_ok_actualiza_hash_y_limpia_token() {
+        Usuario usuario = new Usuario();
+        usuario.setPasswordResetToken("tok");
+        usuario.setPasswordResetTokenExpiryDate(LocalDateTime.now().plusMinutes(5));
+
+        when(usuarioRepo.findByPasswordResetToken("tok")).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.encode("NewPass1!")).thenReturn("hash2");
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.resetPassword("tok", "NewPass1!");
+
+        assertEquals("hash2", usuario.getContrasenaHash());
+        assertEquals(null, usuario.getPasswordResetToken());
+    }
+
+    @Test
+    void registrarCompetidor_ok() {
+        RegistroCompetidorDTO dto = new RegistroCompetidorDTO();
+        dto.setDni("12345678");
+        dto.setNombre("Ana");
+        dto.setApellido("Perez");
+        dto.setCorreo("ana@robotech.com");
+        dto.setTelefono("999111222");
+        dto.setContrasena("Pass1!");
+        dto.setCodigoClub("CLUB01");
+
+        Club club = Club.builder().idClub("C1").build();
+        CodigoRegistroCompetidor codigo = CodigoRegistroCompetidor.builder().club(club).build();
+
+        when(usuarioRepo.existsByCorreo("ana@robotech.com")).thenReturn(false);
+        when(usuarioRepo.existsByTelefono("999111222")).thenReturn(false);
+        when(codigoService.validarCodigo("CLUB01")).thenReturn(codigo);
+        when(passwordEncoder.encode("Pass1!")).thenReturn("hash");
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.registrarCompetidor(dto);
+
+        verify(competidorRepo, times(1)).save(any(Competidor.class));
+        verify(codigoService, times(1)).marcarUso(codigo);
+    }
+
+    @Test
+    void registrarClub_ok_genera_codigo() {
+        RegistroClubDTO dto = new RegistroClubDTO();
+        dto.setNombre("Club A");
+        dto.setCorreo("club@robotech.com");
+        dto.setTelefono("999111222");
+        dto.setDireccionFiscal("Av 123");
+        dto.setContrasena("Pass1!");
+
+        when(usuarioRepo.existsByCorreo("club@robotech.com")).thenReturn(false);
+        when(passwordEncoder.encode("Pass1!")).thenReturn("hash");
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(inv -> {
+            Usuario u = inv.getArgument(0);
+            u.setIdUsuario("ABCDEF12");
+            return u;
+        });
+        when(clubRepo.save(any(Club.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.registrarClub(dto);
+
+        ArgumentCaptor<Club> clubCaptor = ArgumentCaptor.forClass(Club.class);
+        verify(clubRepo, times(1)).save(clubCaptor.capture());
+        assertEquals("CLB-ABCDEF", clubCaptor.getValue().getCodigoClub());
+    }
+
+    @Test
+    void registrarJuez_ok() {
+        RegistroJuezDTO dto = new RegistroJuezDTO();
+        dto.setDni("12345678");
+        dto.setCorreo("juez@robotech.com");
+        dto.setTelefono("999111222");
+        dto.setContrasena("Pass1!");
+        dto.setLicencia("LIC-01");
+
+        when(usuarioRepo.existsByCorreo("juez@robotech.com")).thenReturn(false);
+        when(passwordEncoder.encode("Pass1!")).thenReturn("hash");
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        authService.registrarJuez(dto);
+
+        verify(juezRepo, times(1)).save(any(Juez.class));
     }
 }

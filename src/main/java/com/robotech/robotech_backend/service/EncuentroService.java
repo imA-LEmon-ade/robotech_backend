@@ -280,11 +280,89 @@ public class EncuentroService {
 
     private List<String> obtenerParticipantes(CategoriaTorneo categoria) {
         if (categoria.getModalidad() == ModalidadCategoria.INDIVIDUAL) {
-            return inscripcionRepo.findByCategoriaTorneoIdCategoriaTorneoAndEstado(categoria.getIdCategoriaTorneo(), EstadoInscripcion.ACTIVADA)
-                    .stream().filter(i -> i.getRobot() != null).map(i -> i.getRobot().getIdRobot()).collect(Collectors.toList());
+            List<InscripcionTorneo> inscripciones = inscripcionRepo
+                    .findByCategoriaTorneoIdCategoriaTorneoAndEstado(
+                            categoria.getIdCategoriaTorneo(),
+                            EstadoInscripcion.ACTIVADA
+                    );
+
+            List<String> invalidos = new ArrayList<>();
+            List<String> participantes = new ArrayList<>();
+
+            for (InscripcionTorneo i : inscripciones) {
+                Robot r = i.getRobot();
+                if (r == null || r.getCompetidor() == null) {
+                    invalidos.add(i.getIdInscripcion());
+                    continue;
+                }
+                if (r.getEstado() != EstadoRobot.ACTIVO) {
+                    invalidos.add(r.getIdRobot());
+                    continue;
+                }
+                if (r.getCompetidor().getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                    invalidos.add(r.getIdRobot());
+                    continue;
+                }
+                participantes.add(r.getIdRobot());
+            }
+
+            if (!invalidos.isEmpty()) {
+                throw new RuntimeException(
+                        "Hay participantes no aprobados o inactivos: " + String.join(", ", invalidos)
+                );
+            }
+
+            return participantes;
         } else {
-            return equipoRepo.findByCategoriaTorneoIdCategoriaTorneo(categoria.getIdCategoriaTorneo())
-                    .stream().map(EquipoTorneo::getIdEquipo).filter(Objects::nonNull).collect(Collectors.toList());
+            List<EquipoTorneo> equipos = equipoRepo.findByCategoriaTorneoIdCategoriaTorneo(
+                    categoria.getIdCategoriaTorneo()
+            );
+
+            List<String> invalidos = new ArrayList<>();
+            List<String> participantes = new ArrayList<>();
+
+            for (EquipoTorneo e : equipos) {
+                if (e.getEstado() == EstadoEquipoTorneo.ANULADA ||
+                        e.getEstado() == EstadoEquipoTorneo.RECHAZADO) {
+                    continue;
+                }
+                if (e.getRobots() == null || e.getRobots().isEmpty()) {
+                    invalidos.add(e.getIdEquipo());
+                    continue;
+                }
+
+                boolean equipoValido = true;
+                for (Robot r : e.getRobots()) {
+                    if (r == null || r.getCompetidor() == null) {
+                        equipoValido = false;
+                        break;
+                    }
+                    if (r.getEstado() != EstadoRobot.ACTIVO) {
+                        equipoValido = false;
+                        break;
+                    }
+                    if (r.getCompetidor().getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                        equipoValido = false;
+                        break;
+                    }
+                }
+
+                if (!equipoValido) {
+                    invalidos.add(e.getIdEquipo());
+                    continue;
+                }
+                if (e.getIdEquipo() != null) {
+                    participantes.add(e.getIdEquipo());
+                }
+            }
+
+            if (!invalidos.isEmpty()) {
+                throw new RuntimeException(
+                        "Hay equipos con robots no aprobados o inactivos: " + String.join(", ", invalidos)
+                );
+            }
+
+            return participantes;
         }
     }
 

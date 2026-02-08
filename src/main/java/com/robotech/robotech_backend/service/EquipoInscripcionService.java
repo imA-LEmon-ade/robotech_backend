@@ -93,10 +93,17 @@ public class EquipoInscripcionService {
                 .toList();
 
         for (Robot r : robots) {
-
-            if (!r.getCompetidor().getClubActual().getIdClub().equals(club.getIdClub())) {
+            Competidor comp = r.getCompetidor();
+            if (comp == null || comp.getClubActual() == null ||
+                    !comp.getClubActual().getIdClub().equals(club.getIdClub())) {
                 throw new RuntimeException(
                         "Robot " + r.getNombre() + " no pertenece al club");
+            }
+            if (comp.getEstadoValidacion() != EstadoValidacion.APROBADO) {
+                throw new RuntimeException("Competidor no aprobado para el robot: " + r.getNombre());
+            }
+            if (r.getEstado() != EstadoRobot.ACTIVO) {
+                throw new RuntimeException("Robot inactivo: " + r.getNombre());
             }
 
             boolean yaInscrito = equipoRepo

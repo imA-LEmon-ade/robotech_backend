@@ -46,6 +46,12 @@ public class InscripcionTorneoService {
                 !robot.getCompetidor().getClubActual().getIdClub().equals(club.getIdClub())) {
             throw new RuntimeException("El robot no pertenece a este club");
         }
+        if (robot.getCompetidor().getEstadoValidacion() != EstadoValidacion.APROBADO) {
+            throw new RuntimeException("El competidor del robot no está aprobado");
+        }
+        if (robot.getEstado() != EstadoRobot.ACTIVO) {
+            throw new RuntimeException("El robot está inactivo");
+        }
 
         // 2.5 Validar fechas y cierre de inscripciones
         Date hoy = new Date();
