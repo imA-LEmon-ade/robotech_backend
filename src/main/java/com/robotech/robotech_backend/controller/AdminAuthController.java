@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.controller;
 
 import com.robotech.robotech_backend.dto.LoginAdminRequest;
+import com.robotech.robotech_backend.dto.UsuarioDTO;
 import com.robotech.robotech_backend.model.enums.RolUsuario;
 import com.robotech.robotech_backend.model.entity.Usuario;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -16,7 +17,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequiredArgsConstructor
 public class AdminAuthController {
 
@@ -56,7 +57,16 @@ public class AdminAuthController {
         String token = jwtService.generarToken(usuario);
 
         return ResponseEntity.ok(Map.of(
-                "usuario", usuario,
+                "usuario", new UsuarioDTO(
+                        usuario.getIdUsuario(),
+                        usuario.getDni(),
+                        usuario.getNombres(),
+                        usuario.getApellidos(),
+                        usuario.getCorreo(),
+                        usuario.getRoles(),
+                        usuario.getEstado(),
+                        usuario.getTelefono()
+                ),
                 "roles", usuario.getRoles(),
                 "token", token
         ));

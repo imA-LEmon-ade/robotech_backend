@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/club/solicitudes-ingreso")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAuthority('CLUB')")
 public class ClubSolicitudIngresoController {
 

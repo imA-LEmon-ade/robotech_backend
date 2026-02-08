@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/robots") // 👈 Esta es la ruta que te faltaba
 @RequiredArgsConstructor
-@CrossOrigin("*") // Permite que React se conecte
+@CrossOrigin(origins = "${app.frontend.url}") // Permite que React se conecte
 public class RobotPublicoController {
 
     private final RobotPublicoService robotPublicoService;

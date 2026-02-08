@@ -12,7 +12,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class AdminController {
 
     @Autowired private UsuarioRepository usuarioRepository;

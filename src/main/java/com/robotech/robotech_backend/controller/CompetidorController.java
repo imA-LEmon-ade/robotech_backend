@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/competidores")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class CompetidorController {
 
     @Autowired

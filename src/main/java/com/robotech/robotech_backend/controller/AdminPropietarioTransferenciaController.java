@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/propietario-transferencias")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUBADMINISTRADOR')")
 public class AdminPropietarioTransferenciaController {
 

@@ -138,14 +138,14 @@ public class AdminUsuarioService {
     }
 
     // =========================
-    // CAMBIAR CONTRASEÃ‘A (ADMIN)
+    // CAMBIAR CONTRASEÑA (ADMIN)
     // =========================
     public Usuario cambiarContrasena(String id, CambiarContrasenaDTO dto) {
         Usuario u = usuarioRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(dto.contrasenaActual(), u.getContrasenaHash())) {
-            throw new RuntimeException("Contrasena actual incorrecta");
+            throw new RuntimeException("Contraseña actual incorrecta");
         }
 
         u.setContrasenaHash(passwordEncoder.encode(dto.nuevaContrasena()));

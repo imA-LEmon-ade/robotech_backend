@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/rankings")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class RankingController {
 
     private final RankingService rankingService;

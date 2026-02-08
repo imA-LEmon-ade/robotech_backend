@@ -189,7 +189,7 @@ public class AuthService {
         }
 
         if (usuarioRepo.existsByTelefono(dto.getTelefono())) {
-            throw new RuntimeException("Tel?fono ya registrado");
+            throw new RuntimeException("Teléfono ya registrado");
         }
 
         CodigoRegistroCompetidor codigo =
@@ -273,6 +273,7 @@ public class AuthService {
         }
 
         Usuario usuario = Usuario.builder()
+                .dni(dto.getDni())
                 .correo(dto.getCorreo())
                 .telefono(dto.getTelefono())
                 .contrasenaHash(passwordEncoder.encode(dto.getContrasena()))

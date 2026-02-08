@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/club/inscripciones")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class ClubInscripcionController {
 
     private final InscripcionTorneoService individualService;

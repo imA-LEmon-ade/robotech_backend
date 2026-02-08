@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/torneos")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 public class TorneoPublicoController {
 
     private final TorneoPublicoService service;

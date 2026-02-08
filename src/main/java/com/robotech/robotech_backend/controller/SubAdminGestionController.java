@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/subadmin")
 @RequiredArgsConstructor
-@CrossOrigin("*") // Para permitir las peticiones de React
+@CrossOrigin(origins = "${app.frontend.url}") // Para permitir las peticiones de React
 public class SubAdminGestionController {
 
     private final SubAdminCompetidorService competidorService;

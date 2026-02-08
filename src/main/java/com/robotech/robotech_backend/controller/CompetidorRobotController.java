@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/competidor/robots")
 @RequiredArgsConstructor
-@CrossOrigin("*") // Permite peticiones desde React
+@CrossOrigin(origins = "${app.frontend.url}") // Permite peticiones desde React
 public class CompetidorRobotController {
 
     private final RobotService robotService;

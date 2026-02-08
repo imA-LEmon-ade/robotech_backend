@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/jueces")
-@CrossOrigin("*")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequiredArgsConstructor
 public class AdminJuezController {
 
