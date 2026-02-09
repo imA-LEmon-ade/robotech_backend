@@ -56,7 +56,7 @@ class AuthServiceUseCasesTest {
                 .correo("admin@robotech.test")
                 .dni("12345678")
                 .contrasenaHash(passwordEncoder.encode("Secret123!"))
-                .roles(new HashSet<>(Set.of(RolUsuario.ADMINISTRADOR)))
+                .roles(new HashSet<>(Set.of(RolUsuario.SUBADMINISTRADOR)))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -65,7 +65,7 @@ class AuthServiceUseCasesTest {
         LoginResponseDTO response = authService.login("admin@robotech.test", "Secret123!");
 
         assertNotNull(response.token());
-        assertTrue(response.roles().contains(RolUsuario.ADMINISTRADOR));
+        assertTrue(response.roles().contains(RolUsuario.SUBADMINISTRADOR));
         assertNotNull(response.entidad());
         assertTrue(response.entidad() instanceof Map);
         @SuppressWarnings("unchecked")
@@ -363,12 +363,9 @@ class AuthServiceUseCasesTest {
                 .build();
         usuarioRepository.save(usuario);
 
-        LoginResponseDTO response = authService.login("admin2@robotech.test", "Secret123!");
-        assertNotNull(response.token());
-        assertTrue(response.entidad() instanceof Map);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> entidad = (Map<String, Object>) response.entidad();
-        assertTrue(entidad.containsKey("usuario"));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.login("admin2@robotech.test", "Secret123!"));
+        assertEquals("Este inicio de sesion es solo para club, competidor, juez y subadministrador", ex.getMessage());
     }
 
     @Test
