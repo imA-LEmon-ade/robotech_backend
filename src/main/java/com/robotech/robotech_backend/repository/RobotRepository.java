@@ -18,6 +18,7 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
     List<Robot> findAllWithDetalles();
 
     List<Robot> findByCompetidor_IdCompetidor(String idCompetidor);
+    List<Robot> findByCompetidor_IdCompetidorIn(List<String> idCompetidores);
 
     boolean existsByCompetidor_IdCompetidorAndCategoria(String idCompetidor, CategoriaCompetencia categoria);
 
@@ -65,6 +66,36 @@ public interface RobotRepository extends JpaRepository<Robot, String> {
             @Param("idClub") String idClub,
             Pageable pageable
     );
+
+    @Query(
+            value = """
+            SELECT r FROM Robot r
+            LEFT JOIN FETCH r.competidor c
+            LEFT JOIN FETCH c.usuario u
+            LEFT JOIN FETCH c.clubActual cl
+            WHERE (:q IS NULL OR :q = '' OR
+                   LOWER(r.nombre) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(r.nickname) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.nombres) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(cl.nombre) LIKE LOWER(CONCAT('%', :q, '%')))
+            """,
+            countQuery = """
+            SELECT COUNT(r) FROM Robot r
+            LEFT JOIN r.competidor c
+            LEFT JOIN c.usuario u
+            LEFT JOIN c.clubActual cl
+            WHERE (:q IS NULL OR :q = '' OR
+                   LOWER(r.nombre) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(r.nickname) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.nombres) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(cl.nombre) LIKE LOWER(CONCAT('%', :q, '%')))
+            """
+    )
+    Page<Robot> buscarPublico(@Param("q") String q, Pageable pageable);
 
     @Query("""
     SELECT r

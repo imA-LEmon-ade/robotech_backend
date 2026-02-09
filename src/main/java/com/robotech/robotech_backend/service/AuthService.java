@@ -70,9 +70,13 @@ public class AuthService {
             throw new RuntimeException("Cuenta inactiva");
         }
 
+        Set<RolUsuario> roles = usuario.getRoles() != null ? usuario.getRoles() : java.util.Set.of();
+        if (roles.contains(RolUsuario.ADMINISTRADOR)) {
+            throw new RuntimeException("Este inicio de sesion es solo para club, competidor, juez y subadministrador");
+        }
+
         String token = jwtService.generarToken(usuario);
 
-        Set<RolUsuario> roles = usuario.getRoles() != null ? usuario.getRoles() : java.util.Set.of();
         Map<String, Object> entidad = new HashMap<>();
 
         if (roles.contains(RolUsuario.CLUB)) {

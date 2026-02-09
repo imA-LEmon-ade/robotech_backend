@@ -1,6 +1,5 @@
 package com.robotech.robotech_backend.service;
 
-import com.robotech.robotech_backend.dto.RobotPublicoDTO;
 import com.robotech.robotech_backend.model.entity.Club;
 import com.robotech.robotech_backend.model.entity.Competidor;
 import com.robotech.robotech_backend.model.entity.Robot;
@@ -12,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ class RobotPublicoServiceTest {
 
     @Test
     void obtenerRobotsPublicos_mapea_independiente() {
+        PageRequest pageable = PageRequest.of(0, 10);
         Robot r = Robot.builder()
                 .idRobot("R1")
                 .nombre("Titan")
@@ -36,16 +39,18 @@ class RobotPublicoServiceTest {
                 .competidor(null)
                 .build();
 
-        when(robotRepo.findAllWithDetalles()).thenReturn(List.of(r));
+        Page<Robot> page = new PageImpl<>(List.of(r), pageable, 1);
+        when(robotRepo.buscarPublico(null, pageable)).thenReturn(page);
 
-        List<RobotPublicoDTO> result = robotPublicoService.obtenerRobotsPublicos();
+        var result = robotPublicoService.obtenerRobotsPublicos(pageable, null);
 
-        assertEquals(1, result.size());
-        assertEquals("Independiente", result.get(0).getNombreClub());
+        assertEquals(1, result.content().size());
+        assertEquals("Independiente", result.content().get(0).getNombreClub());
     }
 
     @Test
     void obtenerRobotsPublicos_mapea_competidor_y_club() {
+        PageRequest pageable = PageRequest.of(0, 10);
         Usuario u = Usuario.builder().nombres("Ana").apellidos("Perez").build();
         Club c = Club.builder().nombre("Club A").build();
         Competidor comp = Competidor.builder().usuario(u).clubActual(c).build();
@@ -57,11 +62,12 @@ class RobotPublicoServiceTest {
                 .competidor(comp)
                 .build();
 
-        when(robotRepo.findAllWithDetalles()).thenReturn(List.of(r));
+        Page<Robot> page = new PageImpl<>(List.of(r), pageable, 1);
+        when(robotRepo.buscarPublico(null, pageable)).thenReturn(page);
 
-        List<RobotPublicoDTO> result = robotPublicoService.obtenerRobotsPublicos();
+        var result = robotPublicoService.obtenerRobotsPublicos(pageable, null);
 
-        assertEquals("Ana Perez", result.get(0).getNombreDueño());
-        assertEquals("Club A", result.get(0).getNombreClub());
+        assertEquals("Ana Perez", result.content().get(0).getNombreDueño());
+        assertEquals("Club A", result.content().get(0).getNombreClub());
     }
 }
