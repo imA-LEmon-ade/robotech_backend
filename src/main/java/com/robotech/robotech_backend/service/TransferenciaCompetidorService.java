@@ -36,6 +36,11 @@ public class TransferenciaCompetidorService {
             throw new RuntimeException("El competidor no pertenece a tu club");
         }
 
+        if (club.getUsuario() != null && competidor.getUsuario() != null
+                && club.getUsuario().getIdUsuario().equals(competidor.getUsuario().getIdUsuario())) {
+            throw new RuntimeException("No puedes transferir al propietario del club");
+        }
+
         boolean existe = transferenciaRepo.existsByCompetidor_IdCompetidorAndEstadoIn(
                 competidor.getIdCompetidor(),
                 Set.of(EstadoTransferencia.EN_VENTA, EstadoTransferencia.PENDIENTE)

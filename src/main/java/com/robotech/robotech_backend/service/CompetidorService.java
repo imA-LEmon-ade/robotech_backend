@@ -5,6 +5,7 @@ import com.robotech.robotech_backend.dto.CompetidorClubDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.model.entity.*;
 import com.robotech.robotech_backend.model.enums.*;
+import com.robotech.robotech_backend.repository.ClubRepository;
 import com.robotech.robotech_backend.repository.CompetidorRepository;
 import com.robotech.robotech_backend.repository.RobotRepository;
 import com.robotech.robotech_backend.repository.UsuarioRepository;
@@ -35,6 +36,7 @@ public class CompetidorService {
     private final UsuarioRepository usuarioRepo;
     private final JuezRepository juezRepo;
     private final EncuentroRepository encuentroRepo;
+    private final ClubRepository clubRepo;
     private final DniValidator dniValidator;
     private final TelefonoValidator telefonoValidator;
 
@@ -145,11 +147,16 @@ public class CompetidorService {
 
     // 1.A. LISTAR POR CLUB (COMPATIBILIDAD)
     public List<CompetidorClubDTO> listarPorClub(String idClub) {
-        return listarPorClub(idClub, null); // Llama al nuevo con búsqueda null
+        return listarPorClub(idClub, null, false); // Llama al nuevo con búsqueda null
     }
 
     // 1.B. LISTAR POR CLUB (CORREGIDO: FILTRADO EN JAVA)
     public List<CompetidorClubDTO> listarPorClub(String idClub, String busqueda) {
+        return listarPorClub(idClub, busqueda, false);
+    }
+
+    // 1.C. LISTAR POR CLUB (OPCIONAL: EXCLUIR PROPIETARIO)
+    public List<CompetidorClubDTO> listarPorClub(String idClub, String busqueda, boolean excluirPropietario) {
 
         // 1. Obtenemos TODOS los competidores de ese club (Consulta simple y segura)
         // NOTA: Asegúrate que tu repositorio tenga 'findByClubActual_IdClub' o 'findByClub_IdClub'
@@ -176,7 +183,19 @@ public class CompetidorService {
                     .collect(Collectors.toList());
         }
 
-        // 3. Mapeo a DTO
+        // 3. Excluir al propietario si aplica
+        if (excluirPropietario) {
+            Club club = clubRepo.findById(idClub).orElse(null);
+            if (club != null) {
+                String idOwner = club.getUsuario() != null ? club.getUsuario().getIdUsuario() : null;
+                if (idOwner != null) {
+                    listaCompleta.removeIf(c -> c.getUsuario() != null
+                            && idOwner.equals(c.getUsuario().getIdUsuario()));
+                }
+            }
+        }
+
+        // 4. Mapeo a DTO
         return listaCompleta.stream()
                 .map(c -> new CompetidorClubDTO(
                         c.getIdCompetidor(),

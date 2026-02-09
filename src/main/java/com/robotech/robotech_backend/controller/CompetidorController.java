@@ -26,11 +26,12 @@ public class CompetidorController {
     @GetMapping("/club/{idClub}")
     public ResponseEntity<?> listarPorClub(
             @PathVariable String idClub,
-            @RequestParam(required = false) String busqueda // ✨ NUEVO: Recibe el filtro
+            @RequestParam(required = false) String busqueda, // ✨ NUEVO: Recibe el filtro
+            @RequestParam(required = false, defaultValue = "false") boolean excluirPropietario
     ) {
         // Llamamos al método sobrecargado del servicio
         return ResponseEntity.ok(
-                competidorService.listarPorClub(idClub, busqueda)
+                competidorService.listarPorClub(idClub, busqueda, excluirPropietario)
         );
     }
 
