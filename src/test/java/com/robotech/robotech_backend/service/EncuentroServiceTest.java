@@ -65,8 +65,10 @@ class EncuentroServiceTest {
         coliseo.setIdColiseo("C1");
         coliseo.setNombre("Coliseo");
 
-        Robot r1 = Robot.builder().idRobot("R1").build();
-        Robot r2 = Robot.builder().idRobot("R2").build();
+        Competidor c1 = Competidor.builder().idCompetidor("C1").estadoValidacion(EstadoValidacion.APROBADO).build();
+        Competidor c2 = Competidor.builder().idCompetidor("C2").estadoValidacion(EstadoValidacion.APROBADO).build();
+        Robot r1 = Robot.builder().idRobot("R1").estado(EstadoRobot.ACTIVO).competidor(c1).build();
+        Robot r2 = Robot.builder().idRobot("R2").estado(EstadoRobot.ACTIVO).competidor(c2).build();
         InscripcionTorneo ins1 = InscripcionTorneo.builder().robot(r1).build();
         InscripcionTorneo ins2 = InscripcionTorneo.builder().robot(r2).build();
 
@@ -106,9 +108,12 @@ class EncuentroServiceTest {
         coliseo.setIdColiseo("C1");
         coliseo.setNombre("Coliseo");
 
-        Robot r1 = Robot.builder().idRobot("R1").build();
-        Robot r2 = Robot.builder().idRobot("R2").build();
-        Robot r3 = Robot.builder().idRobot("R3").build();
+        Competidor c1 = Competidor.builder().idCompetidor("C1").estadoValidacion(EstadoValidacion.APROBADO).build();
+        Competidor c2 = Competidor.builder().idCompetidor("C2").estadoValidacion(EstadoValidacion.APROBADO).build();
+        Competidor c3 = Competidor.builder().idCompetidor("C3").estadoValidacion(EstadoValidacion.APROBADO).build();
+        Robot r1 = Robot.builder().idRobot("R1").estado(EstadoRobot.ACTIVO).competidor(c1).build();
+        Robot r2 = Robot.builder().idRobot("R2").estado(EstadoRobot.ACTIVO).competidor(c2).build();
+        Robot r3 = Robot.builder().idRobot("R3").estado(EstadoRobot.ACTIVO).competidor(c3).build();
         InscripcionTorneo ins1 = InscripcionTorneo.builder().robot(r1).build();
         InscripcionTorneo ins2 = InscripcionTorneo.builder().robot(r2).build();
         InscripcionTorneo ins3 = InscripcionTorneo.builder().robot(r3).build();

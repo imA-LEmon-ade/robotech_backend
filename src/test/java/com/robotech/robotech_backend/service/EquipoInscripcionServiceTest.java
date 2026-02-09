@@ -57,8 +57,18 @@ class EquipoInscripcionServiceTest {
                 .build();
 
         Usuario u = Usuario.builder().idUsuario("U1").build();
-        Competidor comp = Competidor.builder().idCompetidor("U1").usuario(u).clubActual(club).build();
-        Robot robot = Robot.builder().idRobot("R1").nombre("R1").competidor(comp).build();
+        Competidor comp = Competidor.builder()
+                .idCompetidor("U1")
+                .usuario(u)
+                .clubActual(club)
+                .estadoValidacion(EstadoValidacion.APROBADO)
+                .build();
+        Robot robot = Robot.builder()
+                .idRobot("R1")
+                .nombre("R1")
+                .estado(EstadoRobot.ACTIVO)
+                .competidor(comp)
+                .build();
 
         when(clubRepo.findById("C1")).thenReturn(Optional.of(club));
         when(categoriaRepo.findById("CAT1")).thenReturn(Optional.of(categoria));

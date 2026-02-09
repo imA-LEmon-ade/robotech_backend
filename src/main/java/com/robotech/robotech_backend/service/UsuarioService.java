@@ -136,6 +136,9 @@ public class UsuarioService {
 
     @Transactional
     public Usuario crearAdministrador(CrearAdminDTO dto) {
+        if (usuarioRepository.existsByRolesContaining(RolUsuario.ADMINISTRADOR)) {
+            throw new RuntimeException("Ya existe un administrador en el sistema");
+        }
 
         if (usuarioRepository.existsByCorreo(dto.correo())) {
             throw new RuntimeException("Correo registrado");

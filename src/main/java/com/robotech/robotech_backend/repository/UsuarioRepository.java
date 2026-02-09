@@ -1,6 +1,7 @@
 package com.robotech.robotech_backend.repository;
 
 import com.robotech.robotech_backend.model.enums.EstadoUsuario;
+import com.robotech.robotech_backend.model.enums.RolUsuario;
 import com.robotech.robotech_backend.model.entity.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
 
     boolean existsByDni(String dni);
+
+    boolean existsByRolesContaining(RolUsuario rol);
 
     @Query("""
             SELECT u FROM Usuario u
