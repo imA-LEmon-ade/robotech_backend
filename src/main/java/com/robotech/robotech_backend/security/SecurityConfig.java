@@ -60,7 +60,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/admin").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMINISTRADOR", "SUBADMINISTRADOR")
-                        .requestMatchers("/api/subadmin/**").hasRole("SUBADMINISTRADOR")
+                        .requestMatchers("/api/subadmin/**").hasAnyRole("SUBADMINISTRADOR", "ADMINISTRADOR")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )

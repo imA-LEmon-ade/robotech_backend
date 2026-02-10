@@ -11,6 +11,8 @@ import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +31,8 @@ public class SubAdminCompetidorService {
     private final DniValidator dniValidator;
     private final TelefonoValidator telefonoValidator;
 
-    public List<CompetidorResponseDTO> listarTodos() {
-        return competidorRepo.findAll().stream().map(comp -> {
+    public Page<CompetidorResponseDTO> listarTodos(Pageable pageable, String q) {
+        return competidorRepo.buscarAdmin(q, pageable).map(comp -> {
             Usuario u = comp.getUsuario();
             String clubNombre = comp.getClubActual() != null ? comp.getClubActual().getNombre() : "Agente libre";
             return new CompetidorResponseDTO(
@@ -43,7 +45,7 @@ public class SubAdminCompetidorService {
                     comp.getEstadoValidacion().name(),
                     u.getTelefono()
             );
-        }).toList();
+        });
     }
 
     public void registrarCompetidor(RegistroCompetidorDTO dto) {

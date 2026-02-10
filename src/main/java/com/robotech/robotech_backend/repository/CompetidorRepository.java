@@ -53,6 +53,38 @@ public interface CompetidorRepository extends JpaRepository<Competidor, String> 
     )
     Page<Competidor> buscarPublico(@Param("q") String q, Pageable pageable);
 
+    @Query(
+        value = """
+            SELECT c
+            FROM Competidor c
+            JOIN c.usuario u
+            LEFT JOIN c.clubActual ca
+            WHERE (:q IS NULL OR :q = '' OR
+                   LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.nombres) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.dni) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.correo) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.telefono) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(ca.nombre) LIKE LOWER(CONCAT('%', :q, '%')))
+            """,
+        countQuery = """
+            SELECT COUNT(c)
+            FROM Competidor c
+            JOIN c.usuario u
+            LEFT JOIN c.clubActual ca
+            WHERE (:q IS NULL OR :q = '' OR
+                   LOWER(CONCAT(u.nombres, ' ', u.apellidos)) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.nombres) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.apellidos) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.dni) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.correo) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(u.telefono) LIKE LOWER(CONCAT('%', :q, '%')) OR
+                   LOWER(ca.nombre) LIKE LOWER(CONCAT('%', :q, '%')))
+            """
+    )
+    Page<Competidor> buscarAdmin(@Param("q") String q, Pageable pageable);
+
 }
 
 

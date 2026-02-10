@@ -5,6 +5,9 @@ import com.robotech.robotech_backend.dto.RegistroCompetidorDTO;
 import com.robotech.robotech_backend.service.SubAdminCompetidorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +25,7 @@ public class SubAdminGestionController {
 
     // REGISTRAR COMPETIDOR
     @PostMapping("/competidores")
-    @PreAuthorize("hasAuthority('SUBADMINISTRADOR')")
+    @PreAuthorize("hasAnyAuthority('SUBADMINISTRADOR','ADMINISTRADOR')")
     public ResponseEntity<String> registrarCompetidor(
             @RequestBody @Valid RegistroCompetidorDTO dto
     ) {
@@ -32,9 +35,14 @@ public class SubAdminGestionController {
                 .body("Competidor registrado exitosamente");
     }
     @GetMapping("/competidores")
-    @PreAuthorize("hasAuthority('SUBADMINISTRADOR')")
-    public ResponseEntity<List<CompetidorResponseDTO>> listarParaTabla() {
-        return ResponseEntity.ok(competidorService.listarTodos());
+    @PreAuthorize("hasAnyAuthority('SUBADMINISTRADOR','ADMINISTRADOR')")
+    public ResponseEntity<Page<CompetidorResponseDTO>> listarParaTabla(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String q
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(competidorService.listarTodos(pageable, q));
     }
 }
 
