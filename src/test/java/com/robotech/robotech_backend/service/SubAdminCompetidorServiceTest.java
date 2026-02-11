@@ -16,6 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -58,13 +61,15 @@ class SubAdminCompetidorServiceTest {
                 .estadoValidacion(EstadoValidacion.APROBADO)
                 .build();
 
-        when(competidorRepo.findAll()).thenReturn(List.of(comp));
+        when(competidorRepo.buscarAdmin(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(comp), PageRequest.of(0, 20), 1));
 
-        List<CompetidorResponseDTO> result = subAdminCompetidorService.listarTodos();
+        Page<CompetidorResponseDTO> result =
+                subAdminCompetidorService.listarTodos(PageRequest.of(0, 20), null);
 
-        assertEquals(1, result.size());
-        assertEquals("Ana", result.get(0).getNombres());
-        assertEquals("Club A", result.get(0).getClubNombre());
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Ana", result.getContent().get(0).getNombres());
+        assertEquals("Club A", result.getContent().get(0).getClubNombre());
     }
 
     @Test
