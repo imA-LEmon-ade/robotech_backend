@@ -3,10 +3,13 @@ package com.robotech.robotech_backend.controller;
 import com.robotech.robotech_backend.dto.CompetidorActualizarDTO;
 import com.robotech.robotech_backend.dto.CompetidorPerfilDTO;
 import com.robotech.robotech_backend.service.CompetidorService;
+import com.robotech.robotech_backend.model.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 
 import java.util.Collections;
 import java.util.Map;
@@ -57,6 +60,21 @@ public class CompetidorController {
         try {
             competidorService.rechazarCompetidor(idCompetidor);
             return ResponseEntity.ok(Collections.singletonMap("mensaje", "Competidor rechazado correctamente"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("mensaje", e.getMessage()));
+        }
+    }
+
+    // -------------------------------------------------------------------
+    // 4. INACTIVAR (CLUB)
+    // -------------------------------------------------------------------
+    @PreAuthorize("hasRole('CLUB')")
+    @PutMapping("/{idCompetidor}/inactivar")
+    public ResponseEntity<?> inactivarCompetidor(@PathVariable String idCompetidor, Authentication auth) {
+        try {
+            Usuario usuario = (Usuario) auth.getPrincipal();
+            competidorService.inactivarCompetidor(idCompetidor, usuario.getIdUsuario());
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Competidor inactivado correctamente"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("mensaje", e.getMessage()));
         }

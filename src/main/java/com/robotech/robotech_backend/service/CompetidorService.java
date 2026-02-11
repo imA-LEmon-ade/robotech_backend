@@ -15,6 +15,7 @@ import com.robotech.robotech_backend.service.validadores.DniValidator;
 import com.robotech.robotech_backend.service.validadores.TelefonoValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +40,9 @@ public class CompetidorService {
     private final ClubRepository clubRepo;
     private final DniValidator dniValidator;
     private final TelefonoValidator telefonoValidator;
+
+    @Value("${app.uploads.dir:uploads}")
+    private String uploadsDir;
 
     // =============================
     // CRUD BÁSICO (INTACTO)
@@ -82,11 +86,11 @@ public class CompetidorService {
             Competidor c = competidorRepo.findById(idCompetidor)
                     .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
 
-            File carpeta = new File("uploads/competidores");
+            File carpeta = new File(uploadsDir, "competidores");
             if (!carpeta.exists()) carpeta.mkdirs();
 
             String nombreArchivo = UUID.randomUUID() + "_" + foto.getOriginalFilename();
-            Path ruta = Paths.get("uploads/competidores/" + nombreArchivo);
+            Path ruta = Paths.get(uploadsDir, "competidores", nombreArchivo);
             Files.write(ruta, foto.getBytes());
 
             c.setFotoUrl("/uploads/competidores/" + nombreArchivo);
@@ -203,7 +207,9 @@ public class CompetidorService {
                         c.getUsuario().getApellidos(),
                         c.getUsuario().getDni(),
                         c.getEstadoValidacion().name(),
-                        c.getUsuario().getCorreo()
+                        c.getUsuario().getCorreo(),
+                        c.getUsuario().getTelefono(),
+                        c.getUsuario().getEstado() != null ? c.getUsuario().getEstado().name() : null
                 ))
                 .toList();
     }
@@ -253,6 +259,25 @@ public class CompetidorService {
 
         competidor.setEstadoValidacion(EstadoValidacion.RECHAZADO);
         competidorRepo.save(competidor);
+    }
+
+    // 4. INACTIVAR COMPETIDOR (CLUB)
+    @Transactional
+    public void inactivarCompetidor(String idCompetidor, String idUsuarioClub) {
+        Club club = clubRepo.findByUsuario_IdUsuario(idUsuarioClub)
+                .orElseThrow(() -> new RuntimeException("Club no encontrado"));
+
+        Competidor competidor = competidorRepo.findById(idCompetidor)
+                .orElseThrow(() -> new RuntimeException("Competidor no encontrado"));
+
+        if (competidor.getClubActual() == null ||
+                !club.getIdClub().equals(competidor.getClubActual().getIdClub())) {
+            throw new RuntimeException("El competidor no pertenece a tu club");
+        }
+
+        Usuario usuario = competidor.getUsuario();
+        usuario.setEstado(EstadoUsuario.INACTIVO);
+        usuarioRepo.save(usuario);
     }
 }
 

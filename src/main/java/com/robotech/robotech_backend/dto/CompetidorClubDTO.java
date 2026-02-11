@@ -6,6 +6,8 @@ public record CompetidorClubDTO(
         String apellidos,
         String dni,
         String estadoValidacion,
-        String correo
+        String correo,
+        String telefono,
+        String estadoUsuario
 ) {}
 

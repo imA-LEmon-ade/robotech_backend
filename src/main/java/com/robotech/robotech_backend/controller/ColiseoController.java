@@ -6,6 +6,7 @@ import com.robotech.robotech_backend.model.entity.Coliseo;
 import com.robotech.robotech_backend.repository.ColiseoRepository;
 import com.robotech.robotech_backend.service.ColiseoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,6 +28,9 @@ public class ColiseoController {
 
     private final ColiseoService coliseoService;
     private final ColiseoRepository coliseoRepository;
+
+    @Value("${app.uploads.dir:uploads}")
+    private String uploadsDir;
 
     // -------------------------
     // CREAR
@@ -91,7 +95,7 @@ public class ColiseoController {
                 .orElseThrow(() -> new RuntimeException("Coliseo no encontrado"));
 
         String nombreArchivo = id + "_" + file.getOriginalFilename();
-        Path ruta = Paths.get("uploads/coliseos/" + nombreArchivo);
+        Path ruta = Paths.get(uploadsDir, "coliseos", nombreArchivo);
 
         Files.createDirectories(ruta.getParent());
         Files.write(ruta, file.getBytes());
