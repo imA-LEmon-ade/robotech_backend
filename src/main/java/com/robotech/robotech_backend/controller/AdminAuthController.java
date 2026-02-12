@@ -26,7 +26,10 @@ public class AdminAuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginAdmin(@RequestBody LoginAdminRequest req) {
+    public ResponseEntity<?> loginAdmin(@RequestBody(required = false) LoginAdminRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest().body("Body JSON requerido");
+        }
         boolean correoVacio = req.getCorreo() == null || req.getCorreo().isBlank();
         boolean contrasenaVacia = req.getContrasena() == null || req.getContrasena().isBlank();
         if (correoVacio && contrasenaVacia) {

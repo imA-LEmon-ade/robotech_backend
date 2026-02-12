@@ -4,9 +4,11 @@ import com.robotech.robotech_backend.dto.ApiErrorDTO;
 import com.robotech.robotech_backend.service.validadores.FieldValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.server.ResponseStatusException; // IMPORTANTE
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -90,6 +92,26 @@ public class GlobalExceptionHandler {
         error.setFieldErrors(errors);
         error.setSuggestions(List.of());
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorDTO> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("BAD_REQUEST");
+        error.setMessage("Body JSON invalido o faltante");
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of("Envia un JSON valido con Content-Type: application/json"));
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiErrorDTO> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("METHOD_NOT_ALLOWED");
+        error.setMessage("Metodo HTTP no permitido para esta ruta");
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of("Usa el metodo HTTP correcto para el endpoint"));
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
     }
 
     // =========================
