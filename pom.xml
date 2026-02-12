@@ -87,7 +87,6 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- LOMBOK -->
         <dependency>
             <groupId>org.projectlombok</groupId>

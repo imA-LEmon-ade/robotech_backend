@@ -57,7 +57,8 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/api/rankings/**",
                                 "/api/util/dni/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/admin").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMINISTRADOR", "SUBADMINISTRADOR")
