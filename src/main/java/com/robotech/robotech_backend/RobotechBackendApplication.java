@@ -12,6 +12,7 @@ public class RobotechBackendApplication {
 		SpringApplication.run(RobotechBackendApplication.class, args);
 	}
 
+
 }
 
 

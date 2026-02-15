@@ -74,7 +74,8 @@ public class AdminUsuarioService {
                 .correo(dto.correo())
                 .telefono(dto.telefono())
                 .contrasenaHash(passwordEncoder.encode(dto.contrasena()))
-                .roles(Set.of(RolUsuario.COMPETIDOR)) // o el que corresponda
+                // Esta ruta admin solo crea administradores.
+                .roles(Set.of(RolUsuario.ADMINISTRADOR))
                 .estado(EstadoUsuario.ACTIVO)
                 .build();
 
@@ -99,9 +100,7 @@ public class AdminUsuarioService {
         u.setTelefono(dto.telefono());
         u.setNombres(dto.nombres().trim());
         u.setApellidos(dto.apellidos().trim());
-        if (dto.roles() != null) {
-        u.setRoles(dto.roles());
-        }
+        // No se permite cambio de roles desde esta ediciÃ³n para evitar alteraciones bruscas.
         u.setEstado(dto.estado());
 
         return usuarioRepo.save(u);
