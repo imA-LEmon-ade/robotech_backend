@@ -34,7 +34,10 @@ public class AdminJuezController {
     public ResponseEntity<PageResponse<JuezAdminDTO>> listar(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String q
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String dni,
+            @RequestParam(required = false) String licencia
     ) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
@@ -42,7 +45,7 @@ public class AdminJuezController {
                 Sort.by("idJuez").ascending()
         );
 
-        Page<JuezAdminDTO> result = juezService.listar(pageable, q);
+        Page<JuezAdminDTO> result = juezService.listar(pageable, q, nombre, dni, licencia);
         return ResponseEntity.ok(new PageResponse<>(
                 result.getContent(),
                 result.getNumber(),

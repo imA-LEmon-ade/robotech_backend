@@ -65,6 +65,19 @@ public class GlobalExceptionHandler {
     }
 
     // =========================
+    // Manejo de envio de correo
+    // =========================
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<ApiErrorDTO> handleEmailDeliveryException(EmailDeliveryException ex) {
+        ApiErrorDTO error = new ApiErrorDTO();
+        error.setCode("EMAIL_DELIVERY_ERROR");
+        error.setMessage(ex.getMessage());
+        error.setFieldErrors(Map.of());
+        error.setSuggestions(List.of("Verifica RESEND_API_KEY y RESEND_FROM en la configuracion."));
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
+    // =========================
     // EMAIL DUPLICADO (Tu código existente)
     // =========================
     @ExceptionHandler(FieldValidationException.class)

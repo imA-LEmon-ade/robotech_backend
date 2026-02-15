@@ -38,7 +38,10 @@ public class SubAdministradorController {
     public ResponseEntity<PageResponse<SubAdminResponseDTO>> listarTodos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String q
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String dni,
+            @RequestParam(required = false) String estado
     ) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
@@ -46,7 +49,7 @@ public class SubAdministradorController {
                 Sort.by("idUsuario").ascending()
         );
 
-        Page<SubAdminResponseDTO> result = subAdminService.listarTodos(pageable, q);
+        Page<SubAdminResponseDTO> result = subAdminService.listarTodos(pageable, q, nombre, dni, estado);
         return ResponseEntity.ok(new PageResponse<>(
                 result.getContent(),
                 result.getNumber(),

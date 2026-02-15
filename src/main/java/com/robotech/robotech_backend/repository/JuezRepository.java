@@ -66,5 +66,36 @@ public interface JuezRepository extends JpaRepository<Juez, String> {
         """
     )
     Page<Juez> buscar(@Param("q") String q, Pageable pageable);
+
+    @Query(
+            value = """
+        SELECT j FROM Juez j
+        JOIN FETCH j.usuario u
+        WHERE
+            (:nombre IS NULL OR :nombre = '' OR
+                LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+            AND (:dni IS NULL OR :dni = '' OR
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+            AND (:licencia IS NULL OR :licencia = '' OR
+                LOWER(COALESCE(j.licencia, '')) LIKE LOWER(CONCAT('%', :licencia, '%')))
+        """,
+            countQuery = """
+        SELECT COUNT(j) FROM Juez j
+        JOIN j.usuario u
+        WHERE
+            (:nombre IS NULL OR :nombre = '' OR
+                LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+            AND (:dni IS NULL OR :dni = '' OR
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+            AND (:licencia IS NULL OR :licencia = '' OR
+                LOWER(COALESCE(j.licencia, '')) LIKE LOWER(CONCAT('%', :licencia, '%')))
+        """
+    )
+    Page<Juez> buscarConFiltros(
+            @Param("nombre") String nombre,
+            @Param("dni") String dni,
+            @Param("licencia") String licencia,
+            Pageable pageable
+    );
 }
 

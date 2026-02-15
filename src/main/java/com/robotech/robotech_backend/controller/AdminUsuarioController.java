@@ -25,7 +25,10 @@ public class AdminUsuarioController {
     public ResponseEntity<PageResponse<UsuarioDTO>> listarUsuarios(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String q
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String dni,
+            @RequestParam(required = false) String rol
     ) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
@@ -33,7 +36,7 @@ public class AdminUsuarioController {
                 Sort.by("idUsuario").ascending()
         );
 
-        Page<UsuarioDTO> result = usuarioService.listar(pageable, q);
+        Page<UsuarioDTO> result = usuarioService.listar(pageable, q, nombre, dni, rol);
         PageResponse<UsuarioDTO> response = new PageResponse<>(
                 result.getContent(),
                 result.getNumber(),

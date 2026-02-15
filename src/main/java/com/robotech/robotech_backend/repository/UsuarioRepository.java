@@ -34,14 +34,59 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
     boolean existsByRolesContaining(RolUsuario rol);
 
-    @Query("""
-            SELECT u FROM Usuario u
+    @Query(
+            value = """
+            SELECT DISTINCT u FROM Usuario u
+            LEFT JOIN u.roles r
             WHERE
                 LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :q, '%'))
                 OR LOWER(COALESCE(u.nombres, '')) LIKE LOWER(CONCAT('%', :q, '%'))
                 OR LOWER(COALESCE(u.apellidos, '')) LIKE LOWER(CONCAT('%', :q, '%'))
                 OR LOWER(COALESCE(u.correo, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-            """)
+                OR LOWER(COALESCE(CONCAT(r, ''), '')) LIKE LOWER(CONCAT('%', :q, '%'))
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT u.idUsuario) FROM Usuario u
+            LEFT JOIN u.roles r
+            WHERE
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.nombres, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.apellidos, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(u.correo, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                OR LOWER(COALESCE(CONCAT(r, ''), '')) LIKE LOWER(CONCAT('%', :q, '%'))
+            """
+    )
     Page<Usuario> buscar(@Param("q") String q, Pageable pageable);
+
+    @Query(
+            value = """
+            SELECT DISTINCT u FROM Usuario u
+            LEFT JOIN u.roles r
+            WHERE
+                (:nombre IS NULL OR :nombre = '' OR
+                    LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+                AND (:dni IS NULL OR :dni = '' OR
+                    LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+                AND (:rol IS NULL OR :rol = '' OR
+                    UPPER(COALESCE(CONCAT(r, ''), '')) = UPPER(:rol))
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT u.idUsuario) FROM Usuario u
+            LEFT JOIN u.roles r
+            WHERE
+                (:nombre IS NULL OR :nombre = '' OR
+                    LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+                AND (:dni IS NULL OR :dni = '' OR
+                    LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+                AND (:rol IS NULL OR :rol = '' OR
+                    UPPER(COALESCE(CONCAT(r, ''), '')) = UPPER(:rol))
+            """
+    )
+    Page<Usuario> buscarConFiltros(
+            @Param("nombre") String nombre,
+            @Param("dni") String dni,
+            @Param("rol") String rol,
+            Pageable pageable
+    );
 }
 

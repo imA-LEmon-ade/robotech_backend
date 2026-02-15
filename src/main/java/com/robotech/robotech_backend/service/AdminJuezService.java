@@ -39,9 +39,26 @@ public class AdminJuezService {
     // ---------------------------------------------------------
     // LISTAR (CORREGIDO PARA TRAER NOMBRES)
     // ---------------------------------------------------------
-    public Page<JuezAdminDTO> listar(Pageable pageable, String q) {
-        String term = (q == null || q.isBlank()) ? null : q.trim();
-        return juezRepository.buscar(term, pageable)
+    public Page<JuezAdminDTO> listar(Pageable pageable, String q, String nombre, String dni, String licencia) {
+        boolean hasSplitFilters =
+                (nombre != null && !nombre.isBlank())
+                        || (dni != null && !dni.isBlank())
+                        || (licencia != null && !licencia.isBlank());
+
+        Page<Juez> page;
+        if (hasSplitFilters) {
+            page = juezRepository.buscarConFiltros(
+                    nombre != null ? nombre.trim() : null,
+                    dni != null ? dni.trim() : null,
+                    licencia != null ? licencia.trim() : null,
+                    pageable
+            );
+        } else {
+            String term = (q == null || q.isBlank()) ? null : q.trim();
+            page = juezRepository.buscar(term, pageable);
+        }
+
+        return page
                 .map(j -> new JuezAdminDTO(
                         j.getIdJuez(),
                         j.getLicencia(),

@@ -73,9 +73,26 @@ public class SubAdministradorService {
     // =========================
     // LISTAR TODOS
     // =========================
-    public Page<SubAdminResponseDTO> listarTodos(Pageable pageable, String q) {
-        String term = (q == null || q.isBlank()) ? null : q.trim();
-        return subAdminRepo.buscar(term, pageable)
+    public Page<SubAdminResponseDTO> listarTodos(Pageable pageable, String q, String nombre, String dni, String estado) {
+        boolean hasSplitFilters =
+                (nombre != null && !nombre.isBlank())
+                        || (dni != null && !dni.isBlank())
+                        || (estado != null && !estado.isBlank());
+
+        Page<SubAdministrador> page;
+        if (hasSplitFilters) {
+            page = subAdminRepo.buscarConFiltros(
+                    nombre != null ? nombre.trim() : null,
+                    dni != null ? dni.trim() : null,
+                    estado != null ? estado.trim() : null,
+                    pageable
+            );
+        } else {
+            String term = (q == null || q.isBlank()) ? null : q.trim();
+            page = subAdminRepo.buscar(term, pageable);
+        }
+
+        return page
                 .map(this::map);
     }
 

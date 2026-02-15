@@ -30,10 +30,25 @@ public class AdminUsuarioService {
     // =========================
     // LISTAR
     // =========================
-    public Page<UsuarioDTO> listar(Pageable pageable, String q) {
-        Page<Usuario> page = (q == null || q.isBlank())
-                ? usuarioRepo.findAll(pageable)
-                : usuarioRepo.buscar(q.trim(), pageable);
+    public Page<UsuarioDTO> listar(Pageable pageable, String q, String nombre, String dni, String rol) {
+        boolean hasSplitFilters =
+                (nombre != null && !nombre.isBlank())
+                        || (dni != null && !dni.isBlank())
+                        || (rol != null && !rol.isBlank());
+
+        Page<Usuario> page;
+        if (hasSplitFilters) {
+            page = usuarioRepo.buscarConFiltros(
+                    nombre != null ? nombre.trim() : null,
+                    dni != null ? dni.trim() : null,
+                    rol != null ? rol.trim() : null,
+                    pageable
+            );
+        } else {
+            page = (q == null || q.isBlank())
+                    ? usuarioRepo.findAll(pageable)
+                    : usuarioRepo.buscar(q.trim(), pageable);
+        }
 
         return page.map(u -> new UsuarioDTO(
                 u.getIdUsuario(),

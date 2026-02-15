@@ -43,6 +43,37 @@ public interface SubAdministradorRepository
         """
     )
     Page<SubAdministrador> buscar(@Param("q") String q, Pageable pageable);
+
+    @Query(
+        value = """
+        SELECT s FROM SubAdministrador s
+        JOIN FETCH s.usuario u
+        WHERE
+            (:nombre IS NULL OR :nombre = '' OR
+                LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+            AND (:dni IS NULL OR :dni = '' OR
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+            AND (:estado IS NULL OR :estado = '' OR
+                UPPER(COALESCE(CONCAT(s.estado, ''), '')) = UPPER(:estado))
+        """,
+        countQuery = """
+        SELECT COUNT(s) FROM SubAdministrador s
+        JOIN s.usuario u
+        WHERE
+            (:nombre IS NULL OR :nombre = '' OR
+                LOWER(CONCAT(COALESCE(u.nombres, ''), ' ', COALESCE(u.apellidos, ''))) LIKE LOWER(CONCAT('%', :nombre, '%')))
+            AND (:dni IS NULL OR :dni = '' OR
+                LOWER(COALESCE(u.dni, '')) LIKE LOWER(CONCAT('%', :dni, '%')))
+            AND (:estado IS NULL OR :estado = '' OR
+                UPPER(COALESCE(CONCAT(s.estado, ''), '')) = UPPER(:estado))
+        """
+    )
+    Page<SubAdministrador> buscarConFiltros(
+            @Param("nombre") String nombre,
+            @Param("dni") String dni,
+            @Param("estado") String estado,
+            Pageable pageable
+    );
 }
 
 
