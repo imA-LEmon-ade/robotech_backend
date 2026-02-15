@@ -79,7 +79,7 @@ class AdminJuezServiceTest {
         Page<Juez> page = new PageImpl<>(List.of(juez), pageable, 1);
         when(juezRepository.buscar("ana", pageable)).thenReturn(page);
 
-        Page<JuezAdminDTO> result = adminJuezService.listar(pageable, "ana");
+        Page<JuezAdminDTO> result = adminJuezService.listar(pageable, "ana", null, null, null);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("J1", result.getContent().get(0).getIdJuez());

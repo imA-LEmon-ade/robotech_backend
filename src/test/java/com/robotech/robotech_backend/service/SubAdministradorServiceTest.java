@@ -88,7 +88,7 @@ class SubAdministradorServiceTest {
 
         when(subAdminRepo.buscar("ana", pageable)).thenReturn(page);
 
-        Page<SubAdminResponseDTO> result = subAdminService.listarTodos(pageable, "ana");
+        Page<SubAdminResponseDTO> result = subAdminService.listarTodos(pageable, "ana", null, null, null);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("U1", result.getContent().get(0).getIdSubadmin());

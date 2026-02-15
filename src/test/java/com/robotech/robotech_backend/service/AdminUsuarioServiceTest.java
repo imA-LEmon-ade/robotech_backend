@@ -68,7 +68,7 @@ class AdminUsuarioServiceTest {
         Page<Usuario> page = new PageImpl<>(List.of(usuario1), pageable, 1);
         when(usuarioRepo.findAll(pageable)).thenReturn(page);
 
-        Page<UsuarioDTO> result = adminUsuarioService.listar(pageable, "");
+        Page<UsuarioDTO> result = adminUsuarioService.listar(pageable, "", null, null, null);
 
         assertEquals(1, result.getTotalElements());
         verify(usuarioRepo, times(1)).findAll(pageable);
@@ -81,7 +81,7 @@ class AdminUsuarioServiceTest {
         Page<Usuario> page = new PageImpl<>(List.of(usuario1), pageable, 1);
         when(usuarioRepo.buscar("ana", pageable)).thenReturn(page);
 
-        Page<UsuarioDTO> result = adminUsuarioService.listar(pageable, "ana");
+        Page<UsuarioDTO> result = adminUsuarioService.listar(pageable, "ana", null, null, null);
 
         assertEquals(1, result.getTotalElements());
         verify(usuarioRepo, times(1)).buscar("ana", pageable);
